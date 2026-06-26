@@ -1,0 +1,702 @@
+/* Donation modal — shared by DonationModal.astro and MethodItem.astro.
+   Namespaced under .dm / .dm__ so it can live as a plain global module. */
+
+.dm {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dm[aria-hidden="false"] {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.dm__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 16, 24, 0.55);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.dm[aria-hidden="false"] .dm__backdrop {
+  opacity: 1;
+}
+
+/* ---- Panel: fixed height, inner scroll ---- */
+.dm__panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 460px);
+  height: min(620px, 90vh);
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--paper-strong);
+  box-shadow: 0 30px 90px rgba(7, 16, 24, 0.34);
+  outline: 0;
+  opacity: 0;
+  transform: translateY(16px) scale(0.98);
+  transition:
+    opacity 220ms ease,
+    transform 240ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.dm[aria-hidden="false"] .dm__panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.dm__handle {
+  display: none;
+}
+
+/* ---- Top bar ---- */
+.dm__bar {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+  padding: 16px 18px;
+}
+
+.dm__iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(16, 24, 32, 0.06);
+  color: var(--ink);
+  transition:
+    background 150ms ease,
+    opacity 150ms ease;
+}
+
+.dm__iconbtn:hover {
+  background: rgba(16, 24, 32, 0.12);
+}
+
+.dm__iconbtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.dm__iconbtn:disabled:hover {
+  background: rgba(16, 24, 32, 0.06);
+}
+
+/* ---- Tricolor progress (signature: the flag fills as you advance) ---- */
+.dm__bands {
+  display: flex;
+  gap: 5px;
+}
+
+.dm__band {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  opacity: 0.16;
+  transition: opacity 320ms ease;
+}
+
+.dm__band--1 {
+  background: var(--yellow);
+}
+
+.dm__band--2 {
+  background: var(--blue);
+}
+
+.dm__band--3 {
+  background: var(--red);
+}
+
+.dm[data-step="1"] .dm__band--1,
+.dm[data-step="2"] .dm__band--1,
+.dm[data-step="2"] .dm__band--2,
+.dm[data-step="done"] .dm__band {
+  opacity: 1;
+}
+
+/* ---- Scroll area ---- */
+.dm__scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 6px 22px 22px;
+  overscroll-behavior: contain;
+}
+
+/* ---- Steps ---- */
+.dm__step {
+  display: none;
+  min-height: 100%;
+  flex-direction: column;
+}
+
+.dm__step.is-active {
+  display: flex;
+  animation: dm-fade 240ms ease both;
+}
+
+@keyframes dm-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.dm__step-head {
+  margin-bottom: 18px;
+}
+
+.dm__title {
+  margin: 0 0 6px;
+  font-family: "Archivo", sans-serif;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+.dm__lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ---- Amounts ---- */
+.dm__amounts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.dm__amount {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 80px;
+  padding: 14px 14px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper-strong);
+  text-align: left;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 120ms ease;
+}
+
+.dm__amount:hover {
+  border-color: rgba(16, 24, 32, 0.32);
+}
+
+.dm__amount:active {
+  transform: scale(0.98);
+}
+
+.dm__amount.is-active {
+  border-color: var(--ink);
+  background: #fbfbf8;
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.dm__amount-value {
+  font-family: "Archivo", sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.dm__amount-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.dm__amount-tag {
+  position: absolute;
+  top: -9px;
+  right: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dm__custom {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 22px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dm__custom input {
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper-strong);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.dm__custom input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
+/* ---- Primary action (always full width, never overflows) ---- */
+.dm__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 14px;
+  background: #101820;
+  color: #fff;
+  font-family: "Archivo", sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background 150ms ease,
+    transform 120ms ease;
+}
+
+.dm__step[data-panel="1"] .dm__cta {
+  margin-top: auto;
+}
+
+.dm__cta:hover {
+  background: #1d2832;
+}
+
+.dm__cta:active {
+  transform: scale(0.99);
+}
+
+/* ---- Amount chip on step 2 ---- */
+.dm__amountchip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(16, 24, 32, 0.05);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dm__amountchip strong {
+  color: var(--ink);
+  font-family: "Archivo", sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+/* ---- Method groups ---- */
+.dm__group + .dm__group {
+  margin-top: 18px;
+}
+
+.dm__group-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dm__methods {
+  display: grid;
+  gap: 10px;
+}
+
+/* ---- Country sections: a parent card whose methods are flat rows inside,
+       collapsible so local payments can be skipped entirely. ---- */
+.dm__country {
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 150ms ease;
+}
+
+.dm__country + .dm__country {
+  margin-top: 10px;
+}
+
+.dm__country.is-open {
+  border-color: rgba(16, 24, 32, 0.28);
+}
+
+.dm__country-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 16px;
+  border: 0;
+  background: var(--paper-strong);
+  color: var(--ink);
+  text-align: left;
+  transition: background 150ms ease;
+}
+
+.dm__country-head:hover {
+  background: rgba(16, 24, 32, 0.03);
+}
+
+.dm__country-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.dm__flag {
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.dm__country-chevron {
+  flex: 0 0 auto;
+  color: rgba(16, 24, 32, 0.45);
+  transition: transform 200ms ease;
+}
+
+.dm__country.is-open .dm__country-chevron {
+  transform: rotate(180deg);
+}
+
+.dm__country-body {
+  display: none;
+}
+
+.dm__country.is-open .dm__country-body {
+  display: block;
+  border-top: 1.5px solid var(--line);
+}
+
+/* Methods nested in a country render as flat rows, not standalone cards,
+   so the country reads as the parent and everything lines up. */
+.dm__country-body .dm__methods {
+  gap: 0;
+}
+
+.dm__country-body .dm__method {
+  border: 0;
+  border-radius: 0;
+}
+
+.dm__country-body .dm__method + .dm__method {
+  border-top: 1.5px solid var(--line);
+}
+
+/* ---- Method accordion item ---- */
+.dm__method {
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 150ms ease;
+}
+
+.dm__method.is-open {
+  border-color: var(--ink);
+}
+
+.dm__method-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  background: var(--paper-strong);
+  text-align: left;
+}
+
+.dm__method-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(0, 70, 184, 0.1);
+  color: var(--blue);
+}
+
+.dm__method-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.dm__method-text strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.dm__method-text span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.dm__method-chevron {
+  color: rgba(16, 24, 32, 0.45);
+  transition: transform 200ms ease;
+}
+
+.dm__method.is-open .dm__method-chevron {
+  transform: rotate(180deg);
+}
+
+.dm__method-body {
+  display: none;
+  padding: 4px 16px 18px;
+}
+
+.dm__method.is-open .dm__method-body {
+  display: block;
+}
+
+.dm__instr-lead {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---- Copy fields ---- */
+.dm__fields {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dm__field {
+  display: grid;
+  gap: 4px;
+}
+
+.dm__field-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dm__field-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  background: var(--paper-strong);
+  color: var(--ink);
+  text-align: left;
+  transition: border-color 150ms ease;
+}
+
+.dm__field-copy:hover {
+  border-color: rgba(16, 24, 32, 0.32);
+}
+
+.dm__field-value {
+  font-size: 15px;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.dm__copy-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  color: var(--blue);
+}
+
+.dm__check-icon {
+  display: none;
+  flex: 0 0 auto;
+  color: #1a8a3c;
+}
+
+.dm__field-copy.is-copied {
+  border-color: #1a8a3c;
+}
+
+.dm__field-copy.is-copied .dm__copy-icon {
+  display: none;
+}
+
+.dm__field-copy.is-copied .dm__check-icon {
+  display: inline-flex;
+}
+
+.dm__field-pending {
+  display: inline-flex;
+  align-items: center;
+  min-height: 50px;
+  padding: 0 14px;
+  border: 1.5px dashed var(--line);
+  border-radius: 11px;
+  color: var(--muted);
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* ---- Numbered steps (a real sequence) ---- */
+.dm__steps {
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+  counter-reset: dm-step;
+}
+
+.dm__steps li {
+  position: relative;
+  padding: 3px 0 3px 38px;
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: 14.5px;
+  line-height: 1.45;
+  counter-increment: dm-step;
+}
+
+.dm__steps li::before {
+  position: absolute;
+  left: 0;
+  top: 1px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  content: counter(dm-step);
+}
+
+/* ---- Done ---- */
+.dm__done {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.dm__done-icon {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  background: rgba(0, 70, 184, 0.1);
+  color: var(--blue);
+}
+
+.dm__done .dm__lead {
+  max-width: 320px;
+  margin-bottom: 24px;
+}
+
+/* ---- Focus visibility ---- */
+.dm button:focus-visible,
+.dm a:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ---- Mobile: bottom sheet ---- */
+@media (max-width: 560px) {
+  .dm {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .dm__panel {
+    width: 100%;
+    height: auto;
+    max-height: 88vh;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-radius: 22px 22px 0 0;
+    transform: translateY(100%);
+  }
+
+  .dm[aria-hidden="false"] .dm__panel {
+    transform: translateY(0);
+  }
+
+  .dm__handle {
+    display: block;
+    width: 42px;
+    height: 5px;
+    margin: 8px auto 0;
+    border-radius: 999px;
+    background: rgba(16, 24, 32, 0.18);
+  }
+
+  .dm__bar {
+    padding-top: 10px;
+  }
+
+  .dm__title {
+    font-size: 23px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dm__backdrop,
+  .dm__panel,
+  .dm__band,
+  .dm__method-chevron,
+  .dm__country-chevron,
+  .dm__step.is-active {
+    transition: none;
+    animation: none;
+  }
+}

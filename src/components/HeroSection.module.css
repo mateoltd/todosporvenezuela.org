@@ -1,0 +1,241 @@
+.hero {
+  --hero-x: var(--page-gutter);
+  --hero-top: calc(var(--header-height) + 28px);
+  --hero-bottom: 34px;
+  --hero-flow-gap: 24px;
+  --hero-title-size: clamp(6.25rem, 9vw, 8.75rem);
+  --hero-eyebrow-gap: 26px;
+  --hero-title-gap: 14px;
+  --hero-copy-gap: 14px;
+  --hero-action-gap: 18px;
+
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: start;
+  row-gap: var(--hero-flow-gap);
+  min-height: 100svh;
+  padding: var(--hero-top) var(--hero-x) var(--hero-bottom);
+  overflow: hidden;
+}
+
+.media {
+  position: absolute;
+  inset: 0 0 auto auto;
+  width: min(67vw, 1080px);
+  height: 608px;
+  pointer-events: none;
+}
+
+.media::before {
+  position: absolute;
+  inset: -2px;
+  z-index: 1;
+  content: "";
+  background:
+    linear-gradient(180deg, var(--paper) 0%, rgba(247, 247, 242, 0.82) 10%, rgba(247, 247, 242, 0) 28%),
+    radial-gradient(ellipse at 18% 66%, rgba(247, 247, 242, 0.98) 0%, rgba(247, 247, 242, 0.9) 18%, rgba(247, 247, 242, 0.56) 34%, rgba(247, 247, 242, 0) 58%),
+    linear-gradient(90deg, var(--paper) 0%, rgba(247, 247, 242, 0.96) 18%, rgba(247, 247, 242, 0.7) 34%, rgba(247, 247, 242, 0) 58%),
+    linear-gradient(180deg, rgba(247, 247, 242, 0) 62%, rgba(247, 247, 242, 0.84) 88%, var(--paper) 100%);
+}
+
+.media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(0.88) contrast(1.03);
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  width: min(68vw, 1020px);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 var(--hero-eyebrow-gap);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  max-width: 900px;
+  margin-bottom: var(--hero-title-gap);
+  font-family: "Barlow Condensed", "Archivo", sans-serif;
+  font-size: var(--hero-title-size);
+  font-weight: 400;
+  line-height: 0.78;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hero h1 span {
+  white-space: nowrap;
+}
+
+.hero h1 strong {
+  display: block;
+  font-weight: 900;
+}
+
+.lede {
+  margin-bottom: var(--hero-copy-gap);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.copy {
+  max-width: 510px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.donationPanel {
+  position: relative;
+  z-index: 3;
+}
+
+.action {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  margin-top: var(--hero-action-gap);
+  text-align: center;
+}
+
+.primaryCta {
+  display: inline-flex;
+  min-width: min(100%, 356px);
+  min-height: 62px;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  border: 0;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #172029, #071018);
+  color: #fff;
+  box-shadow: 0 18px 42px rgba(16, 24, 32, 0.24);
+  font-family: "Archivo", sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.paymentNote {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  color: rgba(16, 24, 32, 0.56);
+  font-size: 13px;
+}
+
+.paymentNote span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+@media (max-width: 1120px) {
+  .hero {
+    --hero-title-size: clamp(5.75rem, 10vw, 7.75rem);
+  }
+
+  .media {
+    width: min(72vw, 960px);
+    height: 480px;
+  }
+
+  .content {
+    width: min(74vw, 890px);
+  }
+
+}
+
+@media (max-width: 860px) {
+  .hero {
+    --hero-top: calc(var(--header-height) + 30px);
+    --hero-bottom: 40px;
+    --hero-flow-gap: 22px;
+    --hero-title-size: clamp(4.75rem, 12vw, 5.25rem);
+    min-height: 100svh;
+  }
+
+  .media {
+    inset: 74px 0 auto 16%;
+    width: 112vw;
+    height: 360px;
+    min-height: 0;
+  }
+
+  .content {
+    width: min(100%, 570px);
+  }
+
+  .eyebrow {
+    margin-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-size: var(--hero-title-size);
+  }
+
+  .lede {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero {
+    --hero-top: calc(var(--header-height) + 32px);
+    --hero-bottom: 36px;
+    --hero-flow-gap: 18px;
+    --hero-title-size: clamp(3.75rem, 16.5vw, 4.25rem);
+  }
+
+  .copy {
+    font-size: 15px;
+  }
+
+  .media {
+    top: 78px;
+    left: 10%;
+    width: 124vw;
+    height: 318px;
+    opacity: 0.84;
+  }
+
+  .lede {
+    font-size: 24px;
+    line-height: 1.05;
+  }
+
+  .primaryCta {
+    min-width: 100%;
+    min-height: 58px;
+    font-size: 17px;
+    letter-spacing: 0;
+  }
+
+  .action {
+    margin-top: 14px;
+  }
+
+  .paymentNote {
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+}

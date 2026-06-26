@@ -1,0 +1,99 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Method {
+  id: string;
+  name: string;
+  icon: string;
+  desc: string;
+  lead: string;
+  fields: { label: string; value: string }[];
+  steps: string[];
+  action: "link" | "confirm";
+  actionLabel: string;
+}
+
+interface Props {
+  method: Method;
+  paypalUrl?: string;
+}
+
+const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
+---
+
+<div class="dm__method" data-method-item={method.id}>
+  <button
+    type="button"
+    class="dm__method-head"
+    data-method-toggle={method.id}
+    aria-expanded="false"
+  >
+    <span class="dm__method-icon">
+      <Icon name={method.icon} size={22} />
+    </span>
+    <span class="dm__method-text">
+      <strong>{method.name}</strong>
+      <span>{method.desc}</span>
+    </span>
+    <Icon class="dm__method-chevron" name="tabler:chevron-down" size={20} />
+  </button>
+
+  <div class="dm__method-body">
+    <p class="dm__instr-lead">{method.lead}</p>
+
+    {
+      method.fields.length > 0 && (
+        <div class="dm__fields">
+          {method.fields.map((field) => (
+            <div class="dm__field">
+              <span class="dm__field-label">{field.label}</span>
+              {field.value ? (
+                <button
+                  type="button"
+                  class="dm__field-copy"
+                  data-copy={field.value}
+                  aria-label={`Copiar ${field.label}`}
+                >
+                  <span class="dm__field-value">{field.value}</span>
+                  <span class="dm__copy-icon">
+                    <Icon name="tabler:copy" size={17} />
+                  </span>
+                  <span class="dm__check-icon">
+                    <Icon name="tabler:check" size={17} />
+                  </span>
+                </button>
+              ) : (
+                <span class="dm__field-pending">Disponible muy pronto</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    <ol class="dm__steps">
+      {method.steps.map((step) => <li>{step}</li>)}
+    </ol>
+
+    {
+      method.action === "link" ? (
+        <a
+          class="dm__cta"
+          href={paypalUrl}
+          target="_blank"
+          rel="noopener"
+          data-paypal-link
+          data-done
+        >
+          {method.actionLabel}
+          <Icon name="tabler:external-link" size={19} />
+        </a>
+      ) : (
+        <button class="dm__cta" type="button" data-done>
+          {method.actionLabel}
+          <Icon name="tabler:check" size={19} />
+        </button>
+      )
+    }
+  </div>
+</div>

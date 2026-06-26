@@ -1,0 +1,93 @@
+---
+import { Icon } from "astro-icon/components";
+import styles from "./OrganizersSection.module.css";
+
+const organizers = [
+  {
+    name: "Cristal Navas",
+    image: "/images/organizers/cristal-navas.jpg",
+    instagram: "https://www.instagram.com/zahara_cristal/"
+  },
+  {
+    name: "Abraham Barrios",
+    image: "/images/organizers/abraham-barrios.jpg",
+    instagram: "https://www.instagram.com/eyyabraham_/"
+  },
+  {
+    name: "Valentina Muriel",
+    image: "/images/organizers/valentina-muriel.jpg",
+    instagram: "https://www.instagram.com/valentina.muriell/"
+  },
+  {
+    name: "Marlon Amarista",
+    image: "/images/organizers/marlon-amarista.jpg",
+    instagram: "https://www.instagram.com/marlonamaristaoficial/"
+  }
+];
+
+const churchSources = [
+  "Ministerio Internacional Agua Viva",
+  "Iglesia Oasis Internacional",
+  "Ministerio Internacional Centro de Esperanza",
+  "Nueva Jerusalén Cuadrangular"
+];
+---
+
+<section class={styles.section} id="transparencia" aria-labelledby="organizers-title">
+  <div class={styles.inner}>
+    <div class={styles.heading}>
+      <h2 id="organizers-title">
+        <span>Rostros</span>{" "}
+        <strong>visibles</strong>
+      </h2>
+      <p>
+        Voluntarios cristianos de distintas iglesias coordinan la ayuda en terreno.
+      </p>
+      <div class={styles.sources} aria-label="Iglesias de referencia">
+        <span>Iglesias de referencia</span>
+        <ul>
+          {churchSources.map((source) => <li>{source}</li>)}
+        </ul>
+      </div>
+    </div>
+
+    <div class={styles.roster}>
+      {
+        organizers.map((person) => (
+          <article class={styles.person}>
+            <div class={styles.profileTop}>
+              <a
+                class={styles.photoWrap}
+                href={person.instagram}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Instagram de ${person.name}`}
+              >
+                <img
+                  class={styles.photo}
+                  src={person.image}
+                  alt={`Foto de perfil de ${person.name}`}
+                  width="128"
+                  height="128"
+                  loading="lazy"
+                />
+              </a>
+            </div>
+
+            <div class={styles.identity}>
+              <div class={styles.socials} aria-label={`Redes sociales de ${person.name}`}>
+                <a href={person.instagram} target="_blank" rel="noreferrer" aria-label={`Instagram de ${person.name}`}>
+                  <Icon name="tabler:brand-instagram" size={20} aria-hidden="true" />
+                </a>
+                <span class={styles.pending} aria-label={`TikTok de ${person.name} por confirmar`}>
+                  <Icon name="tabler:brand-tiktok" size={19} aria-hidden="true" />
+                </span>
+              </div>
+              <h3>{person.name}</h3>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

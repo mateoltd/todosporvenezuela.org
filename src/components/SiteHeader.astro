@@ -1,0 +1,64 @@
+---
+import { Heart, Menu } from "@lucide/astro";
+import styles from "./SiteHeader.module.css";
+---
+
+<header class={styles.siteHeader} data-header data-scrolled-class={styles.scrolled}>
+  <a class={styles.brand} href="/" aria-label="Todos por Venezuela">
+    <span class={styles.brandMark} aria-hidden="true">
+      <img src="/images/tpv-emblem.png" alt="" width="256" height="256" />
+    </span>
+    <span class={styles.brandText}>Todos por<br />Venezuela</span>
+  </a>
+
+  <button
+    class={styles.menuToggle}
+    type="button"
+    aria-label="Abrir menú"
+    data-menu-toggle
+    data-nav-open-class={styles.navOpen}
+  >
+    <Menu size={22} strokeWidth={2} />
+  </button>
+
+  <nav class={styles.primaryNav} data-nav>
+    <a href="#ayuda">Destino</a>
+    <a href="#impacto">Devastación</a>
+    <a href="#transparencia">Organizadores</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+
+  <button class={styles.headerDonate} type="button" data-donate-open>
+    <Heart size={17} fill="currentColor" strokeWidth={2} />
+    <span>Donar ahora</span>
+  </button>
+
+  <span class={styles.flagRule} aria-hidden="true"></span>
+</header>
+
+<script>
+  const nav = document.querySelector("[data-nav]");
+  const menuToggle = document.querySelector("[data-menu-toggle]");
+  const navOpenClass = menuToggle?.getAttribute("data-nav-open-class");
+
+  menuToggle?.addEventListener("click", () => {
+    if (!navOpenClass) return;
+    nav?.classList.toggle(navOpenClass);
+  });
+
+  const header = document.querySelector("[data-header]");
+  const scrolledClass = header?.getAttribute("data-scrolled-class");
+  const onScroll = () => {
+    if (!scrolledClass) return;
+    header?.classList.toggle(scrolledClass, window.scrollY > 8);
+  };
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  nav?.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (!navOpenClass) return;
+      nav.classList.remove(navOpenClass);
+    });
+  });
+</script>

@@ -1,0 +1,67 @@
+---
+import "../styles/global.css";
+import DevastationCarousel from "../components/DevastationCarousel.astro";
+import FaqSection from "../components/FaqSection.astro";
+import FundsSection from "../components/FundsSection.astro";
+import HeroSection from "../components/HeroSection.astro";
+import OrganizersSection from "../components/OrganizersSection.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import DonationModal from "../components/DonationModal.astro";
+
+const raised = 100;
+const goal = 800;
+
+// Datos de cobro. Completa pagoMovil y binance con las cuentas oficiales
+// cuando estén confirmadas; mientras estén vacíos, el modal muestra el
+// estado "Disponible muy pronto" en lugar de datos falsos.
+const donation = {
+  paypalUrl: "https://www.paypal.com/donate",
+  amounts: [
+    { value: 10, note: "Agua potable para una familia" },
+    { value: 25, note: "Kit de higiene y limpieza" },
+    { value: 50, note: "Medicinas y primeros auxilios", popular: true },
+    { value: 100, note: "Refugio temporal para una familia" }
+  ],
+  pagoMovil: { banco: "", telefono: "", documento: "", titular: "" },
+  binance: { payId: "" }
+};
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Todos por Venezuela recauda ayuda inmediata para familias afectadas por el terremoto."
+    />
+    <meta name="theme-color" content="#f7f7f2" />
+    <title>Todos por Venezuela | Ayuda inmediata</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@400;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <SiteHeader />
+
+    <main>
+      <HeroSection raised={raised} goal={goal} />
+
+      <FundsSection />
+      <DevastationCarousel />
+      <OrganizersSection />
+      <FaqSection />
+    </main>
+
+    <DonationModal
+      paypalUrl={donation.paypalUrl}
+      amounts={donation.amounts}
+      pagoMovil={donation.pagoMovil}
+      binance={donation.binance}
+    />
+  </body>
+</html>

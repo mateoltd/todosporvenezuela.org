@@ -1,0 +1,491 @@
+---
+import { Icon } from "astro-icon/components";
+import MethodItem from "./MethodItem.astro";
+import "../styles/donation-modal.css";
+
+interface AmountOption {
+  value: number;
+  note: string;
+  popular?: boolean;
+}
+
+interface PagoMovil {
+  banco: string;
+  telefono: string;
+  documento: string;
+  titular: string;
+}
+
+interface Binance {
+  payId: string;
+}
+
+interface Props {
+  /** Base PayPal donate URL. The selected amount is appended as ?amount= */
+  paypalUrl?: string;
+  amounts?: AmountOption[];
+  pagoMovil?: PagoMovil;
+  binance?: Binance;
+}
+
+const {
+  paypalUrl = "https://www.paypal.com/donate",
+  amounts = [
+    { value: 10, note: "Agua potable para una familia" },
+    { value: 25, note: "Kit de higiene y limpieza" },
+    { value: 50, note: "Medicinas y primeros auxilios", popular: true },
+    { value: 100, note: "Refugio temporal para una familia" }
+  ],
+  // Datos oficiales pendientes: déjalos vacíos para mostrar el estado
+  // "Disponible muy pronto"; al confirmar las cuentas, complétalos aquí.
+  pagoMovil = { banco: "", telefono: "", documento: "", titular: "" },
+  binance = { payId: "" }
+} = Astro.props;
+
+const defaultAmount = amounts.find((a) => a.popular)?.value ?? amounts[0]?.value ?? 25;
+
+const usd = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0
+  }).format(value);
+
+// Métodos de pago. Internacional se lista directo; los pagos locales se
+// eligen por país en un desplegable (hoy solo Venezuela, pero admite más).
+type Method = {
+  id: string;
+  name: string;
+  icon: string;
+  desc: string;
+  lead: string;
+  fields: { label: string; value: string }[];
+  steps: string[];
+  action: "link" | "confirm";
+  actionLabel: string;
+};
+
+const internationalMethods: Method[] = [
+  {
+    id: "paypal",
+    name: "PayPal",
+    icon: "tabler:brand-paypal",
+    desc: "Tarjeta o cuenta PayPal",
+    lead: "Te llevamos a PayPal para completar tu donación. Puedes pagar con tarjeta aunque no tengas cuenta.",
+    fields: [],
+    steps: [
+      "Toca el botón para abrir PayPal.",
+      "Confirma el monto y completa el pago.",
+      "Recibirás un comprobante en tu correo."
+    ],
+    action: "link",
+    actionLabel: "Ir a PayPal"
+  },
+  {
+    id: "binance",
+    name: "Binance Pay",
+    icon: "tabler:brand-binance",
+    desc: "USDT, sin comisiones bancarias",
+    lead: "Envía tu donación en USDT por Binance Pay. Es inmediato y sin comisiones bancarias.",
+    fields: [
+      { label: "Binance Pay ID", value: binance.payId },
+      { label: "Moneda", value: binance.payId ? "USDT" : "" }
+    ],
+    steps: [
+      "Abre Binance y entra a la sección Pay.",
+      "Toca Enviar y pega el Pay ID.",
+      "Envía el monto en USDT."
+    ],
+    action: "confirm",
+    actionLabel: "Ya hice mi pago"
+  }
+];
+
+const localCountries: { id: string; name: string; flag: string; methods: Method[] }[] = [
+  {
+    id: "ve",
+    name: "Venezuela",
+    flag: "circle-flags:ve",
+    methods: [
+      {
+        id: "pagomovil",
+        name: "Pago Móvil",
+        icon: "tabler:device-mobile",
+        desc: "Transferencia en bolívares",
+        lead: "Haz una transferencia por Pago Móvil desde la app de tu banco. El monto se calcula al cambio oficial del BCV del día.",
+        fields: [
+          { label: "Banco", value: pagoMovil.banco },
+          { label: "Teléfono", value: pagoMovil.telefono },
+          { label: "Cédula o RIF", value: pagoMovil.documento },
+          { label: "Titular", value: pagoMovil.titular }
+        ],
+        steps: [
+          "Abre la app de tu banco y entra a Pago Móvil.",
+          "Copia y pega los datos de arriba.",
+          "Envía el monto equivalente en bolívares."
+        ],
+        action: "confirm",
+        actionLabel: "Ya hice mi pago"
+      }
+    ]
+  }
+];
+---
+
+<div
+  class="dm"
+  data-donate-modal
+  data-step="1"
+  data-paypal-url={paypalUrl}
+  aria-hidden="true"
+>
+  <div class="dm__backdrop" data-donate-close></div>
+
+  <section
+    class="dm__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dm-title"
+    tabindex="-1"
+  >
+    <span class="dm__handle" aria-hidden="true"></span>
+
+    <!-- Top bar: back · tricolor progress · close -->
+    <header class="dm__bar">
+      <button class="dm__iconbtn dm__back" type="button" aria-label="Volver" data-back disabled>
+        <Icon name="tabler:arrow-left" size={20} />
+      </button>
+
+      <div class="dm__bands" aria-hidden="true">
+        <span class="dm__band dm__band--1"></span>
+        <span class="dm__band dm__band--2"></span>
+        <span class="dm__band dm__band--3"></span>
+      </div>
+
+      <button class="dm__iconbtn dm__close" type="button" aria-label="Cerrar" data-donate-close>
+        <Icon name="tabler:x" size={20} />
+      </button>
+    </header>
+
+    <div class="dm__scroll">
+      <!-- STEP 1 · Monto -->
+      <div class="dm__step is-active" data-panel="1">
+        <div class="dm__step-head">
+          <h2 class="dm__title" id="dm-title">¿Cuánto quieres donar?</h2>
+          <p class="dm__lead">
+            Cada aporte va directo a las familias afectadas por el terremoto.
+          </p>
+        </div>
+
+        <div class="dm__amounts" role="group" aria-label="Elige un monto">
+          {
+            amounts.map((amount) => (
+              <button
+                type="button"
+                class:list={["dm__amount", { "is-active": amount.value === defaultAmount }]}
+                data-amount={amount.value}
+                aria-pressed={amount.value === defaultAmount ? "true" : "false"}
+              >
+                {amount.popular && <span class="dm__amount-tag">Más elegido</span>}
+                <span class="dm__amount-value">{usd(amount.value)}</span>
+                <span class="dm__amount-note">{amount.note}</span>
+              </button>
+            ))
+          }
+        </div>
+
+        <label class="dm__custom">
+          <span>Otro monto en dólares</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            placeholder="Escribe un monto"
+            data-custom-amount
+          />
+        </label>
+
+        <button class="dm__cta" type="button" data-next>
+          Continuar
+          <Icon name="tabler:chevron-right" size={20} />
+        </button>
+      </div>
+
+      <!-- STEP 2 · Pagar -->
+      <div class="dm__step" data-panel="2">
+        <div class="dm__step-head">
+          <p class="dm__amountchip">
+            Tu donación
+            <strong data-amount-display>{usd(defaultAmount)}</strong>
+          </p>
+          <h2 class="dm__title">¿Cómo quieres pagar?</h2>
+          <p class="dm__lead">Elige el método que te quede más fácil.</p>
+        </div>
+
+        <div class="dm__group">
+          <p class="dm__group-label">
+            <Icon name="tabler:world" size={15} />
+            Desde cualquier país
+          </p>
+
+          <div class="dm__methods">
+            {internationalMethods.map((method) => <MethodItem method={method} paypalUrl={paypalUrl} />)}
+          </div>
+        </div>
+
+        <div class="dm__group">
+          <p class="dm__group-label">
+            <Icon name="tabler:map-pin" size={15} />
+            Pago local
+          </p>
+
+          <!-- Each country is a collapsible section so donors who only want
+               international methods can skip past it. Built for more countries. -->
+          {
+            localCountries.map((country, index) => (
+              <div
+                class:list={["dm__country", { "is-open": index === 0 }]}
+                data-country-item={country.id}
+              >
+                <button
+                  type="button"
+                  class="dm__country-head"
+                  data-country-toggle
+                  aria-expanded={index === 0 ? "true" : "false"}
+                >
+                  <span class="dm__country-title">
+                    <Icon class="dm__flag" name={country.flag} size={26} />
+                    {country.name}
+                  </span>
+                  <Icon class="dm__country-chevron" name="tabler:chevron-down" size={20} />
+                </button>
+
+                <div class="dm__country-body">
+                  <div class="dm__methods">
+                    {country.methods.map((method) => (
+                      <MethodItem method={method} paypalUrl={paypalUrl} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <!-- DONE · Gracias -->
+      <div class="dm__step dm__done" data-panel="done">
+        <span class="dm__done-icon" aria-hidden="true">
+          <Icon name="tabler:heart-handshake" size={36} />
+        </span>
+        <h2 class="dm__title">¡Gracias por tu aporte!</h2>
+        <p class="dm__lead">
+          Tu donación ayuda a familias que lo perdieron todo. Publicamos cada
+          aporte en el reporte de transparencia.
+        </p>
+        <button class="dm__cta" type="button" data-donate-close>Cerrar</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  type StepId = "1" | "2" | "done";
+
+  const modal = document.querySelector<HTMLElement>("[data-donate-modal]");
+
+  if (modal) {
+    const panel = modal.querySelector<HTMLElement>(".dm__panel");
+    const scroll = modal.querySelector<HTMLElement>(".dm__scroll");
+    const openers = document.querySelectorAll<HTMLElement>("[data-donate-open]");
+    const closers = modal.querySelectorAll<HTMLElement>("[data-donate-close]");
+    const backBtn = modal.querySelector<HTMLButtonElement>("[data-back]");
+    const steps = modal.querySelectorAll<HTMLElement>("[data-panel]");
+    const amountButtons = modal.querySelectorAll<HTMLElement>("[data-amount]");
+    const customInput = modal.querySelector<HTMLInputElement>("[data-custom-amount]");
+    const nextBtn = modal.querySelector<HTMLElement>("[data-next]");
+    const methodItems = modal.querySelectorAll<HTMLElement>("[data-method-item]");
+    const methodToggles = modal.querySelectorAll<HTMLElement>("[data-method-toggle]");
+    const amountDisplays = modal.querySelectorAll<HTMLElement>("[data-amount-display]");
+    const paypalLinks = modal.querySelectorAll<HTMLAnchorElement>("[data-paypal-link]");
+    const paypalBase = modal.getAttribute("data-paypal-url") ?? "";
+
+    const countryToggles = modal.querySelectorAll<HTMLElement>("[data-country-toggle]");
+
+    let amount = Number(
+      modal.querySelector<HTMLElement>("[data-amount].is-active")?.getAttribute("data-amount") ?? 50
+    );
+    let lastFocused: HTMLElement | null = null;
+
+    const formatUsd = (value: number) => `$${Math.round(value)}`;
+
+    const syncAmount = () => {
+      amountDisplays.forEach((el) => (el.textContent = formatUsd(amount)));
+      paypalLinks.forEach((link) => {
+        const sep = paypalBase.includes("?") ? "&" : "?";
+        link.href = `${paypalBase}${sep}amount=${Math.round(amount)}&currency_code=USD`;
+      });
+    };
+
+    const collapseMethods = () => {
+      methodItems.forEach((item) => item.classList.remove("is-open"));
+      methodToggles.forEach((t) => t.setAttribute("aria-expanded", "false"));
+    };
+
+    const goToStep = (id: StepId) => {
+      modal.setAttribute("data-step", id);
+      steps.forEach((step) =>
+        step.classList.toggle("is-active", step.getAttribute("data-panel") === id)
+      );
+      if (backBtn) backBtn.disabled = id !== "2";
+      scroll?.scrollTo({ top: 0, behavior: "auto" });
+    };
+
+    // Reset to the default state: the first country open, the rest collapsed.
+    const resetCountries = () => {
+      countryToggles.forEach((toggle, index) => {
+        const open = index === 0;
+        toggle.closest<HTMLElement>("[data-country-item]")?.classList.toggle("is-open", open);
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    };
+
+    const goBack = () => {
+      const current = modal.getAttribute("data-step");
+      if (current === "2") goToStep("1");
+    };
+
+    const getFocusable = () =>
+      Array.from(
+        modal.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => el.offsetParent !== null || el === panel);
+
+    const openModal = () => {
+      lastFocused = document.activeElement as HTMLElement;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      collapseMethods();
+      resetCountries();
+      goToStep("1");
+      window.requestAnimationFrame(() => panel?.focus());
+    };
+
+    const closeModal = () => {
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      lastFocused?.focus();
+    };
+
+    openers.forEach((btn) => btn.addEventListener("click", openModal));
+    closers.forEach((btn) => btn.addEventListener("click", closeModal));
+    backBtn?.addEventListener("click", goBack);
+    nextBtn?.addEventListener("click", () => goToStep("2"));
+
+    amountButtons.forEach((btn) =>
+      btn.addEventListener("click", () => {
+        amountButtons.forEach((b) => {
+          b.classList.remove("is-active");
+          b.setAttribute("aria-pressed", "false");
+        });
+        btn.classList.add("is-active");
+        btn.setAttribute("aria-pressed", "true");
+        amount = Number(btn.getAttribute("data-amount"));
+        if (customInput) customInput.value = "";
+        syncAmount();
+      })
+    );
+
+    customInput?.addEventListener("input", () => {
+      const value = Number(customInput.value);
+      if (value >= 1) {
+        amount = value;
+        amountButtons.forEach((b) => {
+          b.classList.remove("is-active");
+          b.setAttribute("aria-pressed", "false");
+        });
+        syncAmount();
+      }
+    });
+
+    methodToggles.forEach((toggle) =>
+      toggle.addEventListener("click", () => {
+        const item = toggle.closest<HTMLElement>("[data-method-item]");
+        if (!item) return;
+        const willOpen = !item.classList.contains("is-open");
+        collapseMethods();
+        if (willOpen) {
+          item.classList.add("is-open");
+          toggle.setAttribute("aria-expanded", "true");
+          window.requestAnimationFrame(() =>
+            item.scrollIntoView({ block: "nearest", behavior: "smooth" })
+          );
+        }
+      })
+    );
+
+    countryToggles.forEach((toggle) =>
+      toggle.addEventListener("click", () => {
+        const item = toggle.closest<HTMLElement>("[data-country-item]");
+        if (!item) return;
+        const willOpen = !item.classList.contains("is-open");
+        item.classList.toggle("is-open", willOpen);
+        toggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      })
+    );
+
+    modal.querySelectorAll<HTMLElement>("[data-done]").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        // PayPal opens in a new tab via its href; all methods land on thank-you.
+        window.setTimeout(() => goToStep("done"), btn.hasAttribute("href") ? 250 : 0);
+      })
+    );
+
+    modal.querySelectorAll<HTMLElement>("[data-copy]").forEach((btn) =>
+      btn.addEventListener("click", async () => {
+        const value = btn.getAttribute("data-copy") ?? "";
+        try {
+          await navigator.clipboard.writeText(value);
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(btn);
+          const sel = window.getSelection();
+          sel?.removeAllRanges();
+          sel?.addRange(range);
+        }
+        btn.classList.add("is-copied");
+        const label = btn.getAttribute("aria-label") ?? "";
+        btn.setAttribute("aria-label", "Copiado");
+        window.setTimeout(() => {
+          btn.classList.remove("is-copied");
+          btn.setAttribute("aria-label", label);
+        }, 1600);
+      })
+    );
+
+    document.addEventListener("keydown", (event) => {
+      if (modal.getAttribute("aria-hidden") === "true") return;
+      if (event.key === "Escape") {
+        closeModal();
+        return;
+      }
+      if (event.key === "Tab") {
+        const focusable = getFocusable();
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    syncAmount();
+  }
+</script>

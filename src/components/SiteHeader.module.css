@@ -1,0 +1,263 @@
+.siteHeader {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 48px;
+  min-height: var(--header-height);
+  padding: 16px var(--page-gutter);
+  background: var(--paper);
+  transition:
+    min-height 240ms ease,
+    padding 240ms ease,
+    box-shadow 240ms ease;
+}
+
+/* Signature: full-width national tricolor as the structural base rule.
+   Echoes the hero's flag-as-progress-meter and replaces the generic blur fade. */
+.flagRule {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--yellow) 0 33.34%,
+    var(--blue) 33.34% 66.67%,
+    var(--red) 66.67% 100%
+  );
+}
+
+.scrolled {
+  min-height: var(--header-compact-height);
+  padding-top: 11px;
+  padding-bottom: 11px;
+  box-shadow: 0 12px 34px rgba(16, 24, 32, 0.12);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  width: max-content;
+  font-family: "Archivo", sans-serif;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.brandMark {
+  display: block;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  filter: drop-shadow(0 10px 18px rgba(16, 24, 32, 0.12));
+}
+
+.brandMark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brandText {
+  font-size: 17px;
+}
+
+.primaryNav {
+  display: flex;
+  gap: 36px;
+  align-items: center;
+  color: var(--ink);
+  font-family: "Archivo", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.primaryNav a {
+  position: relative;
+  padding: 6px 0;
+  transition: color 160ms ease;
+}
+
+.primaryNav a::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.1, 1);
+}
+
+.primaryNav a:hover {
+  color: var(--red);
+}
+
+.primaryNav a:hover::after,
+.primaryNav a:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* Donate: same solid ink CTA language as the hero's primary button,
+   with a red heart for warmth. */
+.headerDonate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #172029, #071018);
+  color: #fff;
+  box-shadow: 0 12px 26px rgba(16, 24, 32, 0.2);
+  font-family: "Archivo", sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.headerDonate svg {
+  color: var(--red);
+}
+
+.headerDonate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(16, 24, 32, 0.26);
+}
+
+.menuToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid rgba(16, 24, 32, 0.84);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink);
+}
+
+@media (max-width: 1120px) {
+  .siteHeader {
+    gap: 26px;
+  }
+
+  .primaryNav {
+    gap: 22px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+}
+
+@media (max-width: 860px) {
+  .siteHeader {
+    grid-template-columns: 1fr auto auto;
+    padding: 12px var(--page-gutter);
+  }
+
+  .scrolled {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  .menuToggle {
+    display: inline-flex;
+    order: 2;
+  }
+
+  .headerDonate {
+    order: 3;
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .headerDonate span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .primaryNav {
+    position: absolute;
+    top: calc(100% + 1px);
+    right: 18px;
+    display: none;
+    width: min(280px, calc(100vw - 36px));
+    flex-direction: column;
+    gap: 0;
+    align-items: stretch;
+    padding: 6px 0;
+    border-top: 3px solid var(--blue);
+    background: var(--paper-strong);
+    box-shadow: 0 24px 56px rgba(16, 24, 32, 0.18);
+  }
+
+  /* Flag tab on the mobile panel header edge. */
+  .primaryNav::before {
+    content: "";
+    position: absolute;
+    inset: -3px 0 auto;
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      var(--yellow) 0 33.34%,
+      var(--blue) 33.34% 66.67%,
+      var(--red) 66.67% 100%
+    );
+  }
+
+  .primaryNav.navOpen {
+    display: flex;
+  }
+
+  .primaryNav a {
+    padding: 15px 18px;
+  }
+
+  .primaryNav a::after {
+    inset: auto 18px auto 18px;
+    top: auto;
+    bottom: 9px;
+  }
+}
+
+@media (max-width: 560px) {
+  .brandMark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brandText {
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .siteHeader,
+  .headerDonate,
+  .primaryNav a,
+  .primaryNav a::after {
+    transition: none;
+  }
+
+  .headerDonate:hover {
+    transform: none;
+  }
+}

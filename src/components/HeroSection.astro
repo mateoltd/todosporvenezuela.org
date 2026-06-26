@@ -1,0 +1,53 @@
+---
+import { Icon } from "astro-icon/components";
+import { Heart } from "@lucide/astro";
+import ProgressMeter from "./ProgressMeter.astro";
+import styles from "./HeroSection.module.css";
+
+interface Props {
+  raised: number;
+  goal: number;
+}
+
+const { raised, goal } = Astro.props;
+---
+
+<section class={styles.hero} aria-labelledby="hero-title">
+  <div class={styles.media} aria-hidden="true">
+    <img src="/images/venezuela-earthquake-rubble.jpg" alt="" width="1200" height="800" />
+  </div>
+
+  <div class={styles.content}>
+    <p class={styles.eyebrow}>Emergencia terremoto</p>
+    <h1 id="hero-title"><span>Todos por</span> <strong>Venezuela</strong></h1>
+    <p class={styles.lede}>Ayuda inmediata tras el terremoto</p>
+    <p class={styles.copy}>
+      Miles de familias lo han perdido todo. Tu aporte hoy salva vidas y
+      reconstruye esperanza. Fondos destinados a insumos médicos y necesidades
+      inmediatas.
+    </p>
+  </div>
+
+  <div class={styles.donationPanel}>
+    <ProgressMeter raised={raised} goal={goal} />
+
+    <div class={styles.action}>
+      <button class={styles.primaryCta} type="button" data-donate-open>
+        <Heart size={26} fill="currentColor" strokeWidth={2} />
+        <span>Donar ahora</span>
+      </button>
+      <p class={styles.paymentNote}>
+        Donación rápida y segura con
+        <span aria-label="PayPal">
+          <Icon name="tabler:brand-paypal" size={18} />
+        </span>
+        <span aria-label="Binance Pay USDT">
+          <Icon name="tabler:brand-binance" size={18} />
+        </span>
+        <span aria-label="Pago Móvil">
+          <Icon name="tabler:device-mobile" size={18} />
+        </span>
+      </p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,31 @@
+---
+import styles from "./FaqSection.module.css";
+
+const faqs = [
+  {
+    question: "¿Puedo donar desde fuera de Venezuela?",
+    answer: "Sí. El flujo incluye PayPal y Binance Pay USDT para aportes internacionales."
+  },
+  {
+    question: "¿Pago Móvil está disponible?",
+    answer:
+      "Sí. El modal muestra el flujo local; faltan los datos bancarios oficiales antes de activar cobros reales."
+  },
+  {
+    question: "¿La página procesa pagos reales?",
+    answer:
+      "No todavía. La interfaz está lista para conectar las credenciales oficiales de PayPal, Pago Móvil y Binance Pay."
+  }
+];
+---
+
+<section class={styles.faqBand} id="faq">
+  {
+    faqs.map((faq) => (
+      <details class={styles.item}>
+        <summary class={styles.summary}>{faq.question}</summary>
+        <p class={styles.answer}>{faq.answer}</p>
+      </details>
+    ))
+  }
+</section>

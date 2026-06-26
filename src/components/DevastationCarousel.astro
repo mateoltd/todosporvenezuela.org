@@ -1,0 +1,206 @@
+---
+import { ChevronLeft, ChevronRight } from "@lucide/astro";
+import styles from "./DevastationCarousel.module.css";
+
+const slides = [
+  {
+    src: "/images/venezuela-earthquake-la-guaira-collapse.jpg",
+    alt: "Vista aérea de edificios colapsados y equipos de respuesta tras el terremoto en La Guaira.",
+    width: 1800,
+    height: 1200,
+    title: "Colapso en La Guaira",
+    caption: "La escala del daño exige una respuesta coordinada y sostenida.",
+    credit: "AP Photo / Ariana Cubillos",
+    creditUrl: "https://apnews.com/photo-gallery/photos-venezuela-earthquake-missing-rescue-searches-b9bfceacb7b53f06e2e0b54b85461b26"
+  },
+  {
+    src: "/images/venezuela-earthquake-catia-rubble.jpg",
+    alt: "Residentes caminan entre escombros de una vivienda destruida por el terremoto.",
+    width: 1800,
+    height: 1200,
+    title: "Familias entre ruinas",
+    caption: "El impacto se mide en hogares perdidos y comunidades buscando cómo seguir.",
+    credit: "AP Photo / Ariana Cubillos",
+    creditUrl: "https://apnews.com/photo-gallery/photos-venezuela-earthquake-missing-rescue-searches-b9bfceacb7b53f06e2e0b54b85461b26"
+  },
+  {
+    src: "/images/venezuela-earthquake-caracas-neighbors.jpg",
+    alt: "Vecinos retiran escombros de una estructura destruida tras el terremoto.",
+    width: 1800,
+    height: 1200,
+    title: "Vecinos despejando ruinas",
+    caption: "La primera respuesta ocurre cerca: manos locales, recursos limitados.",
+    credit: "AP Photo / Ariana Cubillos",
+    creditUrl: "https://apnews.com/photo-gallery/photos-venezuela-earthquake-missing-rescue-searches-b9bfceacb7b53f06e2e0b54b85461b26"
+  },
+  {
+    src: "/images/venezuela-earthquake-aid-distribution.jpg",
+    alt: "Voluntario de una organización religiosa entrega ayuda a personas afectadas por el terremoto.",
+    width: 1800,
+    height: 1200,
+    title: "Ayuda desde la comunidad",
+    caption: "La red de voluntarios convierte donaciones en atención práctica.",
+    credit: "AP Photo / Ariana Cubillos",
+    creditUrl: "https://apnews.com/photo-gallery/photos-venezuela-earthquake-missing-rescue-searches-b9bfceacb7b53f06e2e0b54b85461b26"
+  },
+  {
+    src: "/images/venezuela-earthquake-shakemap.jpg",
+    alt: "Mapa de intensidad sísmica del USGS para el terremoto cerca de Yumare, Venezuela.",
+    width: 789,
+    height: 883,
+    title: "Intensidad sísmica",
+    caption: "El mapa ubica el impacto principal sobre el centro-norte del país.",
+    credit: "USGS ShakeMap",
+    creditUrl: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/shakemap/intensity",
+    kind: "map"
+  }
+];
+---
+
+<section class={styles.section} id="impacto" aria-labelledby="devastation-title">
+  <div class={styles.text}>
+    <p class={styles.kicker}>Lo que ha pasado</p>
+    <h2 id="devastation-title">Hogares abiertos, escombros y atención urgente.</h2>
+    <p>
+      La emergencia no es abstracta: hay familias desplazadas, zonas dañadas y
+      una respuesta local que necesita recursos médicos para sostenerse.
+    </p>
+    <p class={styles.credit}>Fotos: AP / Ariana Cubillos. Mapa: USGS.</p>
+  </div>
+
+  <div class={styles.carousel} data-devastation-carousel>
+    <div class={styles.stage} data-carousel-stage aria-live="polite">
+      {
+        slides.map((slide, index) => (
+          <figure
+            class={styles.slide}
+            data-carousel-slide
+            data-state={index === 0 ? "active" : index === 1 ? "right" : index === slides.length - 1 ? "left" : "hidden"}
+            data-kind={slide.kind}
+            aria-hidden={index === 0 ? "false" : "true"}
+            tabindex={index === 0 ? "0" : "-1"}
+          >
+            <img src={slide.src} alt={slide.alt} width={slide.width} height={slide.height} loading="lazy" />
+            <figcaption>
+              <strong>{slide.title}</strong>
+              <span>{slide.caption}</span>
+              <a href={slide.creditUrl} target="_blank" rel="noreferrer">{slide.credit}</a>
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+
+    <div class={styles.controls} aria-label="Controles del registro visual">
+      <button class={`${styles.control} ${styles.prevControl}`} type="button" aria-label="Ver imagen anterior" data-carousel-prev>
+        <ChevronLeft size={23} strokeWidth={2.4} />
+      </button>
+      <button class={`${styles.control} ${styles.nextControl}`} type="button" aria-label="Ver imagen siguiente" data-carousel-next>
+        <ChevronRight size={23} strokeWidth={2.4} />
+      </button>
+    </div>
+
+    <div class={styles.progress} aria-label="Seleccionar imagen">
+      {
+        slides.map((slide, index) => (
+          <button
+            class={styles.progressItem}
+            type="button"
+            aria-label={`Ver imagen ${index + 1}: ${slide.title}`}
+            aria-current={index === 0 ? "true" : "false"}
+            data-carousel-dot
+          >
+            <span aria-hidden="true"></span>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  const carouselRoots = document.querySelectorAll("[data-devastation-carousel]");
+
+  carouselRoots.forEach((carousel) => {
+    if (!(carousel instanceof HTMLElement) || carousel.dataset.ready === "true") return;
+    carousel.dataset.ready = "true";
+
+    const slides = Array.from(carousel.querySelectorAll("[data-carousel-slide]"));
+    const dots = Array.from(carousel.querySelectorAll("[data-carousel-dot]"));
+    const prev = carousel.querySelector("[data-carousel-prev]");
+    const next = carousel.querySelector("[data-carousel-next]");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let activeIndex = 0;
+    let autoplayId;
+
+    const setActive = (index) => {
+      activeIndex = (index + slides.length) % slides.length;
+
+      slides.forEach((slide, slideIndex) => {
+        const offset = (slideIndex - activeIndex + slides.length) % slides.length;
+        const state = offset === 0 ? "active" : offset === 1 ? "right" : offset === slides.length - 1 ? "left" : "hidden";
+
+        slide.setAttribute("data-state", state);
+        slide.setAttribute("aria-hidden", state === "active" ? "false" : "true");
+        slide.setAttribute("tabindex", state === "active" ? "0" : "-1");
+      });
+
+      dots.forEach((dot, dotIndex) => {
+        dot.setAttribute("aria-current", dotIndex === activeIndex ? "true" : "false");
+      });
+
+      carousel.style.setProperty("--carousel-index", String(activeIndex));
+    };
+
+    const stopAutoplay = () => {
+      if (autoplayId) window.clearInterval(autoplayId);
+    };
+
+    const startAutoplay = () => {
+      if (reducedMotion) return;
+      stopAutoplay();
+      autoplayId = window.setInterval(() => setActive(activeIndex + 1), 5600);
+    };
+
+    prev?.addEventListener("click", () => {
+      setActive(activeIndex - 1);
+      startAutoplay();
+    });
+
+    next?.addEventListener("click", () => {
+      setActive(activeIndex + 1);
+      startAutoplay();
+    });
+
+    dots.forEach((dot, dotIndex) => {
+      dot.addEventListener("click", () => {
+        setActive(dotIndex);
+        startAutoplay();
+      });
+    });
+
+    carousel.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        setActive(activeIndex - 1);
+        startAutoplay();
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        setActive(activeIndex + 1);
+        startAutoplay();
+      }
+    });
+
+    carousel.addEventListener("mouseenter", stopAutoplay);
+    carousel.addEventListener("mouseleave", startAutoplay);
+    carousel.addEventListener("focusin", stopAutoplay);
+    carousel.addEventListener("focusout", (event) => {
+      if (!carousel.contains(event.relatedTarget)) startAutoplay();
+    });
+
+    setActive(0);
+    startAutoplay();
+  });
+</script>
