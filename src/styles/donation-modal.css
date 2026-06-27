@@ -622,40 +622,10 @@
   content: counter(dm-step);
 }
 
-/* ---- PayPal Donate SDK ---- */
+/* ---- PayPal donate link ---- */
 .dm__paypal-shell {
   display: grid;
-  gap: 10px;
-}
-
-.dm__paypal-button {
-  display: grid;
-  place-items: center;
-  min-height: 58px;
-}
-
-.dm__paypal-button > * {
-  max-width: 100%;
-}
-
-.dm__paypal-button.is-loaded + .dm__paypal-status {
-  display: none;
-}
-
-.dm__paypal-status {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-  text-align: center;
-}
-
-.dm__paypal-fallback {
-  display: none;
-}
-
-.dm__paypal-fallback.is-visible {
-  display: flex;
+  gap: 8px;
 }
 
 /* ---- Done ---- */

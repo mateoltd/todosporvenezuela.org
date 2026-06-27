@@ -78,15 +78,12 @@ const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
     {
       method.action === "paypal" ? (
         <div class="dm__paypal-shell">
-          <div id="dm-paypal-donate-button" class="dm__paypal-button" data-paypal-button></div>
-          <p class="dm__paypal-status" data-paypal-status hidden></p>
           <a
-            class="dm__cta dm__paypal-fallback"
+            class="dm__cta dm__paypal-link"
             href={paypalUrl}
             target="_blank"
             rel="noopener"
             data-paypal-link
-            data-paypal-fallback
           >
             {method.actionLabel}
             <Icon name="tabler:external-link" size={19} />

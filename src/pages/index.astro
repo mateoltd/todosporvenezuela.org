@@ -66,23 +66,6 @@ const donation = {
         env: donationEnv,
         hostedButtonId: getModeEnv("PAYPAL", "HOSTED_BUTTON_ID"),
         business: getModeEnv("PAYPAL", "BUSINESS"),
-        image: {
-            src: getModeEnv(
-                "PAYPAL",
-                "BUTTON_IMAGE_SRC",
-                "https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif",
-            ),
-            alt: getModeEnv(
-                "PAYPAL",
-                "BUTTON_IMAGE_ALT",
-                "Donate with PayPal button",
-            ),
-            title: getModeEnv(
-                "PAYPAL",
-                "BUTTON_IMAGE_TITLE",
-                "PayPal - The safer, easier way to pay online!",
-            ),
-        },
     },
     amounts: [
         { value: 5, note: "Hidratación para quien lo necesita" },

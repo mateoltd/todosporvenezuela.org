@@ -25,11 +25,6 @@ interface PayPalDonate {
   env: "production" | "sandbox";
   hostedButtonId: string;
   business?: string;
-  image: {
-    src: string;
-    alt: string;
-    title: string;
-  };
 }
 
 interface Props {
@@ -45,12 +40,7 @@ const {
   paypalUrl = "https://www.paypal.com/donate",
   paypal = {
     env: "production",
-    hostedButtonId: "",
-    image: {
-      src: "https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif",
-      alt: "Donate with PayPal button",
-      title: "PayPal - The safer, easier way to pay online!"
-    }
+    hostedButtonId: ""
   },
   amounts = [
     { value: 5, note: "Hidratación para quien lo necesita" },
@@ -72,6 +62,32 @@ const usd = (value: number) =>
     currency: "USD",
     maximumFractionDigits: 0
   }).format(value);
+
+const paypalItemName =
+  "Ayuda para insumos médicos, alimentación e hidratación en Venezuela.";
+const paypalItemNumber = "donacion-terremoto";
+const formatPaypalAmount = (value: number) =>
+  Number.isFinite(value) ? Math.max(1, value).toFixed(2) : "1.00";
+const buildInitialPaypalUrl = () => {
+  const url = new URL(paypalUrl || "https://www.paypal.com/donate");
+
+  if (paypal.business) {
+    url.searchParams.delete("hosted_button_id");
+    url.searchParams.set("business", paypal.business);
+  } else if (paypal.hostedButtonId) {
+    url.searchParams.set("hosted_button_id", paypal.hostedButtonId);
+  }
+
+  url.searchParams.set("amount", formatPaypalAmount(defaultAmount));
+  url.searchParams.set("currency_code", "USD");
+  url.searchParams.set("item_name", paypalItemName);
+  url.searchParams.set("item_number", paypalItemNumber);
+  url.searchParams.set("no_shipping", "1");
+  url.searchParams.set("rm", "1");
+
+  return url.toString();
+};
+const paypalInitialUrl = buildInitialPaypalUrl();
 
 // Métodos de pago. Internacional se lista directo; los pagos locales se
 // eligen por país en un desplegable (hoy solo Venezuela, pero admite más).
@@ -168,9 +184,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
   data-paypal-env={paypal.env}
   data-paypal-hosted-button-id={paypal.hostedButtonId}
   data-paypal-business={paypal.business}
-  data-paypal-image-src={paypal.image.src}
-  data-paypal-image-alt={paypal.image.alt}
-  data-paypal-image-title={paypal.image.title}
   aria-hidden="true"
 >
   <div class="dm__backdrop" data-donate-close></div>
@@ -265,7 +278,9 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
           </p>
 
           <div class="dm__methods">
-            {internationalMethods.map((method) => <MethodItem method={method} paypalUrl={paypalUrl} />)}
+            {internationalMethods.map((method) => (
+              <MethodItem method={method} paypalUrl={method.id === "paypal" ? paypalInitialUrl : paypalUrl} />
+            ))}
           </div>
         </div>
 
@@ -344,16 +359,10 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const methodToggles = modal.querySelectorAll<HTMLElement>("[data-method-toggle]");
     const amountDisplays = modal.querySelectorAll<HTMLElement>("[data-amount-display]");
     const paypalLinks = modal.querySelectorAll<HTMLAnchorElement>("[data-paypal-link]");
-    const paypalButton = modal.querySelector<HTMLElement>("[data-paypal-button]");
-    const paypalFallback = modal.querySelector<HTMLAnchorElement>("[data-paypal-fallback]");
-    const paypalStatus = modal.querySelector<HTMLElement>("[data-paypal-status]");
     const paypalBase = modal.getAttribute("data-paypal-url") ?? "";
     const paypalEnv = modal.getAttribute("data-paypal-env") || "production";
     const paypalHostedButtonId = modal.getAttribute("data-paypal-hosted-button-id") ?? "";
     const paypalBusiness = modal.getAttribute("data-paypal-business") ?? "";
-    const paypalImageSrc = modal.getAttribute("data-paypal-image-src") ?? "";
-    const paypalImageAlt = modal.getAttribute("data-paypal-image-alt") ?? "";
-    const paypalImageTitle = modal.getAttribute("data-paypal-image-title") ?? "";
 
     const countryToggles = modal.querySelectorAll<HTMLElement>("[data-country-toggle]");
 
@@ -361,7 +370,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       modal.querySelector<HTMLElement>("[data-amount].is-active")?.getAttribute("data-amount") ?? 10
     );
     let lastFocused: HTMLElement | null = null;
-    let paypalRenderToken = 0;
     let paypalSdkPromise: Promise<void> | null = null;
 
     const paypalItemName =
@@ -371,13 +379,13 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const formatPaypalAmount = (value: number) =>
       Number.isFinite(value) ? Math.max(1, value).toFixed(2) : "1.00";
 
-    type PayPalDonationButton = {
-      render: (selector: string) => void;
+    type PayPalDonationCheckout = {
+      renderTo: (target: Window | WindowProxy) => void;
     };
 
     type PayPalNamespace = {
       Donation: {
-        Button: (options: Record<string, unknown>) => PayPalDonationButton;
+        Checkout?: (options: Record<string, unknown>) => PayPalDonationCheckout;
       };
     };
 
@@ -412,9 +420,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const syncAmount = () => {
       amountDisplays.forEach((el) => (el.textContent = formatUsd(amount)));
       paypalLinks.forEach((link) => (link.href = buildPaypalFallbackUrl()));
-      if (modal.querySelector('[data-method-item="paypal"]')?.classList.contains("is-open")) {
-        renderPayPalButton();
-      }
     };
 
     const collapseMethods = () => {
@@ -438,7 +443,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       collapseMethods();
       item.classList.add("is-open");
       toggle.setAttribute("aria-expanded", "true");
-      if (methodId === "paypal") renderPayPalButton();
+      if (methodId === "paypal") primePayPalCheckout();
     };
 
     // Reset to the default state: the first country open, the rest collapsed.
@@ -469,6 +474,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       collapseMethods();
       resetCountries();
       goToStep(options.step ?? "1");
+      primePayPalCheckout();
       if (options.methodId) openMethod(options.methodId);
       window.requestAnimationFrame(() => panel?.focus());
     };
@@ -509,59 +515,45 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       return paypalSdkPromise;
     };
 
-    const setPaypalStatus = (message: string, visible = true) => {
-      if (!paypalStatus) return;
-      paypalStatus.hidden = !visible;
-      paypalStatus.textContent = message;
+    const primePayPalCheckout = () => {
+      if (!paypalHostedButtonId && !paypalBusiness) return;
+      void loadPayPalSdk().catch(() => undefined);
     };
 
-    const renderPayPalButton = async () => {
-      if (!paypalButton || (!paypalHostedButtonId && !paypalBusiness)) return;
+    const buildPayPalCheckoutConfig = () => {
+      const config: Record<string, unknown> = {
+        env: paypalEnv,
+        amount: formatPaypalAmount(amount),
+        currency_code: "USD",
+        item_name: paypalItemName,
+        item_number: paypalItemNumber,
+        no_shipping: "1",
+        rm: "1",
+        return: buildDonateStateUrl("paypal-completed"),
+        cancel_return: buildDonateStateUrl("paypal-cancelled"),
+        onComplete: () => goToStep("done")
+      };
 
-      const token = ++paypalRenderToken;
-      paypalButton.replaceChildren();
-      paypalButton.classList.remove("is-loaded");
-      paypalFallback?.classList.remove("is-visible");
-      setPaypalStatus("Cargando PayPal...");
+      if (paypalBusiness) {
+        config.business = paypalBusiness;
+      } else if (paypalHostedButtonId) {
+        config.hosted_button_id = paypalHostedButtonId;
+      }
+
+      return config;
+    };
+
+    const openPayPalCheckout = () => {
+      if (!paypalHostedButtonId && !paypalBusiness) return false;
+
+      const checkout = getPayPal()?.Donation?.Checkout;
+      if (!checkout) return false;
 
       try {
-        await loadPayPalSdk();
-        if (token !== paypalRenderToken) return;
-
-        const paypal = getPayPal();
-        if (!paypal) throw new Error("PayPal SDK unavailable");
-
-        const config: Record<string, unknown> = {
-          env: paypalEnv,
-          amount: formatPaypalAmount(amount),
-          currency_code: "USD",
-          item_name: paypalItemName,
-          item_number: paypalItemNumber,
-          no_shipping: "1",
-          rm: "1",
-          return: buildDonateStateUrl("paypal-completed"),
-          cancel_return: buildDonateStateUrl("paypal-cancelled"),
-          image: {
-            src: paypalImageSrc,
-            alt: paypalImageAlt,
-            title: paypalImageTitle
-          },
-          onComplete: () => goToStep("done")
-        };
-
-        if (paypalBusiness) {
-          config.business = paypalBusiness;
-        } else if (paypalHostedButtonId) {
-          config.hosted_button_id = paypalHostedButtonId;
-        }
-
-        paypalButton.replaceChildren();
-        paypal.Donation.Button(config).render(`#${paypalButton.id}`);
-        paypalButton.classList.add("is-loaded");
-        setPaypalStatus("", false);
+        checkout(buildPayPalCheckoutConfig()).renderTo(window.parent);
+        return true;
       } catch {
-        setPaypalStatus("No pudimos cargar el botón de PayPal aquí. Puedes abrirlo en una pestaña nueva.");
-        paypalFallback?.classList.add("is-visible");
+        return false;
       }
     };
 
@@ -584,7 +576,17 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     openers.forEach((btn) => btn.addEventListener("click", () => openModal()));
     closers.forEach((btn) => btn.addEventListener("click", closeModal));
     backBtn?.addEventListener("click", goBack);
-    nextBtn?.addEventListener("click", () => goToStep("2"));
+    nextBtn?.addEventListener("click", () => {
+      goToStep("2");
+      primePayPalCheckout();
+    });
+
+    paypalLinks.forEach((link) =>
+      link.addEventListener("click", (event) => {
+        if (!openPayPalCheckout()) return;
+        event.preventDefault();
+      })
+    );
 
     amountButtons.forEach((btn) =>
       btn.addEventListener("click", () => {
@@ -621,7 +623,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         if (willOpen) {
           item.classList.add("is-open");
           toggle.setAttribute("aria-expanded", "true");
-          if (toggle.getAttribute("data-method-toggle") === "paypal") renderPayPalButton();
+          if (toggle.getAttribute("data-method-toggle") === "paypal") primePayPalCheckout();
           window.requestAnimationFrame(() =>
             item.scrollIntoView({ block: "nearest", behavior: "smooth" })
           );
