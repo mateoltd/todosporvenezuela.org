@@ -281,15 +281,22 @@ const redSpecks = [
     color: rgba(255, 255, 255, 0.88);
   }
 
+  /* The goal is a reference target, not a live stat — keep it smaller and
+     quieter so it reads as context rather than competing with the % progress. */
   .lbl--goal {
     right: 3.6%;
     align-items: flex-end;
     text-align: right;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .lbl--goal strong {
+    font-size: calc(var(--num-size) * 0.62);
+    font-weight: 700;
   }
 
   .lbl--goal span {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.6);
   }
 
   /* ---- Progress rail coupled to the meter's bottom ---- */
@@ -361,6 +368,21 @@ const redSpecks = [
     .meter {
       --bar-h: 78px;
       --num-size: clamp(20px, 6.4vw, 30px);
+    }
+
+    /* Too tight for both — keep the live % (which already says "de la meta")
+       and let the axis carry the goal figure at its right end. With the goal
+       gone, anchor the % to the right edge to mirror Recaudado on the left. */
+    .lbl--goal {
+      display: none;
+    }
+
+    .lbl--pct {
+      left: auto;
+      right: 3.6%;
+      align-items: flex-end;
+      text-align: right;
+      transform: translateY(-50%);
     }
 
     .axis__label {

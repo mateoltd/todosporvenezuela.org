@@ -16,89 +16,103 @@ const goal = 800;
 const env = import.meta.env as Record<string, string | undefined>;
 const getEnv = (key: string, fallback = "") => env[key]?.trim() || fallback;
 const donationEnv: "production" | "sandbox" =
-  getEnv("PUBLIC_DONATION_ENV", getEnv("PUBLIC_PAYPAL_ENV", "production")) === "sandbox"
-    ? "sandbox"
-    : "production";
+    getEnv("PUBLIC_DONATION_ENV", getEnv("PUBLIC_PAYPAL_ENV", "production")) ===
+    "sandbox"
+        ? "sandbox"
+        : "production";
 const getModeEnv = (prefix: string, key: string, fallback = "") =>
-  getEnv(`PUBLIC_${prefix}_${donationEnv.toUpperCase()}_${key}`, getEnv(`PUBLIC_${prefix}_${key}`, fallback));
+    getEnv(
+        `PUBLIC_${prefix}_${donationEnv.toUpperCase()}_${key}`,
+        getEnv(`PUBLIC_${prefix}_${key}`, fallback),
+    );
 const defaultPaypalUrl =
-  donationEnv === "sandbox" ? "https://www.sandbox.paypal.com/donate" : "https://www.paypal.com/donate";
+    donationEnv === "sandbox"
+        ? "https://www.sandbox.paypal.com/donate"
+        : "https://www.paypal.com/donate";
 
 const donation = {
-  paypalUrl: getModeEnv("PAYPAL", "DONATE_URL", defaultPaypalUrl),
-  paypal: {
-    env: donationEnv,
-    hostedButtonId: getModeEnv("PAYPAL", "HOSTED_BUTTON_ID"),
-    business: getModeEnv("PAYPAL", "BUSINESS"),
-    image: {
-      src: getModeEnv(
-        "PAYPAL",
-        "BUTTON_IMAGE_SRC",
-        "https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
-      ),
-      alt: getModeEnv("PAYPAL", "BUTTON_IMAGE_ALT", "Donate with PayPal button"),
-      title: getModeEnv(
-        "PAYPAL",
-        "BUTTON_IMAGE_TITLE",
-        "PayPal - The safer, easier way to pay online!"
-      )
-    }
-  },
-  amounts: [
-    { value: 10, note: "Agua potable para una familia" },
-    { value: 25, note: "Kit de higiene y limpieza" },
-    { value: 50, note: "Medicinas y primeros auxilios", popular: true },
-    { value: 100, note: "Refugio temporal para una familia" }
-  ],
-  pagoMovil: {
-    banco: getModeEnv("PAGO_MOVIL", "BANCO"),
-    telefono: getModeEnv("PAGO_MOVIL", "TELEFONO"),
-    documento: getModeEnv("PAGO_MOVIL", "DOCUMENTO"),
-    titular: getModeEnv("PAGO_MOVIL", "TITULAR")
-  },
-  binance: { payId: getModeEnv("BINANCE", "PAY_ID") }
+    paypalUrl: getModeEnv("PAYPAL", "DONATE_URL", defaultPaypalUrl),
+    paypal: {
+        env: donationEnv,
+        hostedButtonId: getModeEnv("PAYPAL", "HOSTED_BUTTON_ID"),
+        business: getModeEnv("PAYPAL", "BUSINESS"),
+        image: {
+            src: getModeEnv(
+                "PAYPAL",
+                "BUTTON_IMAGE_SRC",
+                "https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif",
+            ),
+            alt: getModeEnv(
+                "PAYPAL",
+                "BUTTON_IMAGE_ALT",
+                "Donate with PayPal button",
+            ),
+            title: getModeEnv(
+                "PAYPAL",
+                "BUTTON_IMAGE_TITLE",
+                "PayPal - The safer, easier way to pay online!",
+            ),
+        },
+    },
+    amounts: [
+        { value: 10, note: "Agua potable para una familia" },
+        { value: 25, note: "Kit de higiene y limpieza" },
+        { value: 50, note: "Medicinas y primeros auxilios", popular: true },
+        { value: 100, note: "Refugio temporal para una familia" },
+    ],
+    pagoMovil: {
+        banco: getModeEnv("PAGO_MOVIL", "BANCO"),
+        telefono: getModeEnv("PAGO_MOVIL", "TELEFONO"),
+        documento: getModeEnv("PAGO_MOVIL", "DOCUMENTO"),
+        titular: getModeEnv("PAGO_MOVIL", "TITULAR"),
+    },
+    binance: { payId: getModeEnv("BINANCE", "PAY_ID") },
 };
 ---
 
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Todos por Venezuela recauda ayuda inmediata para familias afectadas por el terremoto."
-    />
-    <meta name="theme-color" content="#f7f7f2" />
-    <title>Todos por Venezuela | Ayuda inmediata</title>
-    <link rel="icon" href="/images/venezuela-flag.svg" type="image/svg+xml" />
-    <link rel="alternate icon" href="/favicon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@400;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <SiteHeader />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Todos por Venezuela recauda ayuda inmediata para familias afectadas por el terremoto."
+        />
+        <meta name="theme-color" content="#f7f7f2" />
+        <title>Todos por Venezuela | Ayuda inmediata</title>
+        <link
+            rel="icon"
+            href="/images/venezuela-flag.svg"
+            type="image/svg+xml"
+        />
+        <link rel="alternate icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@400;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <SiteHeader />
 
-    <main>
-      <HeroSection raised={raised} goal={goal} />
+        <main>
+            <HeroSection raised={raised} goal={goal} />
 
-      <FundsSection />
-      <DevastationCarousel />
-      <OrganizersSection />
-      <FaqSection />
-    </main>
+            {/* <FundsSection /> */}
+            {/* <DevastationCarousel /> */}
+            <OrganizersSection />
+            <FaqSection />
+        </main>
 
-    <DonationModal
-      paypalUrl={donation.paypalUrl}
-      paypal={donation.paypal}
-      amounts={donation.amounts}
-      pagoMovil={donation.pagoMovil}
-      binance={donation.binance}
-    />
-  </body>
+        <DonationModal
+            paypalUrl={donation.paypalUrl}
+            paypal={donation.paypal}
+            amounts={donation.amounts}
+            pagoMovil={donation.pagoMovil}
+            binance={donation.binance}
+        />
+    </body>
 </html>

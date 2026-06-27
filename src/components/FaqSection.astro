@@ -1,31 +1,175 @@
 ---
+import { Icon } from "astro-icon/components";
 import styles from "./FaqSection.module.css";
 
 const faqs = [
   {
+    question: "¿A dónde va mi donación?",
+    answer:
+      "A ayuda inmediata para familias afectadas por el terremoto: insumos médicos, agua potable, kits de higiene, alimentos, traslados urgentes y apoyo básico según las necesidades que reporte el equipo de respuesta."
+  },
+  {
+    question: "¿Quién coordina la ayuda?",
+    answer:
+      "La coordinación está en manos de Valentina Muriel, Cristal Navas, Abraham Barrios y Marlon Amarista, junto a ministerios e iglesias aliadas que acompañan la respuesta en Venezuela."
+  },
+  {
+    question: "¿Cómo puedo donar?",
+    answer:
+      "Pulsa Donar ahora, elige un monto y selecciona PayPal, Binance Pay USDT o Pago Móvil. El flujo te mostrará los datos y pasos del método que elijas."
+  },
+  {
     question: "¿Puedo donar desde fuera de Venezuela?",
-    answer: "Sí. El flujo incluye PayPal y Binance Pay USDT para aportes internacionales."
+    answer:
+      "Sí. Puedes donar con PayPal usando tarjeta o cuenta PayPal, o enviar USDT por Binance Pay desde cualquier país donde tengas acceso a esos servicios."
   },
   {
-    question: "¿Pago Móvil está disponible?",
+    question: "¿Puedo donar desde Venezuela?",
     answer:
-      "Sí. El modal muestra el flujo local; faltan los datos bancarios oficiales antes de activar cobros reales."
+      "Sí. Puedes aportar con Pago Móvil en bolívares y también con Binance Pay si prefieres USDT. El modal de donación organiza las opciones para que escojas la más cómoda."
   },
   {
-    question: "¿La página procesa pagos reales?",
+    question: "¿Hay un monto mínimo?",
     answer:
-      "No todavía. La interfaz está lista para conectar las credenciales oficiales de PayPal, Pago Móvil y Binance Pay."
+      "Puedes elegir uno de los montos sugeridos o escribir otro monto desde 1 dólar. Cada aporte suma para cubrir necesidades urgentes."
+  },
+  {
+    question: "¿Cómo confirmo Binance Pay o Pago Móvil?",
+    answer:
+      "Conserva tu comprobante y pulsa Ya hice mi pago en el modal para cerrar el flujo de confirmación. Si el equipo necesita validar algún dato, usará la información del comprobante."
+  },
+  {
+    question: "¿Cómo se reportará lo recaudado?",
+    answer:
+      "El avance de la meta se actualizará en la página y los organizadores publicarán reportes de transparencia con lo recaudado y las entregas realizadas conforme avance la respuesta."
   }
 ];
 ---
 
-<section class={styles.faqBand} id="faq">
-  {
-    faqs.map((faq) => (
-      <details class={styles.item}>
-        <summary class={styles.summary}>{faq.question}</summary>
-        <p class={styles.answer}>{faq.answer}</p>
-      </details>
-    ))
-  }
+<section class={styles.faqBand} id="faq" aria-labelledby="faq-title" data-faq-root>
+  <div class={styles.inner}>
+    <div class={styles.heading}>
+      <p class={styles.eyebrow}>Dona con confianza</p>
+      <h2 id="faq-title">
+        <span>Preguntas</span>
+        <strong>frecuentes</strong>
+      </h2>
+    </div>
+
+    <div class={styles.list}>
+      {
+        faqs.map((faq, index) => (
+          <article class={styles.item} data-faq-item>
+            <button
+              class={styles.summary}
+              type="button"
+              aria-expanded="false"
+              aria-controls={`faq-answer-${index}`}
+              data-faq-trigger
+            >
+              <span class={styles.index} aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span class={styles.question}>{faq.question}</span>
+              <span class={styles.toggleIcon} aria-hidden="true">
+                <Icon name="tabler:plus" size={24} />
+              </span>
+            </button>
+            <div
+              class={styles.answer}
+              id={`faq-answer-${index}`}
+              data-faq-panel
+              hidden
+            >
+              <div class={styles.answerInner}>
+                <p>{faq.answer}</p>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class={styles.action}>
+      <button class={styles.donateCta} type="button" data-donate-open>
+        <Icon name="tabler:heart-filled" size={22} aria-hidden="true" />
+        <span>Donar ahora</span>
+      </button>
+    </div>
+  </div>
 </section>
+
+<script>
+  const faqRoots = document.querySelectorAll<HTMLElement>("[data-faq-root]");
+
+  faqRoots.forEach((root) => {
+    if (root.dataset.faqReady === "true") return;
+    root.dataset.faqReady = "true";
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    root.querySelectorAll<HTMLElement>("[data-faq-item]").forEach((item) => {
+      const trigger = item.querySelector<HTMLButtonElement>("[data-faq-trigger]");
+      const panel = item.querySelector<HTMLElement>("[data-faq-panel]");
+
+      if (!trigger || !panel) return;
+
+      const setPanelHeight = (height: number | "auto") => {
+        panel.style.height = height === "auto" ? "auto" : `${height}px`;
+      };
+
+      const openPanel = () => {
+        trigger.setAttribute("aria-expanded", "true");
+        item.dataset.open = "true";
+        panel.hidden = false;
+        panel.dataset.open = "true";
+
+        if (reduceMotion.matches) {
+          setPanelHeight("auto");
+          return;
+        }
+
+        setPanelHeight(0);
+        window.requestAnimationFrame(() => {
+          setPanelHeight(panel.scrollHeight);
+        });
+      };
+
+      const closePanel = () => {
+        trigger.setAttribute("aria-expanded", "false");
+        delete item.dataset.open;
+        delete panel.dataset.open;
+
+        if (reduceMotion.matches) {
+          panel.hidden = true;
+          panel.style.height = "";
+          return;
+        }
+
+        setPanelHeight(panel.getBoundingClientRect().height);
+        window.requestAnimationFrame(() => {
+          setPanelHeight(0);
+        });
+      };
+
+      panel.addEventListener("transitionend", (event) => {
+        if (event.target !== panel || event.propertyName !== "height") return;
+
+        if (trigger.getAttribute("aria-expanded") === "true") {
+          setPanelHeight("auto");
+        } else {
+          panel.hidden = true;
+          panel.style.height = "";
+        }
+      });
+
+      trigger.addEventListener("click", () => {
+        if (trigger.getAttribute("aria-expanded") === "true") {
+          closePanel();
+        } else {
+          openPanel();
+        }
+      });
+    });
+  });
+</script>
