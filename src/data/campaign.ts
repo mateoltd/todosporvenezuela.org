@@ -28,7 +28,7 @@ export const campaignKeywords = [
 ];
 
 export const socialImage = {
-  path: "/images/todos-por-venezuela-social-card.jpg",
+  path: "/images/todos-por-venezuela-social-card-v2.jpg",
   width: 1200,
   height: 630,
   alt: "Todos por Venezuela: ayuda urgente tras el terremoto. Dona insumos médicos, alimentos e hidratación."
