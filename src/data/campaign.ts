@@ -10,7 +10,7 @@ export const socialDescription =
   "Tu donación compra insumos médicos, alimentos e hidratación para familias afectadas en Venezuela.";
 
 export const publishedDate = "2026-06-27";
-export const modifiedDate = "2026-06-27";
+export const modifiedDate = "2026-06-28";
 export const locale = "es_VE";
 export const language = "es-VE";
 
@@ -100,7 +100,7 @@ export const faqs = [
   {
     question: "¿Cómo sé que es confiable?",
     answer:
-      "Los organizadores son miembros reconocidos de sus comunidades y tienen responsabilidades en ministerios e iglesias locales. Publicarán reportes diarios para mostrar el avance de la recaudación, las compras y las entregas realizadas. Dato curioso: el desarrollador de esta web también ya donó. No garantiza que el CSS no tenga opiniones, pero sí que aquí hay gente real poniendo el hombro."
+      "Los organizadores son miembros reconocidos de sus comunidades y tienen responsabilidades en ministerios e iglesias locales. Publicarán reportes diarios para mostrar el avance de la recaudación, las compras y las entregas realizadas. Además, las personas que están ayudando a levantar esta campaña también han aportado: esto no es solo una página para pedir, sino un esfuerzo compartido para responder con hechos."
   },
   {
     question: "¿Cómo dono desde el exterior?",
