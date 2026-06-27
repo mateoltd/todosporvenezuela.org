@@ -8,7 +8,20 @@
   --hero-title-gap: 14px;
   --hero-copy-gap: 14px;
   --hero-action-gap: 18px;
-  --hero-media-mask: linear-gradient(113deg, transparent 42%, rgba(0, 0, 0, 0.4) 47%, #000 53%);
+  /* Short transition, but eased as a smoothstep S-curve (zero slope at both
+     ends) so there's no hard kink where a plain linear gradient would band. */
+  --hero-media-mask: linear-gradient(
+    113deg,
+    transparent 40%,
+    rgba(0, 0, 0, 0.02) 42%,
+    rgba(0, 0, 0, 0.1) 44%,
+    rgba(0, 0, 0, 0.27) 46%,
+    rgba(0, 0, 0, 0.5) 48%,
+    rgba(0, 0, 0, 0.73) 50%,
+    rgba(0, 0, 0, 0.9) 52%,
+    rgba(0, 0, 0, 0.98) 54%,
+    #000 56%
+  );
 
   position: relative;
   isolation: isolate;
