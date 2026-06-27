@@ -53,10 +53,10 @@ const {
     }
   },
   amounts = [
-    { value: 10, note: "Agua potable para una familia" },
-    { value: 25, note: "Kit de higiene y limpieza" },
-    { value: 50, note: "Medicinas y primeros auxilios", popular: true },
-    { value: 100, note: "Refugio temporal para una familia" }
+    { value: 5, note: "Hidratación para quien lo necesita" },
+    { value: 10, note: "Alimentación básica", popular: true },
+    { value: 20, note: "Insumos médicos y primeros auxilios" },
+    { value: 35, note: "Apoyo para zonas remotas" }
   ],
   // Datos oficiales pendientes: déjalos vacíos para mostrar el estado
   // "Disponible muy pronto"; al confirmar las cuentas, complétalos aquí.
@@ -64,7 +64,7 @@ const {
   binance = { payId: "" }
 } = Astro.props;
 
-const defaultAmount = amounts.find((a) => a.popular)?.value ?? amounts[0]?.value ?? 25;
+const defaultAmount = amounts.find((a) => a.popular)?.value ?? amounts[0]?.value ?? 10;
 
 const usd = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -93,12 +93,12 @@ const internationalMethods: Method[] = [
     name: "PayPal",
     icon: "tabler:brand-paypal",
     desc: "Tarjeta o cuenta PayPal",
-    lead: "Te llevamos a PayPal para completar tu donación. Puedes pagar con tarjeta aunque no tengas cuenta.",
+    lead: "Para aportar desde el exterior, te llevamos a PayPal. Puedes pagar con tarjeta o cuenta PayPal.",
     fields: [],
     steps: [
       "Toca el botón de PayPal para abrir la ventana segura.",
       "Confirma el monto y completa el pago.",
-      "Volverás aquí cuando PayPal confirme el donativo."
+      "Tu aporte ayudará a comprar insumos, alimentos e hidratación."
     ],
     action: "paypal",
     actionLabel: "Ir a PayPal"
@@ -108,7 +108,7 @@ const internationalMethods: Method[] = [
     name: "Binance Pay",
     icon: "tabler:brand-binance",
     desc: "USDT, sin comisiones bancarias",
-    lead: "Envía tu donación en USDT por Binance Pay. Es inmediato y sin comisiones bancarias.",
+    lead: "Envía tu aporte en USDT por Binance Pay. Es una opción directa para donar desde Venezuela o desde el exterior.",
     fields: [
       { label: "Binance Pay ID", value: binance.payId },
       { label: "Moneda", value: binance.payId ? "USDT" : "" }
@@ -116,7 +116,7 @@ const internationalMethods: Method[] = [
     steps: [
       "Abre Binance y entra a la sección Pay.",
       "Toca Enviar y pega el Pay ID.",
-      "Envía el monto en USDT."
+      "Envía el monto en USDT y conserva tu comprobante."
     ],
     action: "confirm",
     actionLabel: "Ya hice mi pago"
@@ -149,7 +149,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         name: "Pago Móvil",
         icon: "tabler:device-mobile",
         desc: "Transferencia en bolívares",
-        lead: "Haz una transferencia por Pago Móvil desde la app de tu banco. El monto se calcula al cambio oficial del BCV del día.",
+        lead: "Aporta en bolívares desde la app de tu banco. Es la opción local para quienes están en Venezuela.",
         fields: pagoMovilFields,
         steps: pagoMovilSteps,
         action: "confirm",
@@ -205,9 +205,10 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       <!-- STEP 1 · Monto -->
       <div class="dm__step is-active" data-panel="1">
         <div class="dm__step-head">
-          <h2 class="dm__title" id="dm-title">¿Cuánto quieres donar?</h2>
+          <h2 class="dm__title" id="dm-title">¿Cuánto quieres aportar?</h2>
           <p class="dm__lead">
-            Cada aporte va directo a las familias afectadas por el terremoto.
+            Tu aporte ayuda a comprar insumos médicos, alimentación e hidratación
+            para personas necesitadas, incluso en zonas remotas.
           </p>
         </div>
 
@@ -250,7 +251,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       <div class="dm__step" data-panel="2">
         <div class="dm__step-head">
           <p class="dm__amountchip">
-            Tu donación
+            Tu aporte
             <strong data-amount-display>{usd(defaultAmount)}</strong>
           </p>
           <h2 class="dm__title">¿Cómo quieres pagar?</h2>
@@ -315,8 +316,8 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         </span>
         <h2 class="dm__title">¡Gracias por tu aporte!</h2>
         <p class="dm__lead">
-          Tu donación ayuda a familias que lo perdieron todo. Publicamos cada
-          aporte en el reporte de transparencia.
+          Tu aporte suma en un momento difícil para Venezuela. Publicaremos
+          reportes transparentes todos los días.
         </p>
         <button class="dm__cta" type="button" data-donate-close>Cerrar</button>
       </div>
@@ -357,14 +358,14 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const countryToggles = modal.querySelectorAll<HTMLElement>("[data-country-toggle]");
 
     let amount = Number(
-      modal.querySelector<HTMLElement>("[data-amount].is-active")?.getAttribute("data-amount") ?? 50
+      modal.querySelector<HTMLElement>("[data-amount].is-active")?.getAttribute("data-amount") ?? 10
     );
     let lastFocused: HTMLElement | null = null;
     let paypalRenderToken = 0;
     let paypalSdkPromise: Promise<void> | null = null;
 
     const paypalItemName =
-      "Ayuda inmediata para familias afectadas por el terremoto en Venezuela.";
+      "Ayuda para insumos médicos, alimentación e hidratación en Venezuela.";
     const paypalItemNumber = "donacion-terremoto";
     const formatUsd = (value: number) => `$${Math.round(value)}`;
     const formatPaypalAmount = (value: number) =>
