@@ -13,12 +13,29 @@ const toPositiveNumber = (value: string, fallback: number) => {
 const encodeEvent = (event: string, data: unknown) =>
   encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
+const isClosedControllerError = (error: unknown) =>
+  error instanceof TypeError &&
+  ((error as { code?: string }).code === "ERR_INVALID_STATE" ||
+    error.message.toLowerCase().includes("controller is already closed"));
+
 export const GET: APIRoute = () => {
   const intervalMs = toPositiveNumber(getDonationEnv("DONATION_SSE_INTERVAL_MS"), 3000);
   const maxDurationMs = toPositiveNumber(getDonationEnv("DONATION_SSE_MAX_DURATION_MS"), 25000);
   let closed = false;
   let intervalId: ReturnType<typeof setInterval> | undefined;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const clearTimers = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = undefined;
+    }
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = undefined;
+    }
+  };
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
@@ -27,25 +44,46 @@ export const GET: APIRoute = () => {
       const close = () => {
         if (closed) return;
         closed = true;
-        if (intervalId) clearInterval(intervalId);
-        if (timeoutId) clearTimeout(timeoutId);
-        controller.close();
+        clearTimers();
+
+        try {
+          controller.close();
+        } catch (error) {
+          if (!isClosedControllerError(error)) throw error;
+        }
+      };
+
+      const enqueue = (chunk: Uint8Array) => {
+        if (closed) return;
+
+        try {
+          controller.enqueue(chunk);
+        } catch (error) {
+          if (!isClosedControllerError(error)) throw error;
+          closed = true;
+          clearTimers();
+        }
       };
 
       const sendSnapshot = async () => {
+        if (closed) return;
+
         try {
           const snapshot = await getDonationSnapshot();
+          if (closed) return;
+
           const payload = JSON.stringify(snapshot);
 
           if (payload !== lastPayload) {
             lastPayload = payload;
-            controller.enqueue(encodeEvent("progress", snapshot));
+            enqueue(encodeEvent("progress", snapshot));
           } else {
-            controller.enqueue(encoder.encode(": heartbeat\n\n"));
+            enqueue(encoder.encode(": heartbeat\n\n"));
           }
         } catch (error) {
+          if (closed) return;
           console.error("Donation progress SSE read failed", error);
-          controller.enqueue(encodeEvent("error", { ok: false }));
+          enqueue(encodeEvent("error", { ok: false }));
         }
       };
 
@@ -55,8 +93,7 @@ export const GET: APIRoute = () => {
     },
     cancel() {
       closed = true;
-      if (intervalId) clearInterval(intervalId);
-      if (timeoutId) clearTimeout(timeoutId);
+      clearTimers();
     },
   });
 
