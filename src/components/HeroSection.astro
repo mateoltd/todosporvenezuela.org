@@ -60,11 +60,12 @@ const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
             <span>Todos por</span>
             <strong>Venezuela</strong>
         </h1>
-        <p class={styles.lede}>Ayuda para las zonas afectadas</p>
+        <p class={styles.lede}>Dona ayuda urgente tras el terremoto</p>
         <p class={styles.copy}>
-            Jóvenes venezolanos organizaron esta recaudación para llevar
-            insumos médicos, alimentos e hidratación a familias golpeadas por
-            el terremoto, incluso en comunidades remotas.
+            Estamos comprando y entregando insumos médicos, alimentos e
+            hidratación a familias afectadas en Venezuela. La campaña la
+            coordinan jóvenes venezolanos en el país, con prioridad en
+            comunidades que necesitan respuesta inmediata.
         </p>
         {
             hasOrganizerVideo && (
@@ -81,7 +82,7 @@ const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
         }
     </div>
 
-    <div class={styles.donationPanel}>
+    <div class={styles.donationPanel} id="donar">
         <ProgressMeter raised={raised} goal={goal} />
 
         <div class={styles.action}>

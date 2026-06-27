@@ -2,12 +2,31 @@
 import "../styles/global.css";
 import DevastationCarousel from "../components/DevastationCarousel.astro";
 import FaqSection from "../components/FaqSection.astro";
+import FundsSection from "../components/FundsSection.astro";
 import HeroSection from "../components/HeroSection.astro";
 import OrganizersSection from "../components/OrganizersSection.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import DonationModal from "../components/DonationModal.astro";
 import { getDonationSnapshot } from "../lib/donations/progress";
 import { getPayPalNotifyUrl } from "../lib/donations/paypal";
+import {
+    campaignKeywords,
+    faqs,
+    language,
+    locale,
+    modifiedDate,
+    organizationLogo,
+    organizers,
+    pageDescription,
+    pageTitle,
+    publishedDate,
+    siteName,
+    siteUrlFallback,
+    socialDescription,
+    socialImage,
+    socialTitle,
+} from "../data/campaign";
 
 const donationSnapshot = await getDonationSnapshot();
 const raised = donationSnapshot.raised;
@@ -25,6 +44,14 @@ Astro.response.headers.set("Surrogate-Control", "no-store");
 // del modal; no pongas secretos aquí.
 const env = import.meta.env as Record<string, string | undefined>;
 const getEnv = (key: string, fallback = "") => env[key]?.trim() || fallback;
+const normalizeSiteUrl = (value: string) => {
+    const candidate = value.trim() || siteUrlFallback;
+    const withProtocol = /^https?:\/\//i.test(candidate)
+        ? candidate
+        : `https://${candidate}`;
+
+    return new URL(withProtocol).origin;
+};
 const donationEnv: "production" | "sandbox" =
     getEnv("PUBLIC_DONATION_ENV", getEnv("PUBLIC_PAYPAL_ENV", "production")) ===
     "sandbox"
@@ -70,6 +97,30 @@ const organizerVideo = {
         "Video de los organizadores de Todos por Venezuela",
     ),
 };
+
+const siteBaseUrl = normalizeSiteUrl(
+    getEnv("PUBLIC_SITE_URL", Astro.site?.toString() ?? Astro.url.origin),
+);
+const canonicalUrl = new URL(Astro.url.pathname, `${siteBaseUrl}/`).href;
+const donateUrl = new URL("#donar", canonicalUrl).href;
+const faqUrl = new URL("#faq", canonicalUrl).href;
+const absoluteUrl = (path: string) => new URL(path, canonicalUrl).href;
+const siteDomain = new URL(canonicalUrl).hostname;
+const socialImageUrl = absoluteUrl(socialImage.path);
+const isSecureSocialImage = socialImageUrl.startsWith("https://");
+const logoUrl = absoluteUrl(organizationLogo.path);
+const sameAsUrls = Array.from(
+    new Set([
+        organizerVideoUrl,
+        ...organizers.flatMap((person) => [person.instagram, person.tiktok]),
+    ]),
+);
+const organizationId = `${canonicalUrl}#organization`;
+const websiteId = `${canonicalUrl}#website`;
+const webPageId = `${canonicalUrl}#webpage`;
+const primaryImageId = `${canonicalUrl}#primaryimage`;
+const donationActionId = `${canonicalUrl}#donate-action`;
+const faqPageId = `${canonicalUrl}#faq-page`;
 
 const donation = {
     paypalUrl: getModeEnv("PAYPAL", "DONATE_URL", defaultPaypalUrl),
@@ -118,19 +169,149 @@ const heroImageSrcSet = [
         `/images/optimized/venezuela-earthquake-hero-aid-${width}.avif ${width}w`,
 ).join(", ");
 const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
+const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Organization",
+            "@id": organizationId,
+            name: siteName,
+            url: canonicalUrl,
+            logo: {
+                "@type": "ImageObject",
+                url: logoUrl,
+                width: organizationLogo.width,
+                height: organizationLogo.height,
+            },
+            sameAs: sameAsUrls,
+            knowsAbout: [
+                "ayuda humanitaria",
+                "donaciones para Venezuela",
+                "insumos médicos",
+                "respuesta a emergencias",
+            ],
+        },
+        {
+            "@type": "WebSite",
+            "@id": websiteId,
+            url: `${siteBaseUrl}/`,
+            name: siteName,
+            inLanguage: language,
+            publisher: { "@id": organizationId },
+        },
+        {
+            "@type": "ImageObject",
+            "@id": primaryImageId,
+            url: socialImageUrl,
+            width: socialImage.width,
+            height: socialImage.height,
+            caption: socialImage.alt,
+            inLanguage: language,
+        },
+        {
+            "@type": "WebPage",
+            "@id": webPageId,
+            url: canonicalUrl,
+            name: pageTitle,
+            description: pageDescription,
+            keywords: campaignKeywords,
+            isPartOf: { "@id": websiteId },
+            about: { "@id": organizationId },
+            primaryImageOfPage: { "@id": primaryImageId },
+            inLanguage: language,
+            datePublished: publishedDate,
+            dateModified: modifiedDate,
+            mainEntity: { "@id": faqPageId },
+            potentialAction: { "@id": donationActionId },
+        },
+        {
+            "@type": "DonateAction",
+            "@id": donationActionId,
+            name: "Donar a Todos por Venezuela",
+            description: socialDescription,
+            target: {
+                "@type": "EntryPoint",
+                urlTemplate: donateUrl,
+                actionPlatform: [
+                    "https://schema.org/DesktopWebPlatform",
+                    "https://schema.org/MobileWebPlatform",
+                ],
+            },
+            recipient: { "@id": organizationId },
+            object: {
+                "@type": "Thing",
+                name: "Insumos médicos, alimentos e hidratación para familias afectadas por el terremoto",
+            },
+            instrument: ["PayPal", "Binance Pay", "Pago Móvil"],
+        },
+        {
+            "@type": "FAQPage",
+            "@id": faqPageId,
+            url: faqUrl,
+            name: "Preguntas frecuentes sobre Todos por Venezuela",
+            isPartOf: { "@id": webPageId },
+            inLanguage: language,
+            mainEntity: faqs.map((faq) => ({
+                "@type": "Question",
+                name: faq.question,
+                acceptedAnswer: {
+                    "@type": "Answer",
+                    text: faq.answer,
+                },
+            })),
+        },
+    ],
+};
+const structuredDataJson = JSON.stringify(structuredData).replace(
+    /</g,
+    "\\u003c",
+);
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={language}>
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta
             name="description"
-            content="Todos por Venezuela recauda ayuda inmediata para familias afectadas por el terremoto."
+            content={pageDescription}
         />
+        <meta
+            name="robots"
+            content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+        />
+        <meta name="author" content={siteName} />
         <meta name="theme-color" content="#f7f7f2" />
-        <title>Todos por Venezuela | Ayuda inmediata</title>
+        <meta name="application-name" content={siteName} />
+        <title>{pageTitle}</title>
+        <link rel="canonical" href={canonicalUrl} />
+        <link rel="alternate" hreflang="es" href={canonicalUrl} />
+        <link rel="alternate" hreflang={language} href={canonicalUrl} />
+        <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={siteName} />
+        <meta property="og:locale" content={locale} />
+        <meta property="og:title" content={socialTitle} />
+        <meta property="og:description" content={socialDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content={socialImageUrl} />
+        {
+            isSecureSocialImage && (
+                <meta property="og:image:secure_url" content={socialImageUrl} />
+            )
+        }
+        <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image:width" content={String(socialImage.width)} />
+        <meta property="og:image:height" content={String(socialImage.height)} />
+        <meta property="og:image:alt" content={socialImage.alt} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:domain" content={siteDomain} />
+        <meta name="twitter:url" content={canonicalUrl} />
+        <meta name="twitter:title" content={socialTitle} />
+        <meta name="twitter:description" content={socialDescription} />
+        <meta name="twitter:image" content={socialImageUrl} />
+        <meta name="twitter:image:alt" content={socialImage.alt} />
         <link
             rel="icon"
             href="/images/venezuela-flag.svg"
@@ -175,6 +356,7 @@ const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
             imagesizes={heroImageSizes}
             fetchpriority="high"
         />
+        <script type="application/ld+json" set:html={structuredDataJson}></script>
     </head>
     <body>
         <SiteHeader />
@@ -186,10 +368,13 @@ const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
                 organizerVideo={organizerVideo}
             />
 
+            <FundsSection />
             <DevastationCarousel />
             <OrganizersSection />
             <FaqSection />
         </main>
+
+        <SiteFooter />
 
         <DonationModal
             paypalUrl={donation.paypalUrl}

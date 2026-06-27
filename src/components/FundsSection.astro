@@ -5,13 +5,13 @@ import styles from "./FundsSection.module.css";
 const fundItems = [
   {
     label: "Jeringas e inyectadoras",
-    detail: "Para atención directa, curas y aplicación segura.",
+    detail: "Material esencial para curas, aplicación segura y atención directa.",
     icon: Syringe,
     tone: "yellow"
   },
   {
-    label: "Medicamentos",
-    detail: "Tratamientos prioritarios según la necesidad reportada.",
+    label: "Medicamentos prioritarios",
+    detail: "Tratamientos comprados según necesidades verificadas por el equipo.",
     icon: Pill,
     tone: "blue"
   },
@@ -22,8 +22,8 @@ const fundItems = [
     tone: "red"
   },
   {
-    label: "Alimentos y otros útiles",
-    detail: "Apoyo utilitario cuando la situación local lo requiera.",
+    label: "Alimentos e hidratación",
+    detail: "Apoyo básico para familias que necesitan respuesta inmediata.",
     icon: PackagePlus,
     tone: "ink"
   }
@@ -33,13 +33,14 @@ const fundItems = [
 <section class={styles.section} id="ayuda" aria-labelledby="funds-title">
   <div class={styles.heading}>
     <p class={styles.kicker}>Destino de los fondos</p>
-    <h2 id="funds-title">La recaudación se transforma en insumos concretos.</h2>
+    <h2 id="funds-title">Tu donación se transforma en ayuda concreta.</h2>
   </div>
 
   <div class={styles.body}>
     <p>
-      Todo el dinero recaudado se utilizará para comprar insumos médicos y
-      cubrir necesidades inmediatas que se presenten durante la respuesta.
+      Cada aporte se destina a compras y entregas de emergencia: insumos
+      médicos, alimentos, hidratación y apoyo básico para familias afectadas por
+      el terremoto en Venezuela.
     </p>
 
     <div class={styles.grid}>

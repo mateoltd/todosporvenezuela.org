@@ -1,47 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
+import { affiliationText, organizers } from "../data/campaign";
 import styles from "./OrganizersSection.module.css";
-
-const organizers = [
-  {
-    name: "Valentina Muriel",
-    image: "/images/organizers/valentina-muriel",
-    accent: "var(--yellow)",
-    instagram: "https://www.instagram.com/valentina.muriell/",
-    tiktok: "https://www.tiktok.com/@memukkita"
-  },
-  {
-    name: "Cristal Navas",
-    image: "/images/organizers/cristal-navas",
-    accent: "var(--blue)",
-    instagram: "https://www.instagram.com/zahara_cristal/",
-    tiktok: "https://www.tiktok.com/@zahara_cristal"
-  },
-  {
-    name: "Abraham Barrios",
-    image: "/images/organizers/abraham-barrios",
-    accent: "var(--red)",
-    instagram: "https://www.instagram.com/eyyabraham_/",
-    tiktok: "https://www.tiktok.com/@eyy_abraham"
-  },
-  {
-    name: "Marlon Amarista",
-    image: "/images/organizers/marlon-amarista",
-    accent: "var(--blue)",
-    instagram: "https://www.instagram.com/marlonamaristaoficial/",
-    tiktok: "https://www.tiktok.com/@marlonamarista_"
-  }
-];
-
-const churchAffiliations = [
-  "Ministerio Internacional Agua Viva",
-  "Iglesia Oasis Internacional",
-  "Ministerio Internacional Centro de Esperanza",
-  "Nueva Jerusalén Cuadrangular"
-];
-const affiliationText = `${churchAffiliations.slice(0, -1).join(", ")} y ${
-  churchAffiliations[churchAffiliations.length - 1]
-}`;
 ---
 
 <section class={styles.section} id="transparencia" aria-labelledby="organizers-title">
@@ -52,14 +12,15 @@ const affiliationText = `${churchAffiliations.slice(0, -1).join(", ")} y ${
         <span>Equipo <strong>humano</strong></span>
       </h2>
       <p>
-        Cuatro voluntarios coordinan esta ayuda. Forman parte de {affiliationText}.
+        Cuatro voluntarios coordinan compras, entregas y reportes desde Venezuela.
+        Forman parte de {affiliationText}.
       </p>
 
       <aside class={styles.callout}>
         <span class={styles.calloutIcon} aria-hidden="true">
           <Icon name="tabler:heart-handshake" size={28} />
         </span>
-        <p>Trabajamos en conjunto para que cada donación llegue más lejos y transforme más vidas.</p>
+        <p>Trabajamos en conjunto para convertir cada donación en ayuda verificable para familias afectadas.</p>
       </aside>
     </div>
 
