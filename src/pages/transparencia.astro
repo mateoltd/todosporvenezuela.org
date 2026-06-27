@@ -1,0 +1,136 @@
+---
+import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import TransparencySection from "../components/TransparencySection.astro";
+import DonationModal from "../components/DonationModal.astro";
+import { buildDonationConfig } from "../lib/donations/config";
+import {
+  language,
+  locale,
+  siteName,
+  siteUrlFallback,
+  socialImage,
+} from "../data/campaign";
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "no-store, no-cache, max-age=0, must-revalidate",
+);
+Astro.response.headers.set("CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Surrogate-Control", "no-store");
+
+const env = import.meta.env as Record<string, string | undefined>;
+const getEnv = (key: string, fallback = "") => env[key]?.trim() || fallback;
+const normalizeSiteUrl = (value: string) => {
+  const candidate = value.trim() || siteUrlFallback;
+  const withProtocol = /^https?:\/\//i.test(candidate)
+    ? candidate
+    : `https://${candidate}`;
+
+  return new URL(withProtocol).origin;
+};
+
+const siteBaseUrl = normalizeSiteUrl(
+  getEnv("PUBLIC_SITE_URL", Astro.site?.toString() ?? Astro.url.origin),
+);
+const canonicalUrl = new URL(Astro.url.pathname, `${siteBaseUrl}/`).href;
+const socialImageUrl = new URL(socialImage.path, `${siteBaseUrl}/`).href;
+const isSecureSocialImage = socialImageUrl.startsWith("https://");
+
+const title = `Transparencia | ${siteName}`;
+const description =
+  "Reportes de la campaña Todos por Venezuela: recaudación, compras y entregas. Aún no hay reportes publicados; aparecerán aquí en cuanto comience la respuesta.";
+
+const donation = buildDonationConfig(env, Astro.url.origin);
+---
+
+<!doctype html>
+<html lang={language}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content={siteName} />
+    <meta name="theme-color" content="#f7f7f2" />
+    <meta name="application-name" content={siteName} />
+    <title>{title}</title>
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="es" href={canonicalUrl} />
+    <link rel="alternate" hreflang={language} href={canonicalUrl} />
+    <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={locale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    {
+      isSecureSocialImage && (
+        <meta property="og:image:secure_url" content={socialImageUrl} />
+      )
+    }
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(socialImage.width)} />
+    <meta property="og:image:height" content={String(socialImage.height)} />
+    <meta property="og:image:alt" content={socialImage.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <meta name="twitter:image:alt" content={socialImage.alt} />
+    <link rel="icon" href="/images/venezuela-flag.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link
+      rel="preload"
+      href="/fonts/instrument-sans-latin-400-700.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/archivo-latin-400-900.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/barlow-condensed-latin-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/barlow-condensed-latin-900.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body>
+    <SiteHeader />
+
+    <main>
+      <TransparencySection />
+    </main>
+
+    <SiteFooter />
+
+    <DonationModal
+      paypalUrl={donation.paypalUrl}
+      paypalNotifyUrl={donation.paypalNotifyUrl}
+      paypal={donation.paypal}
+      amounts={donation.amounts}
+      pagoMovil={donation.pagoMovil}
+      binance={donation.binance}
+    />
+  </body>
+</html>

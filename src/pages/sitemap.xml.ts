@@ -29,6 +29,7 @@ export const GET: APIRoute = ({ site, url }) => {
     import.meta.env.PUBLIC_SITE_URL || site?.toString() || url.origin
   );
   const homeUrl = new URL("/", `${siteBaseUrl}/`).href;
+  const transparencyUrl = new URL("/transparencia", `${siteBaseUrl}/`).href;
   const imageUrl = new URL(socialImage.path, homeUrl).href;
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
@@ -42,6 +43,12 @@ export const GET: APIRoute = ({ site, url }) => {
       <image:title>${escapeXml(pageTitle)}</image:title>
       <image:caption>${escapeXml(pageDescription)}</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>${escapeXml(transparencyUrl)}</loc>
+    <lastmod>${modifiedDate}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>
 `;
