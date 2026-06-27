@@ -8,7 +8,7 @@
   --hero-title-gap: 14px;
   --hero-copy-gap: 14px;
   --hero-action-gap: 18px;
-  --hero-media-mask: linear-gradient(100deg, transparent 6%, rgba(0, 0, 0, 0.2) 20%, #000 34%);
+  --hero-media-mask: linear-gradient(113deg, transparent 42%, rgba(0, 0, 0, 0.4) 47%, #000 53%);
 
   position: relative;
   isolation: isolate;
@@ -24,7 +24,7 @@
 .media {
   position: absolute;
   inset: 0 0 auto auto;
-  width: min(74vw, 1280px);
+  width: min(96vw, 1680px);
   height: 650px;
   -webkit-mask-image: var(--hero-media-mask);
   mask-image: var(--hero-media-mask);
@@ -40,7 +40,7 @@
   content: "";
   background:
     linear-gradient(180deg, var(--paper) 0%, rgba(247, 247, 242, 0.54) 8%, rgba(247, 247, 242, 0) 22%),
-    linear-gradient(180deg, rgba(247, 247, 242, 0) 68%, rgba(247, 247, 242, 0.66) 92%, var(--paper) 100%);
+    linear-gradient(180deg, rgba(247, 247, 242, 0) 84%, rgba(247, 247, 242, 0.24) 100%);
 }
 
 .media img {
@@ -161,7 +161,7 @@
   }
 
   .media {
-    width: min(78vw, 1020px);
+    width: min(94vw, 1280px);
     height: 520px;
   }
 
@@ -177,7 +177,9 @@
     --hero-bottom: 40px;
     --hero-flow-gap: 22px;
     --hero-title-size: clamp(4.75rem, 12vw, 5.25rem);
-    --hero-media-mask: linear-gradient(100deg, transparent 4%, rgba(0, 0, 0, 0.2) 16%, #000 30%);
+    /* Stacked layout: image sits on top and text flows beneath, so fade the
+       photo vertically (clears the lede/copy) instead of diagonally. */
+    --hero-media-mask: linear-gradient(180deg, #000 0%, #000 34%, rgba(0, 0, 0, 0.1) 66%, transparent 84%);
     /* Stacked layout: size to content so the section ends at the CTA rather
        than reserving a full viewport and leaving dead space below. */
     min-height: auto;
@@ -226,8 +228,11 @@
     top: 70px;
     left: 10%;
     width: 124vw;
-    height: 270px;
-    opacity: 0.8;
+    height: 264px;
+    opacity: 0.78;
+    /* Text sits close under a shorter band — fade earlier so the lede and
+       copy land on clean paper. */
+    --hero-media-mask: linear-gradient(180deg, #000 0%, #000 28%, rgba(0, 0, 0, 0.08) 58%, transparent 78%);
   }
 
   .lede {
