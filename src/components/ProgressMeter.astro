@@ -399,8 +399,10 @@ const segments = [
   @media (max-width: 640px) {
     .meter__head {
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
+      /* Tight row gap so Recaudado/Meta hug the big percent as one block,
+         instead of leaving it stranded mid-section. */
+      gap: 6px 16px;
+      margin-bottom: 18px;
     }
 
     .meter__stat--percent {

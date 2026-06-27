@@ -8,8 +8,10 @@
   --hero-title-gap: 14px;
   --hero-copy-gap: 14px;
   --hero-action-gap: 18px;
+  --hero-media-mask: linear-gradient(100deg, transparent 6%, rgba(0, 0, 0, 0.2) 20%, #000 34%);
 
   position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-rows: auto auto;
   align-content: start;
@@ -22,24 +24,29 @@
 .media {
   position: absolute;
   inset: 0 0 auto auto;
-  width: min(67vw, 1080px);
-  height: 608px;
+  width: min(74vw, 1280px);
+  height: 650px;
+  -webkit-mask-image: var(--hero-media-mask);
+  mask-image: var(--hero-media-mask);
+  overflow: hidden;
+  z-index: 0;
   pointer-events: none;
 }
 
 .media::before {
   position: absolute;
-  inset: -2px;
+  inset: 0;
   z-index: 1;
   content: "";
   background:
-    linear-gradient(180deg, var(--paper) 0%, rgba(247, 247, 242, 0.82) 10%, rgba(247, 247, 242, 0) 28%),
-    radial-gradient(ellipse at 18% 66%, rgba(247, 247, 242, 0.98) 0%, rgba(247, 247, 242, 0.9) 18%, rgba(247, 247, 242, 0.56) 34%, rgba(247, 247, 242, 0) 58%),
-    linear-gradient(90deg, var(--paper) 0%, rgba(247, 247, 242, 0.96) 18%, rgba(247, 247, 242, 0.7) 34%, rgba(247, 247, 242, 0) 58%),
-    linear-gradient(180deg, rgba(247, 247, 242, 0) 62%, rgba(247, 247, 242, 0.84) 88%, var(--paper) 100%);
+    linear-gradient(180deg, var(--paper) 0%, rgba(247, 247, 242, 0.54) 8%, rgba(247, 247, 242, 0) 22%),
+    linear-gradient(180deg, rgba(247, 247, 242, 0) 68%, rgba(247, 247, 242, 0.66) 92%, var(--paper) 100%);
 }
 
 .media img {
+  position: relative;
+  z-index: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -154,8 +161,8 @@
   }
 
   .media {
-    width: min(72vw, 960px);
-    height: 480px;
+    width: min(78vw, 1020px);
+    height: 520px;
   }
 
   .content {
@@ -170,7 +177,10 @@
     --hero-bottom: 40px;
     --hero-flow-gap: 22px;
     --hero-title-size: clamp(4.75rem, 12vw, 5.25rem);
-    min-height: 100svh;
+    --hero-media-mask: linear-gradient(100deg, transparent 4%, rgba(0, 0, 0, 0.2) 16%, #000 30%);
+    /* Stacked layout: size to content so the section ends at the CTA rather
+       than reserving a full viewport and leaving dead space below. */
+    min-height: auto;
   }
 
   .media {
@@ -199,10 +209,13 @@
 
 @media (max-width: 560px) {
   .hero {
-    --hero-top: calc(var(--header-height) + 32px);
-    --hero-bottom: 36px;
-    --hero-flow-gap: 18px;
+    --hero-top: calc(var(--header-height) + 28px);
+    --hero-bottom: 32px;
+    --hero-flow-gap: 26px;
     --hero-title-size: clamp(3.75rem, 16.5vw, 4.25rem);
+    /* Let the hero be as tall as its content so the donation panel closes the
+       section cleanly — no dead space pooling under the CTA. */
+    min-height: auto;
   }
 
   .copy {
@@ -210,11 +223,11 @@
   }
 
   .media {
-    top: 78px;
+    top: 70px;
     left: 10%;
     width: 124vw;
-    height: 318px;
-    opacity: 0.84;
+    height: 270px;
+    opacity: 0.8;
   }
 
   .lede {
