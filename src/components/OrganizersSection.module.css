@@ -301,15 +301,23 @@
     grid-template-areas:
       "photo identity"
       "photo socials";
-    row-gap: 8px;
+    row-gap: 10px;
+    align-items: start;
   }
 
   .photoWrap {
     grid-area: photo;
+    margin-top: 2px;
   }
 
   .identity {
     grid-area: identity;
+    align-items: flex-start;
+  }
+
+  .identity span {
+    height: 0.74em;
+    margin-top: 0.12em;
   }
 
   .socials {
@@ -340,7 +348,6 @@
 
   .identity span {
     width: 3px;
-    height: 26px;
   }
 
   .identity h3 {
