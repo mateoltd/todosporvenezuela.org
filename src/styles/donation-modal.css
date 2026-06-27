@@ -1,6 +1,3 @@
-/* Donation modal — shared by DonationModal.astro and MethodItem.astro.
-   Namespaced under .dm / .dm__ so it can live as a plain global module. */
-
 .dm {
   position: fixed;
   inset: 0;
@@ -30,7 +27,6 @@
   opacity: 1;
 }
 
-/* ---- Panel: fixed height, inner scroll ---- */
 .dm__panel {
   position: relative;
   z-index: 1;
@@ -59,7 +55,6 @@
   display: none;
 }
 
-/* ---- Top bar ---- */
 .dm__bar {
   display: grid;
   grid-template-columns: 40px 1fr 40px;
@@ -97,7 +92,6 @@
   background: rgba(16, 24, 32, 0.06);
 }
 
-/* ---- Tricolor progress (signature: the flag fills as you advance) ---- */
 .dm__bands {
   display: flex;
   gap: 5px;
@@ -130,7 +124,6 @@
   opacity: 1;
 }
 
-/* ---- Scroll area ---- */
 .dm__scroll {
   flex: 1 1 auto;
   min-height: 0;
@@ -139,7 +132,6 @@
   overscroll-behavior: contain;
 }
 
-/* ---- Steps ---- */
 .dm__step {
   display: none;
   min-height: 100%;
@@ -178,7 +170,6 @@
   line-height: 1.5;
 }
 
-/* ---- Amounts ---- */
 .dm__amounts {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -269,7 +260,6 @@
   outline-offset: 1px;
 }
 
-/* ---- Primary action (always full width, never overflows) ---- */
 .dm__cta {
   display: flex;
   align-items: center;
@@ -304,7 +294,6 @@
   transform: scale(0.99);
 }
 
-/* ---- Amount chip on step 2 ---- */
 .dm__amountchip {
   display: inline-flex;
   align-items: baseline;
@@ -325,7 +314,6 @@
   font-weight: 900;
 }
 
-/* ---- Method groups ---- */
 .dm__group + .dm__group {
   margin-top: 18px;
 }
@@ -347,8 +335,6 @@
   gap: 10px;
 }
 
-/* ---- Country sections: a parent card whose methods are flat rows inside,
-       collapsible so local payments can be skipped entirely. ---- */
 .dm__country {
   border: 1.5px solid var(--line);
   border-radius: 14px;
@@ -415,8 +401,6 @@
   border-top: 1.5px solid var(--line);
 }
 
-/* Methods nested in a country render as flat rows, not standalone cards,
-   so the country reads as the parent and everything lines up. */
 .dm__country-body .dm__methods {
   gap: 0;
 }
@@ -430,7 +414,6 @@
   border-top: 1.5px solid var(--line);
 }
 
-/* ---- Method accordion item ---- */
 .dm__method {
   border: 1.5px solid var(--line);
   border-radius: 14px;
@@ -506,7 +489,6 @@
   line-height: 1.5;
 }
 
-/* ---- Copy fields ---- */
 .dm__fields {
   display: grid;
   gap: 8px;
@@ -588,7 +570,6 @@
   font-style: italic;
 }
 
-/* ---- Numbered steps (a real sequence) ---- */
 .dm__steps {
   margin: 0 0 18px;
   padding: 0;
@@ -622,13 +603,11 @@
   content: counter(dm-step);
 }
 
-/* ---- PayPal donate link ---- */
 .dm__paypal-shell {
   display: grid;
   gap: 8px;
 }
 
-/* ---- Done ---- */
 .dm__done {
   align-items: center;
   justify-content: center;
@@ -651,14 +630,12 @@
   margin-bottom: 24px;
 }
 
-/* ---- Focus visibility ---- */
 .dm button:focus-visible,
 .dm a:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
 
-/* ---- Mobile: bottom sheet ---- */
 @media (max-width: 560px) {
   .dm {
     align-items: flex-end;

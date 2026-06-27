@@ -18,7 +18,7 @@ const currency = (value: number) =>
 const raisedLabel = currency(raised);
 const goalLabel = currency(goal);
 
-// Compact axis labels: $200, $500K, $1.5M …
+// Compact axis labels.
 const compact = (value: number) => {
   if (value <= 0) return "0";
   if (value >= 1_000_000) {
@@ -32,18 +32,12 @@ const compact = (value: number) => {
   return `$${value}`;
 };
 
-// Five evenly spaced ticks (0, ¼, ½, ¾, goal).
 const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => ({
   pos: f * 100,
   label: compact(Math.round(goal * f))
 }));
 
-// --- The flag is decorative and fixed; progress is read from the numbers and
-// the embedded track. Bands sit in a 0..1000 × 0..130 viewBox, stretched to
-// fit. Both seams are slightly diagonal, leaning in opposite directions. ---
-
-// Eight white stars in a shallow arch (the Venezuelan flag), drawn in their own
-// aspect-preserving overlay (viewBox 0 0 300 72) so they don't distort.
+// Stars use a separate viewBox so they do not stretch.
 const starArc = { x0: 28, x1: 272, top: 22, amp: 18, r: 12 };
 const starPoints = (cx: number, cy: number, outer: number) => {
   const inner = outer * 0.42;
@@ -60,12 +54,11 @@ const starPoints = (cx: number, cy: number, outer: number) => {
 const stars = Array.from({ length: 8 }, (_, i) => {
   const t = i / 7;
   const x = starArc.x0 + (starArc.x1 - starArc.x0) * t;
-  // Arch (as on the flag): centre rises, ends curve lower (larger y in SVG).
+  // The arch rises in the center.
   const y = starArc.top + starArc.amp * (2 * t - 1) ** 2;
   return starPoints(x, y, starArc.r);
 });
 
-// Decorative paint flecks scattered just past each seam.
 const blueSpecks = [
   { x: 295, y: 34, r: 4 },
   { x: 278, y: 92, r: 3 },
@@ -89,7 +82,7 @@ const redSpecks = [
     aria-valuenow={percent}
     aria-valuemin={0}
     aria-valuemax={100}
-    aria-label={`${raisedLabel} recaudados de ${goalLabel} — ${percent}% de la meta`}
+    aria-label={`${raisedLabel} recaudados de ${goalLabel}, ${percent}% de la meta`}
   >
     <svg class="flag" viewBox="0 0 1000 130" preserveAspectRatio="none" aria-hidden="true">
       <defs>
@@ -122,7 +115,6 @@ const redSpecks = [
         </mask>
       </defs>
 
-      <!-- Yellow band + faintly masked devastation photo -->
       <rect x="-10" y="-5" width="375" height="140" fill="#f6bf00" />
       <image
         href="/images/optimized/venezuela-earthquake-aid-distribution-meter.jpg"
@@ -136,8 +128,6 @@ const redSpecks = [
         style="mix-blend-mode:multiply"
       />
 
-      <!-- Blue + red bands with brush-painted, diagonally-leaning seams.
-           Blue gets more presence and red runs solid to the right edge. -->
       <g filter="url(#m-paint)">
         <polygon points="345,-5 690,-5 740,135 300,135" fill="#0046b8" />
         {blueSpecks.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#0046b8" />)}
@@ -145,7 +135,6 @@ const redSpecks = [
         {redSpecks.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#e2122a" />)}
       </g>
 
-      <!-- Subtle cloth grain over the coloured area -->
       <rect
         x="-10"
         y="0"
@@ -158,7 +147,6 @@ const redSpecks = [
       />
     </svg>
 
-    <!-- Stars overlay, kept out of the stretched flag so they stay undistorted -->
     <svg class="stars" viewBox="0 0 300 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
       <g fill="#ffffff" opacity="0.92">
         {stars.map((pts) => <polygon points={pts} />)}
@@ -180,7 +168,6 @@ const redSpecks = [
       </div>
     </div>
 
-    <!-- Progress track embedded along the bottom of the meter -->
     <div class="progress">
       <span class="progress__fill" style={`width:${percent}%`}></span>
     </div>
@@ -212,7 +199,6 @@ const redSpecks = [
     z-index: 3;
   }
 
-  /* ---- The flag is the meter; no surrounding frame ---- */
   .bar {
     position: relative;
     height: var(--bar-h);
@@ -229,7 +215,7 @@ const redSpecks = [
     display: block;
   }
 
-  /* Centred over the blue band; width tracks the band so the arch stays on blue */
+  /* Keep the arch centered over the blue band. */
   .stars {
     position: absolute;
     top: 0;
@@ -241,7 +227,6 @@ const redSpecks = [
     pointer-events: none;
   }
 
-  /* ---- Overlaid figures ---- */
   .labels {
     position: absolute;
     inset: 0;
@@ -295,8 +280,7 @@ const redSpecks = [
     color: rgba(255, 255, 255, 0.88);
   }
 
-  /* The goal is a reference target, not a live stat — keep it smaller and
-     quieter so it reads as context rather than competing with the % progress. */
+  /* Goal is context, so it stays quieter than live progress. */
   .lbl--goal {
     right: 3.6%;
     align-items: flex-end;
@@ -313,7 +297,6 @@ const redSpecks = [
     color: rgba(255, 255, 255, 0.6);
   }
 
-  /* ---- Progress rail coupled to the meter's bottom ---- */
   .progress {
     position: absolute;
     left: var(--rail-inset);
@@ -331,7 +314,6 @@ const redSpecks = [
     box-shadow: 0 1px 3px rgba(16, 24, 32, 0.35);
   }
 
-  /* ---- Scale axis (aligned to the embedded rail) ---- */
   .axis {
     position: relative;
     margin: 11px var(--rail-inset) 0;
@@ -384,9 +366,7 @@ const redSpecks = [
       --num-size: clamp(20px, 6.4vw, 30px);
     }
 
-    /* Too tight for both — keep the live % (which already says "de la meta")
-       and let the axis carry the goal figure at its right end. With the goal
-       gone, anchor the % to the right edge to mirror Recaudado on the left. */
+    /* On narrow screens, the axis carries the goal value. */
     .lbl--goal {
       display: none;
     }
@@ -411,7 +391,7 @@ const redSpecks = [
       letter-spacing: 0.12em;
     }
 
-    /* Drop the inner quarter ticks to avoid crowding. */
+    /* Hide inner ticks to avoid crowding. */
     .axis__tick:not(.axis__tick--first):not(.axis__tick--last) {
       display: none;
     }

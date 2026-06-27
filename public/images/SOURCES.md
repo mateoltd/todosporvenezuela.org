@@ -5,11 +5,11 @@
 - `venezuela-earthquake-catia-rubble.jpg`: AP News photo gallery, AP Photo / Ariana Cubillos. Source: https://apnews.com/photo-gallery/photos-venezuela-earthquake-missing-rescue-searches-b9bfceacb7b53f06e2e0b54b85461b26
 - `venezuela-earthquake-caracas-neighbors.jpg`: AP News photo gallery, AP Photo / Ariana Cubillos. Source: https://apnews.com/photo-gallery/photos-venezuela-earthquake-missing-rescue-searches-b9bfceacb7b53f06e2e0b54b85461b26
 - `venezuela-earthquake-aid-distribution.jpg`: AP News photo gallery, AP Photo / Ariana Cubillos. Source: https://apnews.com/photo-gallery/photos-venezuela-earthquake-missing-rescue-searches-b9bfceacb7b53f06e2e0b54b85461b26
-- `venezuela-earthquake-rescue.jpg`: NO LONGER USED in the carousel (replaced by the verified 2026 set below). Provenance was never confirmed — keep out of production until sourced.
-- `venezuela-earthquake-rubble.jpg`: NO LONGER USED in the carousel (replaced by the verified 2026 set below). Provenance was never confirmed — keep out of production until sourced.
+- `venezuela-earthquake-rescue.jpg`: NO LONGER USED in the carousel (replaced by the verified 2026 set below). Provenance was never confirmed, keep out of production until sourced.
+- `venezuela-earthquake-rubble.jpg`: NO LONGER USED in the carousel (replaced by the verified 2026 set below). Provenance was never confirmed, keep out of production until sourced.
 - `venezuela-earthquake-shakemap.jpg`: USGS ShakeMap for event `us6000t7zp`. Source: https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp/shakemap/intensity
 
-## "Lo que está pasando" carousel — 2026 earthquake press photos
+## "Lo que está pasando" carousel, 2026 earthquake press photos
 
 Editorial press photographs of the 24 June 2026 Venezuela earthquakes (M 7.2 + M 7.5),
 verified via NPR's coverage. These are copyrighted agency images used editorially with

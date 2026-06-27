@@ -28,7 +28,7 @@ interface PayPalDonate {
 }
 
 interface Props {
-  /** Fallback PayPal donate URL. The selected amount is appended client-side. */
+  /** Fallback PayPal donate URL. */
   paypalUrl?: string;
   paypal?: PayPalDonate;
   amounts?: AmountOption[];
@@ -48,8 +48,7 @@ const {
     { value: 20, note: "Insumos médicos y primeros auxilios" },
     { value: 35, note: "Apoyo para zonas remotas" }
   ],
-  // Datos oficiales pendientes: déjalos vacíos para mostrar el estado
-  // "Disponible muy pronto"; al confirmar las cuentas, complétalos aquí.
+  // Datos oficiales pendientes: deja vacío para mostrar "Disponible muy pronto".
   pagoMovil = { banco: "", telefono: "", documento: "", titular: "", contacto: "" },
   binance = { payId: "" }
 } = Astro.props;
@@ -89,8 +88,6 @@ const buildInitialPaypalUrl = () => {
 };
 const paypalInitialUrl = buildInitialPaypalUrl();
 
-// Métodos de pago. Internacional se lista directo; los pagos locales se
-// eligen por país en un desplegable (hoy solo Venezuela, pero admite más).
 type Method = {
   id: string;
   name: string;
@@ -197,7 +194,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
   >
     <span class="dm__handle" aria-hidden="true"></span>
 
-    <!-- Top bar: back · tricolor progress · close -->
     <header class="dm__bar">
       <button class="dm__iconbtn dm__back" type="button" aria-label="Volver" data-back disabled>
         <Icon name="tabler:arrow-left" size={20} />
@@ -215,7 +211,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     </header>
 
     <div class="dm__scroll">
-      <!-- STEP 1 · Monto -->
       <div class="dm__step is-active" data-panel="1">
         <div class="dm__step-head">
           <h2 class="dm__title" id="dm-title">¿Cuánto quieres aportar?</h2>
@@ -260,7 +255,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         </button>
       </div>
 
-      <!-- STEP 2 · Pagar -->
       <div class="dm__step" data-panel="2">
         <div class="dm__step-head">
           <p class="dm__amountchip">
@@ -290,8 +284,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
             Pago local
           </p>
 
-          <!-- Each country is a collapsible section so donors who only want
-               international methods can skip past it. Built for more countries. -->
           {
             localCountries.map((country, index) => (
               <div
@@ -324,7 +316,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         </div>
       </div>
 
-      <!-- DONE · Gracias -->
       <div class="dm__step dm__done" data-panel="done">
         <span class="dm__done-icon" aria-hidden="true">
           <Icon name="tabler:heart-handshake" size={36} />
@@ -446,7 +437,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       if (methodId === "paypal") primePayPalCheckout();
     };
 
-    // Reset to the default state: the first country open, the rest collapsed.
+    // Restore the default country state.
     const resetCountries = () => {
       countryToggles.forEach((toggle, index) => {
         const open = index === 0;
@@ -643,7 +634,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
 
     modal.querySelectorAll<HTMLElement>("[data-done]").forEach((btn) =>
       btn.addEventListener("click", () => {
-        // Manual methods land on thank-you after the donor confirms they paid.
+        // Manual methods move to thanks after confirmation.
         window.setTimeout(() => goToStep("done"), btn.hasAttribute("href") ? 250 : 0);
       })
     );

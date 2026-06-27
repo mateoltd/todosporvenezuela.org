@@ -15,8 +15,7 @@
     box-shadow 240ms ease;
 }
 
-/* Signature: full-width national tricolor as the structural base rule.
-   Echoes the hero's flag-as-progress-meter and replaces the generic blur fade. */
+/* Tricolor rule anchors the header to the campaign identity. */
 .flagRule {
   position: absolute;
   inset: auto 0 0;

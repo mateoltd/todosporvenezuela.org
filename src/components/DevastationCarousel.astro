@@ -2,14 +2,12 @@
 import { ChevronLeft, ChevronRight } from "@lucide/astro";
 import styles from "./DevastationCarousel.module.css";
 
-// Fotografías de prensa del terremoto del 24 de junio de 2026 (M 7,2 + M 7,5),
-// verificadas vía la cobertura de NPR. Cada crédito enlaza a la nota fuente.
+// Fotos de prensa verificadas vía NPR.
 const nprDayOf =
   "https://www.npr.org/2026/06/24/nx-s1-5869817/2-major-earthquakes-strike-northern-venezuela-near-caracas";
 const nprDeathToll =
   "https://www.npr.org/2026/06/26/nx-s1-5870651/venezuela-earthquakes-caracas";
 
-// Arc: la búsqueda → el rescate → la pérdida → la devastación → el desamparo.
 const slides = [
   {
     image: "venezuela-earthquake-2026-caracas-rescue-search",
@@ -240,7 +238,7 @@ const imagePlaceholder =
       });
 
       dots.forEach((dot, dotIndex) => {
-        // Reset, then re-apply so the active scrubber slot restarts its fill.
+        // Restart the active scrubber fill.
         dot.setAttribute("aria-current", "false");
         if (dotIndex === activeIndex) {
           void (dot as HTMLElement).offsetWidth;
@@ -285,7 +283,7 @@ const imagePlaceholder =
       }
     });
 
-    // Pointer swipe keeps the photographs navigable by touch.
+    // Touch swipe support.
     let swipeStartX: number | null = null;
     stage?.addEventListener("pointerdown", (event) => {
       swipeStartX = (event as PointerEvent).clientX;
