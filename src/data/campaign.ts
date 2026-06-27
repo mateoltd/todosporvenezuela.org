@@ -100,12 +100,17 @@ export const faqs = [
   {
     question: "¿Cómo sé que es confiable?",
     answer:
-      "Los organizadores son miembros reconocidos de sus comunidades y tienen responsabilidades en ministerios e iglesias locales. Publicarán reportes diarios para mostrar el avance de la recaudación, las compras y las entregas realizadas."
+      "Los organizadores son miembros reconocidos de sus comunidades y tienen responsabilidades en ministerios e iglesias locales. Publicarán reportes diarios para mostrar el avance de la recaudación, las compras y las entregas realizadas. Dato curioso: el desarrollador de esta web también ya donó. No garantiza que el CSS no tenga opiniones, pero sí que aquí hay gente real poniendo el hombro."
   },
   {
     question: "¿Cómo dono desde el exterior?",
     answer:
       "Si estás fuera de Venezuela, puedes donar con PayPal usando tarjeta o cuenta PayPal, o enviar USDT por Binance Pay desde cualquier país donde tengas acceso a esos servicios."
+  },
+  {
+    question: "¿Puedo pagar con tarjeta de débito o crédito?",
+    answer:
+      "Sí. Puedes pagar con tarjeta de débito o crédito a través de PayPal, según la disponibilidad en tu país. También estamos evaluando otros proveedores para habilitar más opciones de pago sin que los fondos queden retenidos tanto tiempo como ocurre con Stripe."
   },
   {
     question: "¿Cómo dono desde Venezuela?",

@@ -123,6 +123,7 @@
   font-weight: 900;
   line-height: 0.86;
   letter-spacing: 0;
+  text-wrap: balance;
   text-transform: uppercase;
 }
 
@@ -278,28 +279,28 @@
   }
 
   .summary {
-    grid-template-columns: 42px minmax(0, 1fr) 44px;
-    gap: 12px;
+    grid-template-columns: 30px minmax(0, 1fr) 38px;
+    gap: 8px;
     min-height: 76px;
-    padding: 14px 12px;
+    padding: 14px 10px;
   }
 
   .index {
-    font-size: 2.2rem;
+    font-size: 1.95rem;
   }
 
   .question {
-    font-size: clamp(1.82rem, 9vw, 2.65rem);
-    line-height: 0.9;
+    font-size: clamp(1.72rem, 7.8vw, 2.34rem);
+    line-height: 0.94;
   }
 
   .toggleIcon {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
   }
 
   .answerInner {
-    padding: 0 16px 22px 66px;
+    padding: 0 16px 22px 50px;
   }
 
   .answer p {
