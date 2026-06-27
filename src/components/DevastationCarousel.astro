@@ -2,54 +2,69 @@
 import { ChevronLeft, ChevronRight } from "@lucide/astro";
 import styles from "./DevastationCarousel.module.css";
 
-const apGallery =
-  "https://apnews.com/photo-gallery/photos-venezuela-earthquake-missing-rescue-searches-b9bfceacb7b53f06e2e0b54b85461b26";
+// Fotografías de prensa del terremoto del 24 de junio de 2026 (M 7,2 + M 7,5),
+// verificadas vía la cobertura de NPR. Cada crédito enlaza a la nota fuente.
+const nprDayOf =
+  "https://www.npr.org/2026/06/24/nx-s1-5869817/2-major-earthquakes-strike-northern-venezuela-near-caracas";
+const nprDeathToll =
+  "https://www.npr.org/2026/06/26/nx-s1-5870651/venezuela-earthquakes-caracas";
 
-// Arc: la escala del daño → la búsqueda → la pérdida → la comunidad que responde.
+// Arc: la búsqueda → el rescate → la pérdida → la devastación → el desamparo.
 const slides = [
   {
-    src: "/images/venezuela-earthquake-la-guaira-collapse.jpg",
-    alt: "Vista aérea de un edificio residencial colapsado por completo tras el terremoto en La Guaira.",
-    width: 1800,
-    height: 1200,
+    src: "/images/venezuela-earthquake-2026-caracas-rescue-search.jpg",
+    alt: "Rescatistas y policías buscan sobrevivientes sobre los escombros de un edificio colapsado en Caracas.",
+    width: 2000,
+    height: 1333,
+    place: "Caracas",
+    title: "La búsqueda entre las ruinas",
+    caption: "Rescatistas y vecinos buscan sobrevivientes en un edificio que se vino abajo.",
+    credit: "Juan Barreto / AFP vía Getty Images",
+    creditUrl: nprDayOf
+  },
+  {
+    src: "/images/venezuela-earthquake-2026-laguaira-neighbors-rescue.jpg",
+    alt: "Un grupo de vecinos carga en brazos a un hombre rescatado de los escombros de un edificio en La Guaira.",
+    width: 2000,
+    height: 1333,
     place: "La Guaira",
-    title: "Una manzana entera, en el suelo",
-    caption: "Edificios completos colapsaron sobre vecindarios habitados. La búsqueda continúa entre los escombros.",
-    credit: "AP / Ariana Cubillos",
-    creditUrl: apGallery
+    title: "Sacado con vida de los escombros",
+    caption: "Los vecinos cargan a un hombre rescatado del derrumbe, un día después del terremoto.",
+    credit: "Pedro Mattey / AP",
+    creditUrl: nprDeathToll
   },
   {
-    src: "/images/venezuela-earthquake-rescue.jpg",
-    alt: "Vecinos y rescatistas buscan personas entre los escombros de un edificio derrumbado durante la noche.",
-    width: 1200,
-    height: 800,
+    src: "/images/venezuela-earthquake-2026-catia-la-mar-rubble.jpg",
+    alt: "Una mujer camina entre los escombros de un edificio dañado, con la mano en la cabeza.",
+    width: 2000,
+    height: 1333,
+    place: "Catia La Mar",
+    title: "Volver a lo que ya no está",
+    caption: "Residentes caminan entre los restos de un edificio dañado por el sismo.",
+    credit: "Pedro Mattey / AP",
+    creditUrl: nprDeathToll
+  },
+  {
+    src: "/images/venezuela-earthquake-2026-los-palos-grandes-tower.jpg",
+    alt: "Un edificio residencial de Los Palos Grandes quedó parcialmente colapsado tras el terremoto en Caracas.",
+    width: 2000,
+    height: 1333,
+    place: "Los Palos Grandes, Caracas",
+    title: "Torres partidas por el sismo",
+    caption: "Un edificio residencial quedó severamente dañado tras el primer terremoto de magnitud 7,2.",
+    credit: "Jesús Vargas / Getty Images",
+    creditUrl: nprDayOf
+  },
+  {
+    src: "/images/venezuela-earthquake-2026-caracas-evacuees.jpg",
+    alt: "Familias evacuadas esperan en la acera, una mujer habla por teléfono junto a sus hijos.",
+    width: 2000,
+    height: 1333,
     place: "Caracas",
-    title: "La búsqueda no para de noche",
-    caption: "Rescatistas y vecinos remueven losas a mano para llegar a quienes siguen atrapados.",
-    credit: "AP / Ariana Cubillos",
-    creditUrl: apGallery
-  },
-  {
-    src: "/images/venezuela-earthquake-rubble.jpg",
-    alt: "Una mujer permanece de pie sobre los escombros de un edificio destruido junto a un auto aplastado.",
-    width: 1200,
-    height: 800,
-    place: "Catia, Caracas",
-    title: "Lo que quedó de un hogar",
-    caption: "Familias regresan a lo que era su casa y encuentran solo ruinas donde vivían.",
-    credit: "AP / Ariana Cubillos",
-    creditUrl: apGallery
-  },
-  {
-    src: "/images/venezuela-earthquake-caracas-neighbors.jpg",
-    alt: "Vecinos retiran escombros con escobas y palas dentro de un edificio dañado por el terremoto.",
-    width: 1800,
-    height: 1200,
-    place: "Caracas",
-    title: "La comunidad empieza a levantarse",
-    caption: "Con escobas y palas, los vecinos despejan lo que el sismo dejó atrás.",
-    credit: "AP / Ariana Cubillos",
-    creditUrl: apGallery
+    title: "Familias a la espera",
+    caption: "Personas evacuadas aguardan a la intemperie, sin saber cuándo podrán volver a casa.",
+    credit: "Jesús Vargas / Getty Images",
+    creditUrl: nprDeathToll
   }
 ];
 
