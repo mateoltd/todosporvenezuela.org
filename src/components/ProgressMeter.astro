@@ -7,7 +7,6 @@ interface Props {
 const { raised, goal } = Astro.props;
 
 const percent = Math.max(0, Math.min(100, Math.round((raised / goal) * 100)));
-const remaining = Math.max(0, goal - raised);
 
 const currency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -18,432 +17,374 @@ const currency = (value: number) =>
 
 const raisedLabel = currency(raised);
 const goalLabel = currency(goal);
-const remainingLabel = currency(remaining);
 
-// The flag IS the progress. Yellow = Recaudado and grows with the %, while
-// blue and red shrink as funding arrives — but each keeps a floor so the
-// flag is never obliterated (at 100% it settles near 82 / 10 / 8).
-const minBlue = 10;
-const minRed = 8;
-const yellowMax = 100 - minBlue - minRed;
-const yellowW = Math.min(percent, yellowMax);
-const rest = 100 - yellowW;
-const blueW = (rest * minBlue) / (minBlue + minRed);
-const redW = (rest * minRed) / (minBlue + minRed);
-
-// Band seams in the 0..1000 viewBox.
-const s1 = yellowW * 10;
-const s2 = (yellowW + blueW) * 10;
-
-const segments = [
-  {
-    mod: "raised",
-    label: "Recaudado",
-    value: raisedLabel,
-    detail: `${percent}% de la meta alcanzada`,
-    left: 0,
-    width: yellowW
-  },
-  {
-    mod: "gap",
-    label: "Por recaudar",
-    value: remainingLabel,
-    detail: `Faltan para llegar a la meta de ${goalLabel}`,
-    left: yellowW,
-    width: blueW
-  },
-  {
-    mod: "urgency",
-    label: "Emergencia activa",
-    value: "M7.5",
-    detail: "Sismo cerca de Yumare · respuesta inmediata en curso",
-    left: yellowW + blueW,
-    width: redW
+// Compact axis labels: $200, $500K, $1.5M …
+const compact = (value: number) => {
+  if (value <= 0) return "0";
+  if (value >= 1_000_000) {
+    const m = value / 1_000_000;
+    return `$${m % 1 ? m.toFixed(1) : m.toFixed(0)}M`;
   }
+  if (value >= 1_000) {
+    const k = value / 1_000;
+    return `$${k % 1 ? k.toFixed(1) : k.toFixed(0)}K`;
+  }
+  return `$${value}`;
+};
+
+// Five evenly spaced ticks (0, ¼, ½, ¾, goal).
+const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => ({
+  pos: f * 100,
+  label: compact(Math.round(goal * f))
+}));
+
+// --- The flag is decorative and fixed; progress is read from the numbers and
+// the embedded track. Bands sit in a 0..1000 × 0..130 viewBox, stretched to
+// fit. Both seams are slightly diagonal, leaning in opposite directions. ---
+
+// Eight white stars in a shallow upward arc (the Venezuelan flag), arranged
+// across the blue band.
+const starArc = { x0: 370, x1: 575, top: 60, amp: 22, r: 11 };
+const starPoints = (cx: number, cy: number, outer: number) => {
+  const inner = outer * 0.42;
+  const pts: string[] = [];
+  for (let i = 0; i < 10; i += 1) {
+    const radius = i % 2 === 0 ? outer : inner;
+    const angle = (Math.PI / 5) * i - Math.PI / 2;
+    pts.push(
+      `${(cx + radius * Math.cos(angle)).toFixed(1)},${(cy + radius * Math.sin(angle)).toFixed(1)}`
+    );
+  }
+  return pts.join(" ");
+};
+const stars = Array.from({ length: 8 }, (_, i) => {
+  const t = i / 7;
+  const x = starArc.x0 + (starArc.x1 - starArc.x0) * t;
+  // Smile arc: ends high, centre dips lower (larger y in SVG space).
+  const y = starArc.top + starArc.amp * (1 - (2 * t - 1) ** 2);
+  return starPoints(x, y, starArc.r);
+});
+
+// Decorative paint flecks scattered just past each seam.
+const blueSpecks = [
+  { x: 295, y: 34, r: 4 },
+  { x: 278, y: 92, r: 3 },
+  { x: 288, y: 60, r: 5 },
+  { x: 262, y: 48, r: 2.5 },
+  { x: 300, y: 104, r: 3.5 }
+];
+const redSpecks = [
+  { x: 560, y: 42, r: 4 },
+  { x: 540, y: 88, r: 3 },
+  { x: 552, y: 62, r: 5 },
+  { x: 528, y: 52, r: 2.5 },
+  { x: 566, y: 100, r: 3.5 }
 ];
 ---
 
 <div class="meter">
-  <div class="meter__head">
-    <div class="meter__stat meter__stat--raised">
-      <span class="meter__eyebrow">Recaudado</span>
-      <strong class="meter__amount">{raisedLabel}</strong>
-    </div>
-
-    <div class="meter__stat meter__stat--percent">
-      <strong class="meter__big">{percent}%</strong>
-      <span class="meter__eyebrow">De la meta</span>
-    </div>
-
-    <div class="meter__stat meter__stat--goal">
-      <span class="meter__eyebrow">Meta</span>
-      <strong class="meter__amount meter__amount--muted">{goalLabel}</strong>
-    </div>
-  </div>
-
   <div
     class="bar"
     role="progressbar"
     aria-valuenow={percent}
     aria-valuemin={0}
     aria-valuemax={100}
-    aria-label={`${percent}% de la meta recaudado`}
+    aria-label={`${raisedLabel} recaudados de ${goalLabel} — ${percent}% de la meta`}
   >
-    <svg class="bar__flag" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+    <svg class="flag" viewBox="0 0 1000 130" preserveAspectRatio="none" aria-hidden="true">
       <defs>
-        <filter id="m-seams" x="-6%" y="-60%" width="112%" height="220%" color-interpolation-filters="sRGB">
-          <feTurbulence type="fractalNoise" baseFrequency="0.009 0.05" numOctaves="4" seed="6" result="n" />
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G" />
+        <filter
+          id="m-paint"
+          x="-20%"
+          y="-40%"
+          width="140%"
+          height="180%"
+          color-interpolation-filters="sRGB"
+        >
+          <feTurbulence type="turbulence" baseFrequency="0.018 0.13" numOctaves="3" seed="11" result="n1" />
+          <feDisplacementMap in="SourceGraphic" in2="n1" scale="32" xChannelSelector="R" yChannelSelector="G" result="d1" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.85 0.7" numOctaves="2" seed="4" result="n2" />
+          <feDisplacementMap in="d1" in2="n2" scale="6" xChannelSelector="R" yChannelSelector="G" />
         </filter>
+
         <filter id="m-grain">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="g" />
           <feColorMatrix in="g" type="saturate" values="0" />
         </filter>
+
+        <linearGradient id="m-fade" gradientUnits="userSpaceOnUse" x1="785" y1="0" x2="968" y2="0">
+          <stop offset="0" stop-color="#ffffff" stop-opacity="0" />
+          <stop offset="1" stop-color="#ffffff" stop-opacity="1" />
+        </linearGradient>
+
+        <linearGradient id="m-photo-mask" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="345" y2="0">
+          <stop offset="0" stop-color="#fff" stop-opacity="1" />
+          <stop offset="0.6" stop-color="#fff" stop-opacity="0.85" />
+          <stop offset="1" stop-color="#fff" stop-opacity="0" />
+        </linearGradient>
+        <mask id="m-photo">
+          <rect x="0" y="0" width="345" height="130" fill="url(#m-photo-mask)" />
+        </mask>
       </defs>
 
-      <g filter="url(#m-seams)">
-        <rect x="-80" y="-40" width={s1 + 120} height="200" fill="#f6bf00" />
-        <rect x={s1 - 40} y="-40" width={s2 - s1 + 80} height="200" fill="#0046b8" />
-        <rect x={s2 - 40} y="-40" width={1120 - s2} height="200" fill="#e2122a" />
+      <!-- Yellow band + faintly masked devastation photo -->
+      <rect x="-10" y="-5" width="375" height="140" fill="#f6bf00" />
+      <image
+        href="/images/venezuela-earthquake-catia-rubble.jpg"
+        x="0"
+        y="0"
+        width="360"
+        height="130"
+        preserveAspectRatio="xMidYMid slice"
+        opacity="0.18"
+        mask="url(#m-photo)"
+        style="mix-blend-mode:multiply"
+      />
+
+      <!-- Blue + red bands with brush-painted, diagonally-leaning seams -->
+      <g filter="url(#m-paint)">
+        <polygon points="345,-5 645,-5 695,135 300,135" fill="#0046b8" />
+        {blueSpecks.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#0046b8" />)}
+        <polygon points="565,-5 1045,-5 1045,135 615,135" fill="#e2122a" />
+        {redSpecks.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#e2122a" />)}
       </g>
 
+      <!-- Eight white stars across the blue -->
+      <g fill="#ffffff">
+        {stars.map((pts) => <polygon points={pts} />)}
+      </g>
+
+      <!-- Red fades into white so the goal reads cleanly -->
+      <rect x="600" y="-5" width="430" height="140" fill="url(#m-fade)" />
+
+      <!-- Subtle cloth grain over the coloured area -->
       <rect
-        x="-40"
+        x="-10"
         y="0"
-        width="1080"
-        height="120"
+        width="800"
+        height="130"
         fill="#ffffff"
-        opacity="0.07"
+        opacity="0.05"
         filter="url(#m-grain)"
         style="mix-blend-mode:overlay"
       />
     </svg>
 
-    <div class="bar__zones">
-      {
-        segments.map((segment) => (
-          <button
-            type="button"
-            class={`zone zone--${segment.mod}`}
-            style={`left:${segment.left}%;width:${segment.width}%`}
-            aria-label={`${segment.label}: ${segment.value}. ${segment.detail}`}
-          >
-            <span class="tip">
-              <span class="tip__label">{segment.label}</span>
-              <span class="tip__value">{segment.value}</span>
-              <span class="tip__detail">{segment.detail}</span>
-            </span>
-          </button>
-        ))
-      }
+    <div class="labels">
+      <div class="lbl lbl--raised">
+        <strong>{raisedLabel}</strong>
+        <span>Recaudado</span>
+      </div>
+      <div class="lbl lbl--pct">
+        <strong>{percent}%</strong>
+        <span>De la meta</span>
+      </div>
+      <div class="lbl lbl--goal">
+        <strong>{goalLabel}</strong>
+        <span>Meta</span>
+      </div>
     </div>
+
+    <!-- Progress track embedded along the bottom of the meter -->
+    <div class="progress">
+      <span class="progress__fill" style={`width:${percent}%`}></span>
+    </div>
+  </div>
+
+  <div class="axis" aria-hidden="true">
+    {
+      ticks.map((tick, i) => (
+        <div
+          class={`axis__tick${i === 0 ? " axis__tick--first" : ""}${i === ticks.length - 1 ? " axis__tick--last" : ""}`}
+          style={`left:${tick.pos}%`}
+        >
+          <span class="axis__pip" />
+          <span class="axis__label">{tick.label}</span>
+        </div>
+      ))
+    }
   </div>
 </div>
 
 <style>
   .meter {
-    --meter-head-gap: 16px;
-    --meter-amount-size: 40px;
-    --meter-percent-size: 64px;
-    --meter-bar-height: 88px;
+    --bar-h: 104px;
+    --num-size: clamp(26px, 4vw, 46px);
+    --tag-size: clamp(9px, 0.9vw, 12px);
+    --rail-inset: 11px;
 
     position: relative;
     z-index: 3;
   }
 
-  /* ---- Stat header ---- */
-  .meter__head {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: end;
-    gap: 14px 24px;
-    margin-bottom: var(--meter-head-gap);
-  }
-
-  .meter__stat {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-  }
-
-  .meter__stat--raised {
-    justify-self: start;
-    text-align: left;
-  }
-
-  .meter__stat--percent {
-    justify-self: center;
-    align-items: center;
-    gap: 4px;
-    text-align: center;
-  }
-
-  .meter__stat--goal {
-    justify-self: end;
-    text-align: right;
-  }
-
-  .meter__eyebrow {
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .meter__amount {
-    font-family: "Archivo", sans-serif;
-    font-size: var(--meter-amount-size);
-    font-weight: 800;
-    line-height: 0.92;
-    color: var(--ink);
-  }
-
-  .meter__amount--muted {
-    color: rgba(16, 24, 32, 0.42);
-  }
-
-  .meter__big {
-    font-family: "Archivo", sans-serif;
-    font-size: var(--meter-percent-size);
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: 0;
-    color: var(--ink);
-  }
-
-  .meter__stat--percent .meter__eyebrow {
-    color: var(--red);
-  }
-
-  /* ---- The flag bar ---- */
+  /* ---- The flag is the meter; no surrounding frame ---- */
   .bar {
     position: relative;
-    height: var(--meter-bar-height);
-    overflow: visible;
-    border-radius: var(--radius);
-    background: #e7e3da;
+    height: var(--bar-h);
+    border-radius: 14px;
+    overflow: hidden;
     box-shadow: var(--shadow);
   }
 
-  .bar__flag {
+  .flag {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    border-radius: var(--radius);
-    filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.25));
+    display: block;
   }
 
-  /* ---- Hoverable meaning zones ---- */
-  .bar__zones {
+  /* ---- Overlaid figures ---- */
+  .labels {
     position: absolute;
     inset: 0;
-    z-index: 2;
-  }
-
-  .zone {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  .zone::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(255, 255, 255, 0);
-    transition: background 0.15s ease;
-  }
-
-  .zone:hover::before,
-  .zone:focus-visible::before {
-    background: rgba(255, 255, 255, 0.14);
-  }
-
-  .zone:focus-visible {
-    outline: none;
-  }
-
-  /* ---- Tooltip ---- */
-  .tip {
-    position: absolute;
-    bottom: calc(100% + 14px);
-    left: 50%;
-    z-index: 4;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    width: max-content;
-    max-width: 250px;
-    padding: 12px 16px;
-    border-radius: 12px;
-    background: var(--ink);
-    box-shadow: 0 18px 40px rgba(16, 24, 32, 0.28);
-    text-align: left;
-    opacity: 0;
-    visibility: hidden;
-    transform: translate(-50%, 6px);
-    transition: opacity 0.16s ease, transform 0.16s ease;
     pointer-events: none;
   }
 
-  .tip::after {
-    content: "";
+  .lbl {
     position: absolute;
-    top: 100%;
-    left: 50%;
-    width: 12px;
-    height: 12px;
-    margin: -6px 0 0 -6px;
-    background: var(--ink);
-    border-radius: 2px;
-    transform: rotate(45deg);
-  }
-
-  .zone:hover .tip,
-  .zone:focus-visible .tip,
-  .zone:focus .tip {
-    opacity: 1;
-    visibility: visible;
-    transform: translate(-50%, 0);
-  }
-
-  /* Keep edge tooltips on screen. */
-  .zone--raised .tip {
-    left: 0;
-    transform: translate(0, 6px);
-  }
-
-  .zone--raised:hover .tip,
-  .zone--raised:focus-visible .tip,
-  .zone--raised:focus .tip {
-    transform: translate(0, 0);
-  }
-
-  .zone--raised .tip::after {
-    left: 28px;
-  }
-
-  .zone--urgency .tip {
-    left: auto;
-    right: 0;
-    transform: translate(0, 6px);
-  }
-
-  .zone--urgency:hover .tip,
-  .zone--urgency:focus-visible .tip,
-  .zone--urgency:focus .tip {
-    transform: translate(0, 0);
-  }
-
-  .zone--urgency .tip::after {
-    left: auto;
-    right: 22px;
-  }
-
-  .tip__label {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
-  }
-
-  .tip__value {
-    font-family: "Archivo", sans-serif;
-    font-size: 24px;
-    font-weight: 800;
+    top: 48%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
     line-height: 1;
+    transform: translateY(-50%);
+  }
+
+  .lbl strong {
+    font-family: "Archivo", sans-serif;
+    font-size: var(--num-size);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 0.9;
+  }
+
+  .lbl span {
+    font-family: "Archivo", sans-serif;
+    font-size: var(--tag-size);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .lbl--raised {
+    left: 3.6%;
+    color: var(--ink);
+  }
+
+  .lbl--raised span {
+    color: rgba(16, 24, 32, 0.72);
+  }
+
+  .lbl--pct {
+    left: 72%;
+    transform: translate(-50%, -50%);
+    align-items: center;
+    text-align: center;
     color: #fff;
   }
 
-  .zone--raised .tip__value {
-    color: var(--yellow);
+  .lbl--pct span {
+    color: rgba(255, 255, 255, 0.88);
   }
 
-  .zone--urgency .tip__value {
-    color: #ff5a6a;
+  .lbl--goal {
+    right: 3.6%;
+    align-items: flex-end;
+    text-align: right;
+    color: rgba(16, 24, 32, 0.62);
   }
 
-  .tip__detail {
-    margin-top: 2px;
-    font-size: 13px;
-    line-height: 1.35;
-    color: rgba(255, 255, 255, 0.82);
+  .lbl--goal span {
+    color: rgba(16, 24, 32, 0.45);
+  }
+
+  /* ---- Progress rail coupled to the meter's bottom ---- */
+  .progress {
+    position: absolute;
+    left: var(--rail-inset);
+    right: var(--rail-inset);
+    bottom: 8px;
+    height: 6px;
+  }
+
+  .progress__fill {
+    display: block;
+    height: 100%;
+    min-width: 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 1px 3px rgba(16, 24, 32, 0.35);
+  }
+
+  /* ---- Scale axis (aligned to the embedded rail) ---- */
+  .axis {
+    position: relative;
+    margin: 11px var(--rail-inset) 0;
+    height: 28px;
+  }
+
+  .axis__tick {
+    position: absolute;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    transform: translateX(-50%);
+  }
+
+  .axis__tick--first {
+    transform: translateX(0);
+    align-items: flex-start;
+  }
+
+  .axis__tick--last {
+    transform: translateX(-100%);
+    align-items: flex-end;
+  }
+
+  .axis__pip {
+    width: 1px;
+    height: 6px;
+    background: rgba(16, 24, 32, 0.28);
+  }
+
+  .axis__label {
+    font-family: "Archivo", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(16, 24, 32, 0.5);
+    white-space: nowrap;
   }
 
   @media (max-width: 900px) {
-    .meter__amount {
-      font-size: 34px;
-    }
-
-    .meter__big {
-      font-size: 56px;
-    }
-
-    .bar {
-      height: 84px;
+    .meter {
+      --bar-h: 92px;
     }
   }
 
   @media (max-width: 640px) {
-    .meter__head {
-      grid-template-columns: 1fr 1fr;
-      /* Tight row gap so Recaudado/Meta hug the big percent as one block,
-         instead of leaving it stranded mid-section. */
-      gap: 6px 16px;
-      margin-bottom: 18px;
+    .meter {
+      --bar-h: 78px;
+      --num-size: clamp(20px, 6.4vw, 30px);
     }
 
-    .meter__stat--percent {
-      grid-row: 1;
-      grid-column: 1 / -1;
-    }
-
-    .meter__stat--raised {
-      grid-row: 2;
-      grid-column: 1;
-    }
-
-    .meter__stat--goal {
-      grid-row: 2;
-      grid-column: 2;
-    }
-
-    .meter__big {
-      font-size: 64px;
-    }
-
-    .meter__amount {
-      font-size: 30px;
-    }
-
-    .bar {
-      height: 72px;
-    }
-
-    .tip {
-      max-width: 200px;
+    .axis__label {
+      font-size: 11px;
     }
   }
 
-  @media (max-width: 380px) {
-    .meter__amount {
-      font-size: 26px;
+  @media (max-width: 460px) {
+    .lbl--pct span,
+    .lbl--goal span,
+    .lbl--raised span {
+      letter-spacing: 0.12em;
     }
 
-    .meter__big {
-      font-size: 54px;
+    /* Drop the inner quarter ticks to avoid crowding. */
+    .axis__tick:not(.axis__tick--first):not(.axis__tick--last) {
+      display: none;
     }
   }
 </style>
