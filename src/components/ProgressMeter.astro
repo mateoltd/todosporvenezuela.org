@@ -35,24 +35,6 @@ const redW = (rest * minRed) / (minBlue + minRed);
 const s1 = yellowW * 10;
 const s2 = (yellowW + blueW) * 10;
 
-// Stars scattered across the (dynamic) blue band; soft and tone-on-tone, with
-// a few near the seams so they get partly torn off.
-const starSpec = [
-  { fx: 0.14, y: 82, s: 28, o: 0.5 },
-  { fx: 0.27, y: 46, s: 24, o: 0.4 },
-  { fx: 0.4, y: 84, s: 34, o: 0.55 },
-  { fx: 0.52, y: 44, s: 26, o: 0.45 },
-  { fx: 0.64, y: 82, s: 30, o: 0.5 },
-  { fx: 0.77, y: 50, s: 36, o: 0.52 },
-  { fx: 0.9, y: 80, s: 24, o: 0.4 }
-];
-const stars = starSpec.map((d) => ({
-  x: +(s1 + d.fx * (s2 - s1)).toFixed(1),
-  y: d.y,
-  s: d.s,
-  o: d.o
-}));
-
 const segments = [
   {
     mod: "raised",
@@ -117,31 +99,12 @@ const segments = [
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="g" />
           <feColorMatrix in="g" type="saturate" values="0" />
         </filter>
-        <symbol id="m-star" viewBox="0 0 24 24">
-          <path d="M12 1.6l3.09 6.26 6.91 1-5 4.87 1.18 6.88L12 17.35l-6.18 3.25L7 13.73l-5-4.87 6.91-1z" />
-        </symbol>
       </defs>
 
       <g filter="url(#m-seams)">
         <rect x="-80" y="-40" width={s1 + 120} height="200" fill="#f6bf00" />
         <rect x={s1 - 40} y="-40" width={s2 - s1 + 80} height="200" fill="#0046b8" />
         <rect x={s2 - 40} y="-40" width={1120 - s2} height="200" fill="#e2122a" />
-      </g>
-
-      <g>
-        {
-          stars.map((star) => (
-            <use
-              href="#m-star"
-              x={star.x - star.s / 2}
-              y={star.y - star.s / 2}
-              width={star.s}
-              height={star.s}
-              fill="#ffffff"
-              opacity={star.o}
-            />
-          ))
-        }
       </g>
 
       <rect
