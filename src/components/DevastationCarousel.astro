@@ -12,7 +12,8 @@ const nprDeathToll =
 // Arc: la búsqueda → el rescate → la pérdida → la devastación → el desamparo.
 const slides = [
   {
-    src: "/images/venezuela-earthquake-2026-caracas-rescue-search.jpg",
+    image: "venezuela-earthquake-2026-caracas-rescue-search",
+    widths: [720, 1080, 1440, 1800],
     alt: "Rescatistas y policías buscan sobrevivientes sobre los escombros de un edificio colapsado en Caracas.",
     width: 2000,
     height: 1333,
@@ -23,7 +24,8 @@ const slides = [
     creditUrl: nprDayOf
   },
   {
-    src: "/images/venezuela-earthquake-2026-laguaira-neighbors-rescue.jpg",
+    image: "venezuela-earthquake-2026-laguaira-neighbors-rescue",
+    widths: [720, 1080, 1440, 1800],
     alt: "Un grupo de vecinos carga en brazos a un hombre rescatado de los escombros de un edificio en La Guaira.",
     width: 2000,
     height: 1333,
@@ -34,7 +36,8 @@ const slides = [
     creditUrl: nprDeathToll
   },
   {
-    src: "/images/venezuela-earthquake-2026-catia-la-mar-rubble.jpg",
+    image: "venezuela-earthquake-2026-catia-la-mar-rubble",
+    widths: [720, 1080, 1440, 1800],
     alt: "Una mujer camina entre los escombros de un edificio dañado, con la mano en la cabeza.",
     width: 2000,
     height: 1333,
@@ -45,7 +48,8 @@ const slides = [
     creditUrl: nprDeathToll
   },
   {
-    src: "/images/venezuela-earthquake-2026-los-palos-grandes-tower.jpg",
+    image: "venezuela-earthquake-2026-los-palos-grandes-tower",
+    widths: [720, 1080, 1440, 1800],
     alt: "Un edificio residencial de Los Palos Grandes quedó parcialmente colapsado tras el terremoto en Caracas.",
     width: 2000,
     height: 1333,
@@ -56,7 +60,8 @@ const slides = [
     creditUrl: nprDayOf
   },
   {
-    src: "/images/venezuela-earthquake-2026-caracas-evacuees.jpg",
+    image: "venezuela-earthquake-2026-caracas-evacuees",
+    widths: [720, 1080, 1440, 1800],
     alt: "Familias evacuadas esperan en la acera, una mujer habla por teléfono junto a sus hijos.",
     width: 2000,
     height: 1333,
@@ -69,6 +74,15 @@ const slides = [
 ];
 
 const total = String(slides.length).padStart(2, "0");
+const imageSizes = "100vw";
+const imageSrc = (name: string, width: number, format: "avif" | "webp" | "jpg") =>
+  `/images/optimized/${name}-${width}.${format}`;
+const imageSrcSet = (
+  slide: (typeof slides)[number],
+  format: "avif" | "webp" | "jpg"
+) => slide.widths.map((width) => `${imageSrc(slide.image, width, format)} ${width}w`).join(", ");
+const imagePlaceholder =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='2'/%3E";
 ---
 
 <section class={styles.section} id="impacto" aria-labelledby="devastation-title">
@@ -105,14 +119,28 @@ const total = String(slides.length).padStart(2, "0");
             data-state={index === 0 ? "active" : "hidden"}
             aria-hidden={index === 0 ? "false" : "true"}
           >
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              width={slide.width}
-              height={slide.height}
-              loading={index === 0 ? "eager" : "lazy"}
-              decoding="async"
-            />
+            <picture>
+              <source
+                data-srcset={imageSrcSet(slide, "avif")}
+                data-sizes={imageSizes}
+                type="image/avif"
+              />
+              <source
+                data-srcset={imageSrcSet(slide, "webp")}
+                data-sizes={imageSizes}
+                type="image/webp"
+              />
+              <img
+                src={imagePlaceholder}
+                data-src={`/images/${slide.image}.jpg`}
+                alt={slide.alt}
+                width={slide.width}
+                height={slide.height}
+                loading="lazy"
+                decoding="async"
+                fetchpriority="low"
+              />
+            </picture>
             <figcaption class={styles.caption}>
               <div class={styles.captionHead}>
                 <span class={styles.place}>{slide.place}</span>
@@ -132,10 +160,10 @@ const total = String(slides.length).padStart(2, "0");
 
       <div class={styles.controls} aria-label="Controles del registro visual">
         <button class={styles.control} type="button" aria-label="Ver imagen anterior" data-carousel-prev>
-          <ChevronLeft size={22} strokeWidth={2.4} />
+          <ChevronLeft size={22} stroke-width={2.4} />
         </button>
         <button class={styles.control} type="button" aria-label="Ver imagen siguiente" data-carousel-next>
-          <ChevronRight size={22} strokeWidth={2.4} />
+          <ChevronRight size={22} stroke-width={2.4} />
         </button>
       </div>
 
@@ -173,6 +201,34 @@ const total = String(slides.length).padStart(2, "0");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let activeIndex = 0;
     let autoplayId: number | undefined;
+    let isCarouselVisible = false;
+    let adjacentPreloadId: number | undefined;
+
+    const loadSlideImage = (slide: Element | undefined) => {
+      if (!(slide instanceof HTMLElement) || slide.dataset.imageLoaded === "true") return;
+
+      slide.querySelectorAll<HTMLSourceElement>("source[data-srcset]").forEach((source) => {
+        if (source.dataset.srcset) source.srcset = source.dataset.srcset;
+        if (source.dataset.sizes) source.sizes = source.dataset.sizes;
+      });
+
+      const image = slide.querySelector<HTMLImageElement>("img[data-src]");
+      if (image) {
+        if (image.dataset.srcset) image.srcset = image.dataset.srcset;
+        if (image.dataset.sizes) image.sizes = image.dataset.sizes;
+        if (image.dataset.src) image.src = image.dataset.src;
+      }
+
+      slide.dataset.imageLoaded = "true";
+    };
+
+    const warmAdjacentSlide = () => {
+      if (!isCarouselVisible) return;
+      if (adjacentPreloadId) window.clearTimeout(adjacentPreloadId);
+      adjacentPreloadId = window.setTimeout(() => {
+        loadSlideImage(slides[(activeIndex + 1) % slides.length]);
+      }, 900);
+    };
 
     const setActive = (index: number) => {
       activeIndex = (index + slides.length) % slides.length;
@@ -191,14 +247,20 @@ const total = String(slides.length).padStart(2, "0");
           dot.setAttribute("aria-current", "true");
         }
       });
+
+      if (isCarouselVisible) {
+        loadSlideImage(slides[activeIndex]);
+        warmAdjacentSlide();
+      }
     };
 
     const stopAutoplay = () => {
       if (autoplayId) window.clearInterval(autoplayId);
+      autoplayId = undefined;
     };
 
     const startAutoplay = () => {
-      if (reducedMotion) return;
+      if (reducedMotion || !isCarouselVisible) return;
       stopAutoplay();
       autoplayId = window.setInterval(() => setActive(activeIndex + 1), 6200);
     };
@@ -243,6 +305,27 @@ const total = String(slides.length).padStart(2, "0");
     });
 
     setActive(0);
-    startAutoplay();
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          isCarouselVisible = entry.isIntersecting;
+          if (isCarouselVisible) {
+            loadSlideImage(slides[activeIndex]);
+            warmAdjacentSlide();
+            startAutoplay();
+          } else {
+            stopAutoplay();
+          }
+        },
+        { rootMargin: "240px 0px" }
+      );
+      observer.observe(carousel);
+    } else {
+      isCarouselVisible = true;
+      loadSlideImage(slides[activeIndex]);
+      warmAdjacentSlide();
+      startAutoplay();
+    }
   });
 </script>

@@ -13,6 +13,8 @@
     linear-gradient(180deg, rgba(247, 247, 242, 0.98), rgba(255, 255, 255, 0.74) 46%, rgba(247, 247, 242, 0.98)),
     var(--paper);
   color: var(--ink);
+  content-visibility: auto;
+  contain-intrinsic-size: 980px;
 }
 
 /* ---- Top half: compact, centered editorial context ----

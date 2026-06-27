@@ -1,7 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
 import { CirclePlay, Heart, X } from "@lucide/astro";
-import "plyr/dist/plyr.css";
 import ProgressMeter from "./ProgressMeter.astro";
 import styles from "./HeroSection.module.css";
 
@@ -17,21 +16,39 @@ interface Props {
 
 const { raised, goal, organizerVideo } = Astro.props;
 const hasOrganizerVideo = Boolean(organizerVideo?.src);
+const heroWidths = [640, 960, 1280, 1680, 2240];
+const heroSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
+const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
+    heroWidths
+        .map(
+            (width) =>
+                `/images/optimized/venezuela-earthquake-hero-aid-${width}.${format} ${width}w`,
+        )
+        .join(", ");
 ---
 
 <section class={styles.hero} aria-labelledby="hero-title">
     <div class={styles.media} aria-hidden="true">
         <picture>
             <source
-                srcset="/images/venezuela-earthquake-hero-aid.webp"
+                srcset={heroSrcSet("avif")}
+                sizes={heroSizes}
+                type="image/avif"
+            />
+            <source
+                srcset={heroSrcSet("webp")}
+                sizes={heroSizes}
                 type="image/webp"
             />
             <img
-                src="/images/venezuela-earthquake-hero-aid.jpg"
+                src="/images/optimized/venezuela-earthquake-hero-aid-1280.jpg"
+                srcset={heroSrcSet("jpg")}
+                sizes={heroSizes}
                 alt=""
-                width="3360"
-                height="2240"
+                width="1680"
+                height="1120"
                 decoding="async"
+                loading="eager"
                 fetchpriority="high"
             />
         </picture>
@@ -57,7 +74,7 @@ const hasOrganizerVideo = Boolean(organizerVideo?.src);
                     data-video-open
                     aria-haspopup="dialog"
                 >
-                    <CirclePlay size={21} strokeWidth={2.4} />
+                    <CirclePlay size={21} stroke-width={2.4} />
                     <span>Ver video de los organizadores</span>
                 </button>
             )
@@ -69,7 +86,7 @@ const hasOrganizerVideo = Boolean(organizerVideo?.src);
 
         <div class={styles.action}>
             <button class={styles.primaryCta} type="button" data-donate-open>
-                <Heart size={26} fill="currentColor" strokeWidth={2} />
+                <Heart size={26} fill="currentColor" stroke-width={2} />
                 <span>Donar ahora</span>
             </button>
             <p class={styles.paymentNote}>
@@ -116,7 +133,7 @@ const hasOrganizerVideo = Boolean(organizerVideo?.src);
                         data-video-close
                         aria-label="Cerrar video"
                     >
-                        <X size={22} strokeWidth={2.2} />
+                        <X size={22} stroke-width={2.2} />
                     </button>
                 </header>
 
@@ -125,7 +142,7 @@ const hasOrganizerVideo = Boolean(organizerVideo?.src);
                         data-video-player
                         title={organizerVideo.title}
                         playsinline
-                        preload="metadata"
+                        preload="none"
                     >
                         <source src={organizerVideo.src} type="video/mp4" />
                     </video>
@@ -150,8 +167,6 @@ const hasOrganizerVideo = Boolean(organizerVideo?.src);
 }
 
 <script>
-    import Plyr from "plyr";
-
     const videoModal = document.querySelector<HTMLElement>("[data-video-modal]");
 
     if (videoModal && videoModal.dataset.videoReady !== "true") {
@@ -167,38 +182,98 @@ const hasOrganizerVideo = Boolean(organizerVideo?.src);
         const videoClosers =
             videoModal.querySelectorAll<HTMLElement>("[data-video-close]");
         let lastFocusedVideoElement: HTMLElement | null = null;
-        let organizerPlayer: Plyr | null = null;
+        let organizerPlayer: { pause: () => void } | null = null;
+        let organizerPlayerPromise: Promise<void> | null = null;
+        let plyrStylesheetPromise: Promise<void> | null = null;
 
-        if (videoPlayer) {
-            organizerPlayer = new Plyr(videoPlayer, {
-                clickToPlay: true,
-                controls: [
-                    "play-large",
-                    "play",
-                    "progress",
-                    "current-time",
-                    "mute",
-                    "volume",
-                ],
-                fullscreen: {
-                    enabled: false,
-                    fallback: false,
-                    iosNative: false,
-                },
-                hideControls: true,
-                invertTime: false,
-                keyboard: {
-                    focused: true,
-                    global: false,
-                },
-                ratio: "9:16",
-                resetOnEnd: true,
-                tooltips: {
-                    controls: false,
-                    seek: false,
-                },
+        const loadPlyrStylesheet = () => {
+            if (plyrStylesheetPromise) return plyrStylesheetPromise;
+
+            plyrStylesheetPromise = new Promise<void>((resolve, reject) => {
+                const existing = document.querySelector<HTMLLinkElement>(
+                    'link[data-plyr-stylesheet="true"]',
+                );
+
+                if (existing) {
+                    if (existing.sheet) {
+                        resolve();
+                    } else {
+                        existing.addEventListener("load", () => resolve(), {
+                            once: true,
+                        });
+                        existing.addEventListener(
+                            "error",
+                            () =>
+                                reject(
+                                    new Error(
+                                        "Plyr stylesheet failed to load",
+                                    ),
+                                ),
+                            { once: true },
+                        );
+                    }
+                    return;
+                }
+
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = "/vendor/plyr.css";
+                link.dataset.plyrStylesheet = "true";
+                link.addEventListener("load", () => resolve(), { once: true });
+                link.addEventListener(
+                    "error",
+                    () =>
+                        reject(
+                            new Error("Plyr stylesheet failed to load"),
+                        ),
+                    { once: true },
+                );
+                document.head.append(link);
             });
-        }
+
+            return plyrStylesheetPromise;
+        };
+
+        const prepareVideoPlayer = () => {
+            if (!videoPlayer || organizerPlayer) return Promise.resolve();
+            if (organizerPlayerPromise) return organizerPlayerPromise;
+
+            organizerPlayerPromise = Promise.all([
+                import("plyr"),
+                loadPlyrStylesheet(),
+            ]).then(([{ default: Plyr }]) => {
+                organizerPlayer = new Plyr(videoPlayer, {
+                    clickToPlay: true,
+                    controls: [
+                        "play-large",
+                        "play",
+                        "progress",
+                        "current-time",
+                        "mute",
+                        "volume",
+                    ],
+                    fullscreen: {
+                        enabled: false,
+                        fallback: false,
+                        iosNative: false,
+                    },
+                    hideControls: true,
+                    invertTime: false,
+                    keyboard: {
+                        focused: true,
+                        global: false,
+                    },
+                    ratio: "9:16",
+                    resetOnEnd: true,
+                    tooltips: {
+                        controls: false,
+                        seek: false,
+                    },
+                });
+            });
+
+            return organizerPlayerPromise;
+        };
 
         const getVideoFocusable = () =>
             Array.from(
@@ -211,6 +286,11 @@ const hasOrganizerVideo = Boolean(organizerVideo?.src);
             lastFocusedVideoElement = document.activeElement as HTMLElement;
             videoModal.setAttribute("aria-hidden", "false");
             document.body.classList.add("modal-open");
+            if (videoPlayer) {
+                videoPlayer.preload = "metadata";
+                videoPlayer.load();
+            }
+            void prepareVideoPlayer();
             window.requestAnimationFrame(() => videoDialog?.focus());
         };
 

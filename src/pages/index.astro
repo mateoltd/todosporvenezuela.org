@@ -2,7 +2,6 @@
 import "../styles/global.css";
 import DevastationCarousel from "../components/DevastationCarousel.astro";
 import FaqSection from "../components/FaqSection.astro";
-import FundsSection from "../components/FundsSection.astro";
 import HeroSection from "../components/HeroSection.astro";
 import OrganizersSection from "../components/OrganizersSection.astro";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -112,6 +111,18 @@ const donation = {
     },
     binance: { payId: getModeEnv("BINANCE", "PAY_ID") },
 };
+
+const heroImageSrcSet = [
+    640,
+    960,
+    1280,
+    1680,
+    2240,
+].map(
+    (width) =>
+        `/images/optimized/venezuela-earthquake-hero-aid-${width}.avif ${width}w`,
+).join(", ");
+const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
 ---
 
 <!doctype html>
@@ -132,11 +143,42 @@ const donation = {
         />
         <link rel="alternate icon" href="/favicon.png" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@400;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
+            rel="preload"
+            href="/fonts/instrument-sans-latin-400-700.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
+        <link
+            rel="preload"
+            href="/fonts/archivo-latin-400-900.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
+        <link
+            rel="preload"
+            href="/fonts/barlow-condensed-latin-400.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
+        <link
+            rel="preload"
+            href="/fonts/barlow-condensed-latin-900.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
+        <link
+            rel="preload"
+            as="image"
+            href="/images/optimized/venezuela-earthquake-hero-aid-1280.avif"
+            type="image/avif"
+            imagesrcset={heroImageSrcSet}
+            imagesizes={heroImageSizes}
+            fetchpriority="high"
         />
     </head>
     <body>

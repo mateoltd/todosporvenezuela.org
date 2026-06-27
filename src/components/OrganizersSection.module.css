@@ -8,6 +8,8 @@
     linear-gradient(180deg, rgba(247, 247, 242, 0.98), rgba(255, 255, 255, 0.9) 45%, rgba(247, 247, 242, 0.96)),
     linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(247, 247, 242, 0.12) 48%, rgba(255, 255, 255, 0.66)),
     var(--paper);
+  content-visibility: auto;
+  contain-intrinsic-size: 820px;
 }
 
 .inner {
