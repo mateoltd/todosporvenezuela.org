@@ -1,84 +1,14 @@
 ---
 import { Icon } from "astro-icon/components";
+import {
+  devastationFallbackImageSrc,
+  devastationImageSizes,
+  devastationImageSrcSet,
+  devastationSlides as slides
+} from "../data/devastation-carousel";
 import styles from "./DevastationCarousel.module.css";
 
-// Fotos de prensa verificadas vía NPR.
-const nprDayOf =
-  "https://www.npr.org/2026/06/24/nx-s1-5869817/2-major-earthquakes-strike-northern-venezuela-near-caracas";
-const nprDeathToll =
-  "https://www.npr.org/2026/06/26/nx-s1-5870651/venezuela-earthquakes-caracas";
-
-const slides = [
-  {
-    image: "venezuela-earthquake-2026-caracas-rescue-search",
-    widths: [720, 1080, 1440, 1800],
-    alt: "Rescatistas y policías buscan sobrevivientes sobre los escombros de un edificio colapsado en Caracas.",
-    width: 2000,
-    height: 1333,
-    place: "Caracas",
-    title: "La búsqueda entre las ruinas",
-    caption: "Rescatistas y vecinos buscan sobrevivientes en un edificio que se vino abajo.",
-    credit: "Juan Barreto / AFP vía Getty Images",
-    creditUrl: nprDayOf
-  },
-  {
-    image: "venezuela-earthquake-2026-laguaira-neighbors-rescue",
-    widths: [720, 1080, 1440, 1800],
-    alt: "Un grupo de vecinos carga en brazos a un hombre rescatado de los escombros de un edificio en La Guaira.",
-    width: 2000,
-    height: 1333,
-    place: "La Guaira",
-    title: "Sacado con vida de los escombros",
-    caption: "Los vecinos cargan a un hombre rescatado del derrumbe, un día después del terremoto.",
-    credit: "Pedro Mattey / AP",
-    creditUrl: nprDeathToll
-  },
-  {
-    image: "venezuela-earthquake-2026-catia-la-mar-rubble",
-    widths: [720, 1080, 1440, 1800],
-    alt: "Una mujer camina entre los escombros de un edificio dañado, con la mano en la cabeza.",
-    width: 2000,
-    height: 1333,
-    place: "Catia La Mar",
-    title: "Volver a lo que ya no está",
-    caption: "Residentes caminan entre los restos de un edificio dañado por el sismo.",
-    credit: "Pedro Mattey / AP",
-    creditUrl: nprDeathToll
-  },
-  {
-    image: "venezuela-earthquake-2026-los-palos-grandes-tower",
-    widths: [720, 1080, 1440, 1800],
-    alt: "Un edificio residencial de Los Palos Grandes quedó parcialmente colapsado tras el terremoto en Caracas.",
-    width: 2000,
-    height: 1333,
-    place: "Los Palos Grandes, Caracas",
-    title: "Torres partidas por el sismo",
-    caption: "Un edificio residencial quedó severamente dañado tras el primer terremoto de magnitud 7,2.",
-    credit: "Jesús Vargas / Getty Images",
-    creditUrl: nprDayOf
-  },
-  {
-    image: "venezuela-earthquake-2026-caracas-evacuees",
-    widths: [720, 1080, 1440, 1800],
-    alt: "Familias evacuadas esperan en la acera, una mujer habla por teléfono junto a sus hijos.",
-    width: 2000,
-    height: 1333,
-    place: "Caracas",
-    title: "Familias a la espera",
-    caption: "Personas evacuadas aguardan a la intemperie, sin saber cuándo podrán volver a casa.",
-    credit: "Jesús Vargas / Getty Images",
-    creditUrl: nprDeathToll
-  }
-];
-
 const total = String(slides.length).padStart(2, "0");
-const imageSizes = "100vw";
-const imageSrc = (name: string, width: number, format: "avif" | "webp" | "jpg") =>
-  `/images/optimized/${name}-${width}.${format}`;
-const imageSrcSet = (
-  slide: (typeof slides)[number],
-  format: "avif" | "webp" | "jpg"
-) => slide.widths.map((width) => `${imageSrc(slide.image, width, format)} ${width}w`).join(", ");
 const imagePlaceholder =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='2'/%3E";
 ---
@@ -115,28 +45,37 @@ const imagePlaceholder =
             class={styles.slide}
             data-carousel-slide
             data-state={index === 0 ? "active" : "hidden"}
+            data-image-loaded={index === 0 ? "true" : undefined}
             aria-hidden={index === 0 ? "false" : "true"}
           >
             <picture>
               <source
-                data-srcset={imageSrcSet(slide, "avif")}
-                data-sizes={imageSizes}
+                srcset={index === 0 ? devastationImageSrcSet(slide, "avif") : undefined}
+                sizes={index === 0 ? devastationImageSizes : undefined}
+                data-srcset={index === 0 ? undefined : devastationImageSrcSet(slide, "avif")}
+                data-sizes={index === 0 ? undefined : devastationImageSizes}
                 type="image/avif"
               />
               <source
-                data-srcset={imageSrcSet(slide, "webp")}
-                data-sizes={imageSizes}
+                srcset={index === 0 ? devastationImageSrcSet(slide, "webp") : undefined}
+                sizes={index === 0 ? devastationImageSizes : undefined}
+                data-srcset={index === 0 ? undefined : devastationImageSrcSet(slide, "webp")}
+                data-sizes={index === 0 ? undefined : devastationImageSizes}
                 type="image/webp"
               />
               <img
-                src={imagePlaceholder}
-                data-src={`/images/${slide.image}.jpg`}
+                src={index === 0 ? devastationFallbackImageSrc(slide.image) : imagePlaceholder}
+                srcset={index === 0 ? devastationImageSrcSet(slide, "jpg") : undefined}
+                sizes={index === 0 ? devastationImageSizes : undefined}
+                data-src={index === 0 ? undefined : devastationFallbackImageSrc(slide.image)}
+                data-srcset={index === 0 ? undefined : devastationImageSrcSet(slide, "jpg")}
+                data-sizes={index === 0 ? undefined : devastationImageSizes}
                 alt={slide.alt}
                 width={slide.width}
                 height={slide.height}
-                loading="lazy"
+                loading={index === 0 ? "eager" : "lazy"}
                 decoding="async"
-                fetchpriority="low"
+                fetchpriority={index === 0 ? "auto" : "low"}
               />
             </picture>
             <figcaption class={styles.caption}>
@@ -197,10 +136,30 @@ const imagePlaceholder =
     const prev = carousel.querySelector("[data-carousel-prev]");
     const next = carousel.querySelector("[data-carousel-next]");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedData = window.matchMedia("(prefers-reduced-data: reduce)").matches;
+    const connection = "connection" in navigator
+      ? (navigator as Navigator & {
+          connection?: { effectiveType?: string; saveData?: boolean };
+        }).connection
+      : undefined;
+    const deviceMemory = "deviceMemory" in navigator
+      ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+      : undefined;
+    const effectiveType = connection?.effectiveType ?? "";
+    const conserveData =
+      reducedData ||
+      connection?.saveData === true ||
+      effectiveType === "slow-2g" ||
+      effectiveType === "2g" ||
+      (deviceMemory !== undefined && deviceMemory <= 2) ||
+      navigator.hardwareConcurrency <= 2;
     let activeIndex = 0;
     let autoplayId: number | undefined;
+    let canLoadCarouselImages = false;
     let isCarouselVisible = false;
-    let adjacentPreloadId: number | undefined;
+    let neighborPreloadId: number | undefined;
+
+    if (conserveData) carousel.dataset.conserveData = "true";
 
     const loadSlideImage = (slide: Element | undefined) => {
       if (!(slide instanceof HTMLElement) || slide.dataset.imageLoaded === "true") return;
@@ -220,12 +179,33 @@ const imagePlaceholder =
       slide.dataset.imageLoaded = "true";
     };
 
-    const warmAdjacentSlide = () => {
-      if (!isCarouselVisible) return;
-      if (adjacentPreloadId) window.clearTimeout(adjacentPreloadId);
-      adjacentPreloadId = window.setTimeout(() => {
+    const loadNearbySlides = () => {
+      if (!canLoadCarouselImages) return;
+      if (neighborPreloadId) window.clearTimeout(neighborPreloadId);
+
+      const activeSlide = slides[activeIndex];
+      loadSlideImage(activeSlide);
+
+      const warmNeighbors = () => {
         loadSlideImage(slides[(activeIndex + 1) % slides.length]);
-      }, 900);
+        if (!conserveData) {
+          loadSlideImage(slides[(activeIndex - 1 + slides.length) % slides.length]);
+        }
+      };
+
+      const activeImage = activeSlide?.querySelector("img");
+      if (conserveData && activeImage instanceof HTMLImageElement && !activeImage.complete) {
+        activeImage.addEventListener(
+          "load",
+          () => {
+            neighborPreloadId = window.setTimeout(warmNeighbors, 250);
+          },
+          { once: true }
+        );
+        return;
+      }
+
+      neighborPreloadId = window.setTimeout(warmNeighbors, conserveData ? 250 : 0);
     };
 
     const setActive = (index: number) => {
@@ -246,9 +226,8 @@ const imagePlaceholder =
         }
       });
 
-      if (isCarouselVisible) {
-        loadSlideImage(slides[activeIndex]);
-        warmAdjacentSlide();
+      if (canLoadCarouselImages) {
+        loadNearbySlides();
       }
     };
 
@@ -258,12 +237,13 @@ const imagePlaceholder =
     };
 
     const startAutoplay = () => {
-      if (reducedMotion || !isCarouselVisible) return;
+      if (reducedMotion || conserveData || !isCarouselVisible) return;
       stopAutoplay();
       autoplayId = window.setInterval(() => setActive(activeIndex + 1), 6200);
     };
 
     const go = (index: number) => {
+      canLoadCarouselImages = true;
       setActive(index);
       startAutoplay();
     };
@@ -305,12 +285,23 @@ const imagePlaceholder =
     setActive(0);
 
     if ("IntersectionObserver" in window) {
-      const observer = new IntersectionObserver(
+      const preloadObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting) return;
+
+          canLoadCarouselImages = true;
+          loadNearbySlides();
+          preloadObserver.disconnect();
+        },
+        { rootMargin: conserveData ? "360px 0px" : "900px 0px" }
+      );
+
+      const visibilityObserver = new IntersectionObserver(
         ([entry]) => {
           isCarouselVisible = entry.isIntersecting;
           if (isCarouselVisible) {
-            loadSlideImage(slides[activeIndex]);
-            warmAdjacentSlide();
+            canLoadCarouselImages = true;
+            loadNearbySlides();
             startAutoplay();
           } else {
             stopAutoplay();
@@ -318,11 +309,12 @@ const imagePlaceholder =
         },
         { rootMargin: "240px 0px" }
       );
-      observer.observe(carousel);
+      preloadObserver.observe(carousel);
+      visibilityObserver.observe(carousel);
     } else {
+      canLoadCarouselImages = true;
       isCarouselVisible = true;
-      loadSlideImage(slides[activeIndex]);
-      warmAdjacentSlide();
+      loadNearbySlides();
       startAutoplay();
     }
   });

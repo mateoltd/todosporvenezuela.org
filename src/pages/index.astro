@@ -10,6 +10,12 @@ import DonationModal from "../components/DonationModal.astro";
 import { getDonationSnapshot } from "../lib/donations/progress";
 import { buildDonationConfig } from "../lib/donations/config";
 import {
+    devastationImageSizes,
+    devastationImageSrc,
+    devastationImageSrcSet,
+    devastationSlides,
+} from "../data/devastation-carousel";
+import {
     campaignKeywords,
     faqs,
     language,
@@ -102,6 +108,16 @@ const heroImageSrcSet = [
         `/images/optimized/venezuela-earthquake-hero-aid-${width}.avif ${width}w`,
 ).join(", ");
 const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
+const firstCarouselSlide = devastationSlides[0];
+const firstCarouselImageSrcSet = devastationImageSrcSet(
+    firstCarouselSlide,
+    "avif",
+);
+const firstCarouselImageHref = devastationImageSrc(
+    firstCarouselSlide.image,
+    720,
+    "avif",
+);
 const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -289,6 +305,15 @@ const structuredDataJson = JSON.stringify(structuredData).replace(
             imagesrcset={heroImageSrcSet}
             imagesizes={heroImageSizes}
             fetchpriority="high"
+        />
+        <link
+            rel="preload"
+            as="image"
+            href={firstCarouselImageHref}
+            type="image/avif"
+            imagesrcset={firstCarouselImageSrcSet}
+            imagesizes={devastationImageSizes}
+            fetchpriority="low"
         />
         <script type="application/ld+json" set:html={structuredDataJson}></script>
     </head>
