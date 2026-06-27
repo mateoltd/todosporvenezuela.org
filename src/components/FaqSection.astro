@@ -4,34 +4,43 @@ import styles from "./FaqSection.module.css";
 
 const faqs = [
   {
-    question: "¿A dónde va mi donación?",
+    question: "¿Qué se compra con mi donación?",
     answer:
-      "A ayuda inmediata para familias afectadas por el terremoto: insumos médicos, agua potable, kits de higiene, alimentos, traslados urgentes y apoyo básico según las necesidades que reporte el equipo de respuesta."
+      "Insumos médicos, alimentación, hidratación y apoyo básico para personas necesitadas tras el terremoto, incluyendo familias en zonas remotas del país."
   },
   {
-    question: "¿Quién coordina la ayuda?",
+    question: "¿Quiénes están detrás de la campaña?",
     answer:
-      "La coordinación está en manos de Valentina Muriel, Cristal Navas, Abraham Barrios y Marlon Amarista, junto a ministerios e iglesias aliadas que acompañan la respuesta en Venezuela."
+      "Somos un grupo de jóvenes cristianos venezolanos que vive en el país y tomó la iniciativa de ayudar ante el sufrimiento que está viendo de cerca. Valentina Muriel, Cristal Navas, Abraham Barrios y Marlon Amarista coordinan la campaña.",
+    link: {
+      href: "https://www.instagram.com/p/DaD7tL_vjyc/",
+      label: "Ver el video de presentación del proyecto"
+    }
   },
   {
-    question: "¿Cómo puedo donar?",
+    question: "¿Cómo sé que es confiable?",
     answer:
-      "Pulsa Donar ahora, elige un monto y selecciona PayPal, Binance Pay USDT o Pago Móvil. El flujo te mostrará los datos y pasos del método que elijas."
+      "Los organizadores son miembros reconocidos de sus comunidades y tienen responsabilidades en ministerios e iglesias locales. Esa referencia comunitaria ayuda a dar confianza, sin convertir esta campaña en una colecta institucional."
   },
   {
-    question: "¿Puedo donar desde fuera de Venezuela?",
+    question: "¿Cómo dono desde el exterior?",
     answer:
-      "Sí. Puedes donar con PayPal usando tarjeta o cuenta PayPal, o enviar USDT por Binance Pay desde cualquier país donde tengas acceso a esos servicios."
+      "Si estás fuera de Venezuela, puedes donar con PayPal usando tarjeta o cuenta PayPal, o enviar USDT por Binance Pay desde cualquier país donde tengas acceso a esos servicios."
   },
   {
-    question: "¿Puedo donar desde Venezuela?",
+    question: "¿Cómo dono desde Venezuela?",
     answer:
-      "Sí. Puedes aportar con Pago Móvil en bolívares y también con Binance Pay si prefieres USDT. El modal de donación organiza las opciones para que escojas la más cómoda."
+      "Si estás en Venezuela, puedes aportar con Pago Móvil en bolívares. También puedes usar Binance Pay si prefieres donar en USDT."
   },
   {
-    question: "¿Hay un monto mínimo?",
+    question: "¿Publicarán reportes?",
     answer:
-      "Puedes elegir uno de los montos sugeridos o escribir otro monto desde 1 dólar. Cada aporte suma para cubrir necesidades urgentes."
+      "Sí. Publicaremos reportes transparentes todos los días con el avance de la recaudación, el uso de los fondos y las entregas realizadas conforme avance la respuesta."
+  },
+  {
+    question: "¿Y si no puedo donar dinero?",
+    answer:
+      "También puedes ayudar orando, compartiendo la campaña y enviándola a más personas. Cada gesto ayuda a que la ayuda llegue más lejos."
   },
   {
     question: "¿Cómo confirmo Binance Pay o Pago Móvil?",
@@ -39,9 +48,9 @@ const faqs = [
       "Conserva tu comprobante y pulsa Ya hice mi pago en el modal para cerrar el flujo de confirmación. Si el equipo necesita validar algún dato, usará la información del comprobante."
   },
   {
-    question: "¿Cómo se reportará lo recaudado?",
+    question: "¿Hay un monto mínimo?",
     answer:
-      "El avance de la meta se actualizará en la página y los organizadores publicarán reportes de transparencia con lo recaudado y las entregas realizadas conforme avance la respuesta."
+      "Puedes elegir uno de los montos sugeridos o escribir otro monto desde 1 dólar. Cada aporte suma para cubrir necesidades urgentes."
   }
 ];
 ---
@@ -83,6 +92,11 @@ const faqs = [
             >
               <div class={styles.answerInner}>
                 <p>{faq.answer}</p>
+                {"link" in faq && faq.link && (
+                  <a href={faq.link.href} target="_blank" rel="noreferrer">
+                    {faq.link.label}
+                  </a>
+                )}
               </div>
             </div>
           </article>
