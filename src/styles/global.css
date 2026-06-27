@@ -21,6 +21,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-height) + 18px);
 }
 
 body {
@@ -70,5 +71,11 @@ p {
     --page-gutter: 18px;
     --header-height: 72px;
     --header-compact-height: 60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

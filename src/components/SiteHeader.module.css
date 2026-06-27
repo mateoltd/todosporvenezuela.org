@@ -3,9 +3,9 @@
   inset: 0 0 auto;
   z-index: 20;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 48px;
+  gap: clamp(18px, 3vw, 40px);
   min-height: var(--header-height);
   padding: 16px var(--page-gutter);
   background: var(--paper);
@@ -40,6 +40,7 @@
   display: inline-flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
   width: max-content;
   font-family: "Archivo", sans-serif;
   font-weight: 900;
@@ -67,9 +68,17 @@
   font-size: 17px;
 }
 
+.brand:focus-visible,
+.primaryNav a:focus-visible,
+.menuToggle:focus-visible,
+.headerDonate:focus-visible {
+  outline: 3px solid rgba(0, 70, 184, 0.48);
+  outline-offset: 3px;
+}
+
 .primaryNav {
   display: flex;
-  gap: 36px;
+  gap: clamp(20px, 2.6vw, 34px);
   align-items: center;
   color: var(--ink);
   font-family: "Archivo", sans-serif;
@@ -81,14 +90,14 @@
 
 .primaryNav a {
   position: relative;
-  padding: 6px 0;
+  padding: 8px 0;
   transition: color 160ms ease;
 }
 
 .primaryNav a::after {
   content: "";
   position: absolute;
-  inset: auto 0 0;
+  inset: auto 0 1px;
   height: 2px;
   background: var(--red);
   transform: scaleX(0);
@@ -105,13 +114,10 @@
   transform: scaleX(1);
 }
 
-/* Donate: same solid ink CTA language as the hero's primary button,
-   with a red heart for warmth. */
 .headerDonate {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
   min-height: 48px;
   padding: 0 24px;
   border: 0;
@@ -129,32 +135,56 @@
     box-shadow 160ms ease;
 }
 
-.headerDonate svg {
-  color: var(--red);
-}
-
 .headerDonate:hover {
   transform: translateY(-1px);
   box-shadow: 0 16px 32px rgba(16, 24, 32, 0.26);
+}
+
+.donateTextCompact {
+  display: none;
 }
 
 .menuToggle {
   display: none;
   align-items: center;
   justify-content: center;
+  position: relative;
   width: 44px;
   height: 44px;
   border: 1.5px solid rgba(16, 24, 32, 0.84);
   border-radius: var(--radius);
   background: transparent;
   color: var(--ink);
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.menuToggle:hover,
+.menuToggle[aria-expanded="true"] {
+  border-color: var(--blue);
+  background: rgba(0, 70, 184, 0.08);
+  color: var(--blue);
+}
+
+.menuIconOpen,
+.menuIconClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menuIconClose,
+.menuToggle[aria-expanded="true"] .menuIconOpen {
+  display: none;
+}
+
+.menuToggle[aria-expanded="true"] .menuIconClose {
+  display: inline-flex;
 }
 
 @media (max-width: 1120px) {
-  .siteHeader {
-    gap: 26px;
-  }
-
   .primaryNav {
     gap: 22px;
     font-size: 12px;
@@ -180,23 +210,24 @@
 
   .headerDonate {
     order: 3;
-    width: 44px;
+    width: auto;
+    min-width: 76px;
     min-height: 44px;
-    padding: 0;
+    padding: 0 14px;
+    font-size: 12px;
   }
 
-  .headerDonate span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+  .donateTextFull {
+    display: none;
+  }
+
+  .donateTextCompact {
+    display: inline;
   }
 
   .primaryNav {
     position: absolute;
-    top: calc(100% + 1px);
+    top: calc(100% + 8px);
     right: 18px;
     display: none;
     width: min(280px, calc(100vw - 36px));
@@ -204,23 +235,9 @@
     gap: 0;
     align-items: stretch;
     padding: 6px 0;
-    border-top: 3px solid var(--blue);
+    border-radius: var(--radius);
     background: var(--paper-strong);
     box-shadow: 0 24px 56px rgba(16, 24, 32, 0.18);
-  }
-
-  /* Flag tab on the mobile panel header edge. */
-  .primaryNav::before {
-    content: "";
-    position: absolute;
-    inset: -3px 0 auto;
-    height: 3px;
-    background: linear-gradient(
-      90deg,
-      var(--yellow) 0 33.34%,
-      var(--blue) 33.34% 66.67%,
-      var(--red) 66.67% 100%
-    );
   }
 
   .primaryNav.navOpen {
@@ -228,6 +245,7 @@
   }
 
   .primaryNav a {
+    min-height: 48px;
     padding: 15px 18px;
   }
 
@@ -247,11 +265,16 @@
   .brandText {
     font-size: 14px;
   }
+
+  .siteHeader {
+    gap: 10px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .siteHeader,
   .headerDonate,
+  .menuToggle,
   .primaryNav a,
   .primaryNav a::after {
     transition: none;
