@@ -6,7 +6,8 @@ interface Props {
 
 const { raised, goal } = Astro.props;
 
-const percent = Math.max(0, Math.min(100, Math.round((raised / goal) * 100)));
+const percent = goal > 0 ? Math.max(0, Math.min(100, Math.round((raised / goal) * 100))) : 0;
+const pollMs = Number(import.meta.env.PUBLIC_DONATION_PROGRESS_POLL_MS ?? 15000);
 
 const currency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -75,9 +76,15 @@ const redSpecks = [
 ];
 ---
 
-<div class="meter">
+<div
+  class="meter"
+  data-donation-meter
+  data-progress-url="/api/donations/progress"
+  data-poll-ms={Number.isFinite(pollMs) ? pollMs : 15000}
+>
   <div
     class="bar"
+    data-progress-bar
     role="progressbar"
     aria-valuenow={percent}
     aria-valuemin={0}
@@ -155,21 +162,21 @@ const redSpecks = [
 
     <div class="labels">
       <div class="lbl lbl--raised">
-        <strong>{raisedLabel}</strong>
+        <strong data-raised-label>{raisedLabel}</strong>
         <span>Recaudado</span>
       </div>
       <div class="lbl lbl--pct">
-        <strong>{percent}%</strong>
+        <strong data-percent-label>{percent}%</strong>
         <span>De la meta</span>
       </div>
       <div class="lbl lbl--goal">
-        <strong>{goalLabel}</strong>
+        <strong data-goal-label>{goalLabel}</strong>
         <span>Meta</span>
       </div>
     </div>
 
     <div class="progress">
-      <span class="progress__fill" style={`width:${percent}%`}></span>
+      <span class="progress__fill" data-progress-fill style={`width:${percent}%`}></span>
     </div>
   </div>
 
@@ -187,6 +194,76 @@ const redSpecks = [
     }
   </div>
 </div>
+
+<script>
+  type DonationProgress = {
+    currency: string;
+    goal: number;
+    percent: number;
+    raised: number;
+  };
+
+  const donationMeters = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-donation-meter]")
+  );
+
+  const formatDonationCurrency = (value: number, currency: string) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: Number.isInteger(value) ? 0 : 2
+    }).format(value);
+
+  const applyDonationProgress = (meter: HTMLElement, progress: DonationProgress) => {
+    const bar = meter.querySelector<HTMLElement>("[data-progress-bar]");
+    const fill = meter.querySelector<HTMLElement>("[data-progress-fill]");
+    const raisedLabel = meter.querySelector<HTMLElement>("[data-raised-label]");
+    const percentLabel = meter.querySelector<HTMLElement>("[data-percent-label]");
+    const goalLabel = meter.querySelector<HTMLElement>("[data-goal-label]");
+    const percent = Math.max(0, Math.min(100, Math.round(progress.percent)));
+    const raised = formatDonationCurrency(progress.raised, progress.currency);
+    const goal = formatDonationCurrency(progress.goal, progress.currency);
+
+    if (bar) {
+      bar.setAttribute("aria-valuenow", String(percent));
+      bar.setAttribute("aria-label", `${raised} recaudados de ${goal}, ${percent}% de la meta`);
+    }
+    if (fill) fill.style.width = `${percent}%`;
+    if (raisedLabel) raisedLabel.textContent = raised;
+    if (percentLabel) percentLabel.textContent = `${percent}%`;
+    if (goalLabel) goalLabel.textContent = goal;
+  };
+
+  const refreshDonationProgress = async (meter: HTMLElement) => {
+    const progressUrl = meter.getAttribute("data-progress-url") || "/api/donations/progress";
+    const response = await fetch(progressUrl, { cache: "no-store" });
+    if (!response.ok) throw new Error("Donation progress fetch failed");
+
+    const progress = (await response.json()) as DonationProgress;
+    applyDonationProgress(meter, progress);
+  };
+
+  donationMeters.forEach((meter) => {
+    void refreshDonationProgress(meter).catch(() => undefined);
+
+    const pollMs = Number(meter.getAttribute("data-poll-ms"));
+    if (Number.isFinite(pollMs) && pollMs > 0) {
+      window.setInterval(() => {
+        void refreshDonationProgress(meter).catch(() => undefined);
+      }, pollMs);
+    }
+  });
+
+  window.addEventListener("donation:paypal-complete", () => {
+    donationMeters.forEach((meter) => {
+      [0, 2000, 6000, 15000].forEach((delay) => {
+        window.setTimeout(() => {
+          void refreshDonationProgress(meter).catch(() => undefined);
+        }, delay);
+      });
+    });
+  });
+</script>
 
 <style>
   .meter {

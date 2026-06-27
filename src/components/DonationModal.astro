@@ -2,6 +2,7 @@
 import { Icon } from "astro-icon/components";
 import MethodItem from "./MethodItem.astro";
 import "../styles/donation-modal.css";
+import { getPayPalItemName, getPayPalItemNumber } from "../lib/donations/paypal";
 
 interface AmountOption {
   value: number;
@@ -30,6 +31,7 @@ interface PayPalDonate {
 interface Props {
   /** Fallback PayPal donate URL. */
   paypalUrl?: string;
+  paypalNotifyUrl?: string;
   paypal?: PayPalDonate;
   amounts?: AmountOption[];
   pagoMovil?: PagoMovil;
@@ -38,6 +40,7 @@ interface Props {
 
 const {
   paypalUrl = "https://www.paypal.com/donate",
+  paypalNotifyUrl = "",
   paypal = {
     env: "production",
     hostedButtonId: ""
@@ -62,9 +65,8 @@ const usd = (value: number) =>
     maximumFractionDigits: 0
   }).format(value);
 
-const paypalItemName =
-  "Ayuda para insumos médicos, alimentación e hidratación en Venezuela.";
-const paypalItemNumber = "donacion-terremoto";
+const paypalItemName = getPayPalItemName();
+const paypalItemNumber = getPayPalItemNumber();
 const formatPaypalAmount = (value: number) =>
   Number.isFinite(value) ? Math.max(1, value).toFixed(2) : "1.00";
 const buildInitialPaypalUrl = () => {
@@ -83,6 +85,7 @@ const buildInitialPaypalUrl = () => {
   url.searchParams.set("item_number", paypalItemNumber);
   url.searchParams.set("no_shipping", "1");
   url.searchParams.set("rm", "1");
+  if (paypalNotifyUrl) url.searchParams.set("notify_url", paypalNotifyUrl);
 
   return url.toString();
 };
@@ -181,6 +184,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
   data-paypal-env={paypal.env}
   data-paypal-hosted-button-id={paypal.hostedButtonId}
   data-paypal-business={paypal.business}
+  data-paypal-notify-url={paypalNotifyUrl}
   aria-hidden="true"
 >
   <div class="dm__backdrop" data-donate-close></div>
@@ -354,6 +358,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const paypalEnv = modal.getAttribute("data-paypal-env") || "production";
     const paypalHostedButtonId = modal.getAttribute("data-paypal-hosted-button-id") ?? "";
     const paypalBusiness = modal.getAttribute("data-paypal-business") ?? "";
+    const paypalNotifyUrl = modal.getAttribute("data-paypal-notify-url") ?? "";
 
     const countryToggles = modal.querySelectorAll<HTMLElement>("[data-country-toggle]");
 
@@ -403,6 +408,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       url.searchParams.set("item_number", paypalItemNumber);
       url.searchParams.set("no_shipping", "1");
       url.searchParams.set("rm", "1");
+      if (paypalNotifyUrl) url.searchParams.set("notify_url", paypalNotifyUrl);
       url.searchParams.set("return", buildDonateStateUrl("paypal-completed"));
       url.searchParams.set("cancel_return", buildDonateStateUrl("paypal-cancelled"));
       return url.toString();
@@ -522,8 +528,13 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         rm: "1",
         return: buildDonateStateUrl("paypal-completed"),
         cancel_return: buildDonateStateUrl("paypal-cancelled"),
-        onComplete: () => goToStep("done")
+        onComplete: (details: unknown) => {
+          window.dispatchEvent(new CustomEvent("donation:paypal-complete", { detail: details }));
+          goToStep("done");
+        }
       };
+
+      if (paypalNotifyUrl) config.notify_url = paypalNotifyUrl;
 
       if (paypalBusiness) {
         config.business = paypalBusiness;
@@ -553,6 +564,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       const donateState = url.searchParams.get("donate");
 
       if (donateState === "paypal-completed") {
+        window.dispatchEvent(new CustomEvent("donation:paypal-complete"));
         openModal({ step: "done" });
       } else if (donateState === "paypal-cancelled") {
         openModal({ step: "2", methodId: "paypal" });

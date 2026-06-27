@@ -6,9 +6,12 @@ import HeroSection from "../components/HeroSection.astro";
 import OrganizersSection from "../components/OrganizersSection.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import DonationModal from "../components/DonationModal.astro";
+import { getDonationSnapshot } from "../lib/donations/progress";
+import { getPayPalNotifyUrl } from "../lib/donations/paypal";
 
-const raised = 100;
-const goal = 800;
+const donationSnapshot = await getDonationSnapshot();
+const raised = donationSnapshot.raised;
+const goal = donationSnapshot.goal;
 
 // Datos de cobro. Son PUBLIC_* porque se renderizan en el HTML estático
 // del modal; no pongas secretos aquí.
@@ -62,6 +65,7 @@ const organizerVideo = {
 
 const donation = {
     paypalUrl: getModeEnv("PAYPAL", "DONATE_URL", defaultPaypalUrl),
+    paypalNotifyUrl: getPayPalNotifyUrl(Astro.url.origin),
     paypal: {
         env: donationEnv,
         hostedButtonId: getModeEnv("PAYPAL", "HOSTED_BUTTON_ID"),
@@ -181,6 +185,7 @@ const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
 
         <DonationModal
             paypalUrl={donation.paypalUrl}
+            paypalNotifyUrl={donation.paypalNotifyUrl}
             paypal={donation.paypal}
             amounts={donation.amounts}
             pagoMovil={donation.pagoMovil}

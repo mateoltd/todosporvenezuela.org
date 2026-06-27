@@ -1,7 +1,10 @@
 import { defineConfig } from "astro/config";
+import vercel from "@astrojs/vercel";
 import icon from "astro-icon";
 
 export default defineConfig({
-  output: "static",
+  adapter: vercel(),
+  output: "server",
+  site: process.env.PUBLIC_SITE_URL,
   integrations: [icon()]
 });
