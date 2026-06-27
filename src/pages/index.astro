@@ -13,6 +13,14 @@ const donationSnapshot = await getDonationSnapshot();
 const raised = donationSnapshot.raised;
 const goal = donationSnapshot.goal;
 
+Astro.response.headers.set(
+    "Cache-Control",
+    "no-store, no-cache, max-age=0, must-revalidate",
+);
+Astro.response.headers.set("CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Surrogate-Control", "no-store");
+
 // Datos de cobro. Son PUBLIC_* porque se renderizan en el HTML estático
 // del modal; no pongas secretos aquí.
 const env = import.meta.env as Record<string, string | undefined>;

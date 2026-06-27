@@ -79,6 +79,7 @@ const redSpecks = [
 <div
   class="meter"
   data-donation-meter
+  data-progress-events-url="/api/donations/events"
   data-progress-url="/api/donations/progress"
   data-poll-ms={Number.isFinite(pollMs) ? pollMs : 15000}
 >
@@ -199,8 +200,11 @@ const redSpecks = [
   type DonationProgress = {
     currency: string;
     goal: number;
+    goalCents?: number;
     percent: number;
     raised: number;
+    raisedCents?: number;
+    updatedAt?: string | null;
   };
 
   const donationMeters = Array.from(
@@ -236,11 +240,45 @@ const redSpecks = [
 
   const refreshDonationProgress = async (meter: HTMLElement) => {
     const progressUrl = meter.getAttribute("data-progress-url") || "/api/donations/progress";
-    const response = await fetch(progressUrl, { cache: "no-store" });
+    const url = new URL(progressUrl, window.location.href);
+    url.searchParams.set("_", String(Date.now()));
+
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache"
+      }
+    });
     if (!response.ok) throw new Error("Donation progress fetch failed");
 
     const progress = (await response.json()) as DonationProgress;
     applyDonationProgress(meter, progress);
+  };
+
+  const connectDonationProgressStream = () => {
+    if (!donationMeters.length || !("EventSource" in window)) return;
+
+    const eventsUrl =
+      donationMeters[0]?.getAttribute("data-progress-events-url") || "/api/donations/events";
+    const url = new URL(eventsUrl, window.location.href);
+    url.searchParams.set("_", String(Date.now()));
+
+    const events = new EventSource(url);
+
+    events.addEventListener("progress", (event) => {
+      try {
+        const progress = JSON.parse((event as MessageEvent).data) as DonationProgress;
+        donationMeters.forEach((meter) => applyDonationProgress(meter, progress));
+      } catch {
+        // Ignore malformed stream events and let the polling fallback continue.
+      }
+    });
+
+    events.addEventListener("error", () => {
+      donationMeters.forEach((meter) => {
+        void refreshDonationProgress(meter).catch(() => undefined);
+      });
+    });
   };
 
   donationMeters.forEach((meter) => {
@@ -254,6 +292,8 @@ const redSpecks = [
     }
   });
 
+  connectDonationProgressStream();
+
   window.addEventListener("donation:paypal-complete", () => {
     donationMeters.forEach((meter) => {
       [0, 2000, 6000, 15000].forEach((delay) => {
@@ -261,6 +301,20 @@ const redSpecks = [
           void refreshDonationProgress(meter).catch(() => undefined);
         }, delay);
       });
+    });
+  });
+
+  window.addEventListener("pageshow", () => {
+    donationMeters.forEach((meter) => {
+      void refreshDonationProgress(meter).catch(() => undefined);
+    });
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+
+    donationMeters.forEach((meter) => {
+      void refreshDonationProgress(meter).catch(() => undefined);
     });
   });
 </script>

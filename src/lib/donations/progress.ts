@@ -278,8 +278,11 @@ export const donationJson = (body: unknown, init?: ResponseInit) =>
   new Response(JSON.stringify(body), {
     ...init,
     headers: {
-      "Cache-Control": "no-store",
+      "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
       "Content-Type": "application/json",
+      "CDN-Cache-Control": "no-store",
+      "Surrogate-Control": "no-store",
+      "Vercel-CDN-Cache-Control": "no-store",
       ...(init?.headers ?? {}),
     },
   });
