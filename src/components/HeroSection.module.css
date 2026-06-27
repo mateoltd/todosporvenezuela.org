@@ -419,29 +419,23 @@
 }
 
 @media (max-width: 860px) {
-  /* Mobile hero is one viewport-tall column. The photo is the only flexible row,
-     so it grows to absorb slack on tall phones (no gap under the CTA) and shrinks
-     on short phones (the donate panel stays at the fold) — no per-device tuning. */
   .hero {
     --hero-bottom: 28px;
     --hero-title-size: clamp(4rem, 12vw, 5.5rem);
-    /* Low floor so the band can compress when the fold is tight; flex-grow refills it. */
     --hero-photo-min: 140px;
     --hero-photo-max: 64svh;
     --meter-drop: 0px;
-    /* Ragged seam, bottom edge only: the rect is oversized so its displaced
-       side/top edges fall outside the frame and only the bottom gradient tears. */
+    /* Rect is oversized so its displaced side/top edges fall outside the frame
+       and only the bottom gradient tears. */
     --hero-media-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='900' viewBox='0 0 600 900' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='0' y2='900'%3E%3Cstop offset='0' stop-color='white' stop-opacity='1'/%3E%3Cstop offset='0.62' stop-color='white' stop-opacity='1'/%3E%3Cstop offset='0.88' stop-color='white' stop-opacity='0'/%3E%3C/linearGradient%3E%3Cfilter id='r' x='-5%25' y='-5%25' width='110%25' height='110%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.05 0.06' numOctaves='3' seed='19' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='32' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Crect x='-90' y='-90' width='780' height='1110' fill='url(%23g)' filter='url(%23r)'/%3E%3C/svg%3E");
 
     display: flex;
     flex-direction: column;
     min-height: 100svh;
-    /* Keep the ask clear of the home-indicator / bottom safe area. */
     padding: var(--header-height) var(--hero-x) calc(var(--hero-bottom) + env(safe-area-inset-bottom));
     row-gap: 0;
   }
 
-  /* Full-bleed band that flexes with the viewport; tears into paper at its lower edge. */
   .media {
     position: relative;
     inset: auto;
@@ -466,7 +460,6 @@
     filter: saturate(0.9) contrast(1.02);
   }
 
-  /* Text column on clean paper, just under the torn seam. */
   .content {
     width: 100%;
     margin-top: 8px;
@@ -485,7 +478,6 @@
     font-size: 26px;
   }
 
-  /* Video access becomes a calm in-flow pill on paper, not a floating overlay. */
   .videoCta {
     position: static;
     inset: auto;
@@ -560,16 +552,10 @@
   }
 }
 
-/* ── Fold-fit by viewport height ──────────────────────────────────────────
-   The hero fills 100svh and the photo flexes, but on shorter screens the fixed
-   rows (headline, copy, meter, CTA) can still outrun the fold. These tiers tighten
-   the rhythm as height drops so the donate panel stays in view — keyed on height,
-   not width, because that is what the fold actually depends on. */
 @media (max-width: 860px) and (max-height: 850px) {
   .hero {
     --hero-title-size: clamp(3.1rem, 11.5vw, 4rem);
     --hero-photo-min: 116px;
-    /* Hold the band back so it can't crowd out the lower rows. */
     --hero-photo-max: 46svh;
   }
 
@@ -594,82 +580,40 @@
     margin-top: 14px;
   }
 
-  /* The meter already states the raised total and %, so the axis scale is the
-     first row to drop once the fold gets tight. */
-  .donationPanel :global(.axis) {
-    display: none;
-  }
-
   .action {
     margin-top: 10px;
   }
 }
 
-/* Compact phones (iPhone SE class): the photo becomes a slim band and the
-   secondary video pill yields its height so the ask clears the fold. */
-@media (max-width: 860px) and (max-height: 700px) {
+/* Tall portrait tablets: drop the 100svh fill so the photo can't balloon and
+   no dead gap opens before the next section. */
+@media (max-width: 860px) and (min-height: 1000px) {
   .hero {
-    --hero-title-size: clamp(2.8rem, 12vw, 3.4rem);
-    --hero-title-gap: 10px;
-    --hero-copy-gap: 12px;
-    --hero-photo-min: 92px;
-    --hero-photo-max: 38svh;
+    min-height: auto;
   }
 
-  .eyebrow {
-    margin-bottom: 10px;
-    font-size: 12px;
-  }
-
-  .lede {
-    margin-top: 8px;
-    font-size: 21px;
-  }
-
-  .copy {
-    font-size: 14px;
-    line-height: 1.4;
-  }
-
-  /* No room for the full pill, so video collapses to a compact play button
-     tucked into the empty top-right corner of the text column — zero added
-     height, still one tap to watch. */
-  .videoCta {
-    position: absolute;
-    top: 2px;
-    right: 0;
-    left: auto;
-    display: inline-flex;
-    width: 42px;
-    height: 42px;
+  .media {
+    flex: 0 0 auto;
+    height: clamp(360px, 42svh, 520px);
     min-height: 0;
-    margin: 0;
-    padding: 0;
-    border: 1.5px solid rgba(16, 24, 32, 0.16);
-    background: var(--paper-strong);
-    box-shadow: 0 6px 16px rgba(16, 24, 32, 0.18);
+    max-height: none;
   }
 
-  .videoCta span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
+  .content,
   .donationPanel {
-    margin-top: 14px;
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
   }
 
-  .action {
-    margin-top: 10px;
+  .content {
+    margin-top: 20px;
   }
+}
 
-  .paymentNote {
-    margin-top: 8px;
+@media (min-width: 861px) and (max-width: 1120px) and (min-height: 1000px) {
+  .hero {
+    min-height: auto;
   }
 }
 
