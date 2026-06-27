@@ -42,9 +42,9 @@ const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => ({
 // the embedded track. Bands sit in a 0..1000 × 0..130 viewBox, stretched to
 // fit. Both seams are slightly diagonal, leaning in opposite directions. ---
 
-// Eight white stars in a shallow upward arc (the Venezuelan flag), arranged
-// across the blue band.
-const starArc = { x0: 372, x1: 620, top: 60, amp: 22, r: 11 };
+// Eight white stars in a shallow arch (the Venezuelan flag), drawn in their own
+// aspect-preserving overlay (viewBox 0 0 300 72) so they don't distort.
+const starArc = { x0: 28, x1: 272, top: 22, amp: 18, r: 12 };
 const starPoints = (cx: number, cy: number, outer: number) => {
   const inner = outer * 0.42;
   const pts: string[] = [];
@@ -60,8 +60,8 @@ const starPoints = (cx: number, cy: number, outer: number) => {
 const stars = Array.from({ length: 8 }, (_, i) => {
   const t = i / 7;
   const x = starArc.x0 + (starArc.x1 - starArc.x0) * t;
-  // Smile arc: ends high, centre dips lower (larger y in SVG space).
-  const y = starArc.top + starArc.amp * (1 - (2 * t - 1) ** 2);
+  // Arch (as on the flag): centre rises, ends curve lower (larger y in SVG).
+  const y = starArc.top + starArc.amp * (2 * t - 1) ** 2;
   return starPoints(x, y, starArc.r);
 });
 
@@ -145,11 +145,6 @@ const redSpecks = [
         {redSpecks.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#e2122a" />)}
       </g>
 
-      <!-- Eight white stars across the blue -->
-      <g fill="#ffffff">
-        {stars.map((pts) => <polygon points={pts} />)}
-      </g>
-
       <!-- Subtle cloth grain over the coloured area -->
       <rect
         x="-10"
@@ -161,6 +156,13 @@ const redSpecks = [
         filter="url(#m-grain)"
         style="mix-blend-mode:overlay"
       />
+    </svg>
+
+    <!-- Stars overlay, kept out of the stretched flag so they stay undistorted -->
+    <svg class="stars" viewBox="0 0 300 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <g fill="#ffffff" opacity="0.92">
+        {stars.map((pts) => <polygon points={pts} />)}
+      </g>
     </svg>
 
     <div class="labels">
@@ -225,6 +227,18 @@ const redSpecks = [
     width: 100%;
     height: 100%;
     display: block;
+  }
+
+  /* Centred over the blue band; width tracks the band so the arch stays on blue */
+  .stars {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 30%;
+    height: 100%;
+    transform: translateX(-50%);
+    display: block;
+    pointer-events: none;
   }
 
   /* ---- Overlaid figures ---- */
