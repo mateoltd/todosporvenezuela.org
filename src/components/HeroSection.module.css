@@ -429,23 +429,23 @@
   .hero {
     --hero-top: calc(var(--header-height) + 30px);
     --hero-bottom: 40px;
-    --hero-flow-gap: 22px;
+    --hero-flow-gap: 26px;
     --hero-title-size: clamp(4.75rem, 12vw, 5.25rem);
     /* Stacked layout: image sits on top and text flows beneath, so fade the
        photo vertically (clears the lede/copy) instead of diagonally. */
-    --hero-media-mask: linear-gradient(180deg, #000 0%, #000 34%, rgba(0, 0, 0, 0.1) 66%, transparent 84%);
+    --hero-media-mask: linear-gradient(180deg, #000 0%, #000 40%, rgba(0, 0, 0, 0.12) 72%, transparent 90%);
     /* Stacked layout: image on top, text beneath — no overlap; the meter just
        flows after the copy. */
     --meter-drop: 0px;
-    /* Stacked layout: size to content so the section ends at the CTA rather
-       than reserving a full viewport and leaving dead space below. */
+    /* Wider tablets stay content-sized: a full-viewport fold here would strand a
+       large gap between the copy and the donation panel. */
     min-height: auto;
   }
 
   .media {
-    inset: 74px 0 auto 16%;
-    width: 112vw;
-    height: 360px;
+    inset: 74px auto auto 0;
+    width: 116vw;
+    height: 440px;
     min-height: 0;
   }
 
@@ -474,12 +474,12 @@
 
 @media (max-width: 560px) {
   .hero {
-    --hero-top: calc(var(--header-height) + 28px);
-    --hero-bottom: 32px;
-    --hero-flow-gap: 26px;
+    --hero-top: calc(var(--header-height) + 26px);
+    --hero-bottom: 28px;
+    --hero-flow-gap: 30px;
     --hero-title-size: clamp(3.75rem, 16.5vw, 4.25rem);
-    /* Let the hero be as tall as its content so the donation panel closes the
-       section cleanly — no dead space pooling under the CTA. */
+    /* Size to content so the section ends cleanly at the CTA — no dead space
+       pooling between the copy and the donation panel. */
     min-height: auto;
   }
 
@@ -487,11 +487,26 @@
     font-size: 15px;
   }
 
+  /* Collapse the labelled pill into a clean, perfectly round play button that
+     reads clearly over the photo. */
   .videoCta {
-    width: 44px;
-    min-height: 46px;
+    width: 48px;
+    height: 48px;
+    min-height: 0;
     padding: 0;
-    font-size: 13px;
+    border: 0;
+    background: var(--paper-strong);
+    box-shadow: 0 8px 22px rgba(16, 24, 32, 0.22);
+  }
+
+  .videoCta:hover {
+    background: var(--paper-strong);
+    transform: scale(1.04);
+  }
+
+  .videoCta svg {
+    width: 23px;
+    height: 23px;
   }
 
   .videoCta span {
@@ -505,14 +520,14 @@
   }
 
   .media {
-    top: 70px;
-    left: 10%;
-    width: 124vw;
-    height: 264px;
-    opacity: 0.78;
-    /* Text sits close under a shorter band — fade earlier so the lede and
-       copy land on clean paper. */
-    --hero-media-mask: linear-gradient(180deg, #000 0%, #000 28%, rgba(0, 0, 0, 0.08) 58%, transparent 78%);
+    top: 56px;
+    left: 0;
+    width: 128vw;
+    height: 416px;
+    opacity: 0.94;
+    /* Taller, more vivid band: keep the photo solid through the headline, then
+       fade out just above the copy so the gray text still lands on clean paper. */
+    --hero-media-mask: linear-gradient(180deg, #000 0%, #000 44%, rgba(0, 0, 0, 0.12) 66%, transparent 80%);
   }
 
   .lede {
