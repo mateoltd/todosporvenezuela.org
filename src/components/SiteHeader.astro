@@ -1,5 +1,5 @@
 ---
-import { Menu, X } from "@lucide/astro";
+import { Icon } from "astro-icon/components";
 import styles from "./SiteHeader.module.css";
 ---
 
@@ -30,10 +30,10 @@ import styles from "./SiteHeader.module.css";
     data-nav-open-class={styles.navOpen}
   >
     <span class={styles.menuIconOpen} aria-hidden="true">
-      <Menu size={22} stroke-width={2} />
+      <Icon name="tabler:menu-2" size={22} />
     </span>
     <span class={styles.menuIconClose} aria-hidden="true">
-      <X size={22} stroke-width={2} />
+      <Icon name="tabler:x" size={22} />
     </span>
   </button>
 

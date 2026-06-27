@@ -4,4 +4,3 @@ allowBuilds:
   sharp: true
 minimumReleaseAgeExclude:
   - astro
-  - '@lucide/astro'

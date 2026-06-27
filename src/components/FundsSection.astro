@@ -1,30 +1,30 @@
 ---
-import { Bandage, PackagePlus, Pill, Syringe } from "@lucide/astro";
+import { Icon } from "astro-icon/components";
 import styles from "./FundsSection.module.css";
 
 const fundItems = [
   {
     label: "Jeringas e inyectadoras",
     detail: "Material esencial para curas, aplicación segura y atención directa.",
-    icon: Syringe,
+    icon: "tabler:vaccine",
     tone: "yellow"
   },
   {
     label: "Medicamentos prioritarios",
     detail: "Tratamientos comprados según necesidades verificadas por el equipo.",
-    icon: Pill,
+    icon: "tabler:pill",
     tone: "blue"
   },
   {
     label: "Gasas y guantes",
     detail: "Material básico para higiene, protección y primeros auxilios.",
-    icon: Bandage,
+    icon: "tabler:bandage",
     tone: "red"
   },
   {
     label: "Alimentos e hidratación",
     detail: "Apoyo básico para familias que necesitan respuesta inmediata.",
-    icon: PackagePlus,
+    icon: "tabler:packages",
     tone: "ink"
   }
 ];
@@ -46,11 +46,10 @@ const fundItems = [
     <div class={styles.grid}>
       {
         fundItems.map((item) => {
-          const Icon = item.icon;
           return (
             <article class={`${styles.item} ${styles[item.tone]}`}>
               <span class={styles.icon} aria-hidden="true">
-                <Icon size={23} stroke-width={2.2} />
+                <Icon name={item.icon} size={23} />
               </span>
               <div>
                 <h3>{item.label}</h3>

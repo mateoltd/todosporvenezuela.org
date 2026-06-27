@@ -1,6 +1,5 @@
 ---
 import { Icon } from "astro-icon/components";
-import { CirclePlay, Heart, X } from "@lucide/astro";
 import ProgressMeter from "./ProgressMeter.astro";
 import styles from "./HeroSection.module.css";
 
@@ -75,7 +74,7 @@ const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
                     data-video-open
                     aria-haspopup="dialog"
                 >
-                    <CirclePlay size={21} stroke-width={2.4} />
+                    <Icon name="tabler:player-play" size={21} />
                     <span>Ver video de los organizadores</span>
                 </button>
             )
@@ -87,7 +86,7 @@ const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
 
         <div class={styles.action}>
             <button class={styles.primaryCta} type="button" data-donate-open>
-                <Heart size={26} fill="currentColor" stroke-width={2} />
+                <Icon name="tabler:heart-filled" size={26} />
                 <span>Donar ahora</span>
             </button>
             <p class={styles.paymentNote}>
@@ -134,7 +133,7 @@ const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
                         data-video-close
                         aria-label="Cerrar video"
                     >
-                        <X size={22} stroke-width={2.2} />
+                        <Icon name="tabler:x" size={22} />
                     </button>
                 </header>
 

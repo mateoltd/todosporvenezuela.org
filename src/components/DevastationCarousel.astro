@@ -1,5 +1,5 @@
 ---
-import { ChevronLeft, ChevronRight } from "@lucide/astro";
+import { Icon } from "astro-icon/components";
 import styles from "./DevastationCarousel.module.css";
 
 // Fotos de prensa verificadas vía NPR.
@@ -158,10 +158,10 @@ const imagePlaceholder =
 
       <div class={styles.controls} aria-label="Controles del registro visual">
         <button class={styles.control} type="button" aria-label="Ver imagen anterior" data-carousel-prev>
-          <ChevronLeft size={22} stroke-width={2.4} />
+          <Icon name="tabler:chevron-left" size={22} />
         </button>
         <button class={styles.control} type="button" aria-label="Ver imagen siguiente" data-carousel-next>
-          <ChevronRight size={22} stroke-width={2.4} />
+          <Icon name="tabler:chevron-right" size={22} />
         </button>
       </div>
 
