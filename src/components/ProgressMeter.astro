@@ -44,7 +44,7 @@ const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => ({
 
 // Eight white stars in a shallow upward arc (the Venezuelan flag), arranged
 // across the blue band.
-const starArc = { x0: 370, x1: 575, top: 60, amp: 22, r: 11 };
+const starArc = { x0: 372, x1: 620, top: 60, amp: 22, r: 11 };
 const starPoints = (cx: number, cy: number, outer: number) => {
   const inner = outer * 0.42;
   const pts: string[] = [];
@@ -74,11 +74,11 @@ const blueSpecks = [
   { x: 300, y: 104, r: 3.5 }
 ];
 const redSpecks = [
-  { x: 560, y: 42, r: 4 },
-  { x: 540, y: 88, r: 3 },
-  { x: 552, y: 62, r: 5 },
-  { x: 528, y: 52, r: 2.5 },
-  { x: 566, y: 100, r: 3.5 }
+  { x: 636, y: 42, r: 4 },
+  { x: 616, y: 88, r: 3 },
+  { x: 628, y: 62, r: 5 },
+  { x: 604, y: 52, r: 2.5 },
+  { x: 642, y: 100, r: 3.5 }
 ];
 ---
 
@@ -112,11 +112,6 @@ const redSpecks = [
           <feColorMatrix in="g" type="saturate" values="0" />
         </filter>
 
-        <linearGradient id="m-fade" gradientUnits="userSpaceOnUse" x1="785" y1="0" x2="968" y2="0">
-          <stop offset="0" stop-color="#ffffff" stop-opacity="0" />
-          <stop offset="1" stop-color="#ffffff" stop-opacity="1" />
-        </linearGradient>
-
         <linearGradient id="m-photo-mask" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="345" y2="0">
           <stop offset="0" stop-color="#fff" stop-opacity="1" />
           <stop offset="0.6" stop-color="#fff" stop-opacity="0.85" />
@@ -141,11 +136,12 @@ const redSpecks = [
         style="mix-blend-mode:multiply"
       />
 
-      <!-- Blue + red bands with brush-painted, diagonally-leaning seams -->
+      <!-- Blue + red bands with brush-painted, diagonally-leaning seams.
+           Blue gets more presence and red runs solid to the right edge. -->
       <g filter="url(#m-paint)">
-        <polygon points="345,-5 645,-5 695,135 300,135" fill="#0046b8" />
+        <polygon points="345,-5 690,-5 740,135 300,135" fill="#0046b8" />
         {blueSpecks.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#0046b8" />)}
-        <polygon points="565,-5 1045,-5 1045,135 615,135" fill="#e2122a" />
+        <polygon points="640,-5 1045,-5 1045,135 690,135" fill="#e2122a" />
         {redSpecks.map((s) => <circle cx={s.x} cy={s.y} r={s.r} fill="#e2122a" />)}
       </g>
 
@@ -154,14 +150,11 @@ const redSpecks = [
         {stars.map((pts) => <polygon points={pts} />)}
       </g>
 
-      <!-- Red fades into white so the goal reads cleanly -->
-      <rect x="600" y="-5" width="430" height="140" fill="url(#m-fade)" />
-
       <!-- Subtle cloth grain over the coloured area -->
       <rect
         x="-10"
         y="0"
-        width="800"
+        width="1030"
         height="130"
         fill="#ffffff"
         opacity="0.05"
@@ -277,7 +270,7 @@ const redSpecks = [
   }
 
   .lbl--pct {
-    left: 72%;
+    left: 78%;
     transform: translate(-50%, -50%);
     align-items: center;
     text-align: center;
@@ -292,11 +285,11 @@ const redSpecks = [
     right: 3.6%;
     align-items: flex-end;
     text-align: right;
-    color: rgba(16, 24, 32, 0.62);
+    color: #fff;
   }
 
   .lbl--goal span {
-    color: rgba(16, 24, 32, 0.45);
+    color: rgba(255, 255, 255, 0.8);
   }
 
   /* ---- Progress rail coupled to the meter's bottom ---- */
