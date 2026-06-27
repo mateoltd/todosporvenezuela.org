@@ -11,19 +11,52 @@ import DonationModal from "../components/DonationModal.astro";
 const raised = 100;
 const goal = 800;
 
-// Datos de cobro. Completa pagoMovil y binance con las cuentas oficiales
-// cuando estén confirmadas; mientras estén vacíos, el modal muestra el
-// estado "Disponible muy pronto" en lugar de datos falsos.
+// Datos de cobro. Son PUBLIC_* porque se renderizan en el HTML estático
+// del modal; no pongas secretos aquí.
+const env = import.meta.env as Record<string, string | undefined>;
+const getEnv = (key: string, fallback = "") => env[key]?.trim() || fallback;
+const donationEnv: "production" | "sandbox" =
+  getEnv("PUBLIC_DONATION_ENV", getEnv("PUBLIC_PAYPAL_ENV", "production")) === "sandbox"
+    ? "sandbox"
+    : "production";
+const getModeEnv = (prefix: string, key: string, fallback = "") =>
+  getEnv(`PUBLIC_${prefix}_${donationEnv.toUpperCase()}_${key}`, getEnv(`PUBLIC_${prefix}_${key}`, fallback));
+const defaultPaypalUrl =
+  donationEnv === "sandbox" ? "https://www.sandbox.paypal.com/donate" : "https://www.paypal.com/donate";
+
 const donation = {
-  paypalUrl: "https://www.paypal.com/donate",
+  paypalUrl: getModeEnv("PAYPAL", "DONATE_URL", defaultPaypalUrl),
+  paypal: {
+    env: donationEnv,
+    hostedButtonId: getModeEnv("PAYPAL", "HOSTED_BUTTON_ID"),
+    business: getModeEnv("PAYPAL", "BUSINESS"),
+    image: {
+      src: getModeEnv(
+        "PAYPAL",
+        "BUTTON_IMAGE_SRC",
+        "https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"
+      ),
+      alt: getModeEnv("PAYPAL", "BUTTON_IMAGE_ALT", "Donate with PayPal button"),
+      title: getModeEnv(
+        "PAYPAL",
+        "BUTTON_IMAGE_TITLE",
+        "PayPal - The safer, easier way to pay online!"
+      )
+    }
+  },
   amounts: [
     { value: 10, note: "Agua potable para una familia" },
     { value: 25, note: "Kit de higiene y limpieza" },
     { value: 50, note: "Medicinas y primeros auxilios", popular: true },
     { value: 100, note: "Refugio temporal para una familia" }
   ],
-  pagoMovil: { banco: "", telefono: "", documento: "", titular: "" },
-  binance: { payId: "" }
+  pagoMovil: {
+    banco: getModeEnv("PAGO_MOVIL", "BANCO"),
+    telefono: getModeEnv("PAGO_MOVIL", "TELEFONO"),
+    documento: getModeEnv("PAGO_MOVIL", "DOCUMENTO"),
+    titular: getModeEnv("PAGO_MOVIL", "TITULAR")
+  },
+  binance: { payId: getModeEnv("BINANCE", "PAY_ID") }
 };
 ---
 
@@ -62,6 +95,7 @@ const donation = {
 
     <DonationModal
       paypalUrl={donation.paypalUrl}
+      paypal={donation.paypal}
       amounts={donation.amounts}
       pagoMovil={donation.pagoMovil}
       binance={donation.binance}

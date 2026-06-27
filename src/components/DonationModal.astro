@@ -20,9 +20,21 @@ interface Binance {
   payId: string;
 }
 
+interface PayPalDonate {
+  env: "production" | "sandbox";
+  hostedButtonId: string;
+  business?: string;
+  image: {
+    src: string;
+    alt: string;
+    title: string;
+  };
+}
+
 interface Props {
-  /** Base PayPal donate URL. The selected amount is appended as ?amount= */
+  /** Fallback PayPal donate URL. The selected amount is appended client-side. */
   paypalUrl?: string;
+  paypal?: PayPalDonate;
   amounts?: AmountOption[];
   pagoMovil?: PagoMovil;
   binance?: Binance;
@@ -30,6 +42,15 @@ interface Props {
 
 const {
   paypalUrl = "https://www.paypal.com/donate",
+  paypal = {
+    env: "production",
+    hostedButtonId: "",
+    image: {
+      src: "https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif",
+      alt: "Donate with PayPal button",
+      title: "PayPal - The safer, easier way to pay online!"
+    }
+  },
   amounts = [
     { value: 10, note: "Agua potable para una familia" },
     { value: 25, note: "Kit de higiene y limpieza" },
@@ -61,7 +82,7 @@ type Method = {
   lead: string;
   fields: { label: string; value: string }[];
   steps: string[];
-  action: "link" | "confirm";
+  action: "paypal" | "confirm";
   actionLabel: string;
 };
 
@@ -74,11 +95,11 @@ const internationalMethods: Method[] = [
     lead: "Te llevamos a PayPal para completar tu donación. Puedes pagar con tarjeta aunque no tengas cuenta.",
     fields: [],
     steps: [
-      "Toca el botón para abrir PayPal.",
+      "Toca el botón de PayPal para abrir la ventana segura.",
       "Confirma el monto y completa el pago.",
-      "Recibirás un comprobante en tu correo."
+      "Volverás aquí cuando PayPal confirme el donativo."
     ],
-    action: "link",
+    action: "paypal",
     actionLabel: "Ir a PayPal"
   },
   {
@@ -137,6 +158,12 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
   data-donate-modal
   data-step="1"
   data-paypal-url={paypalUrl}
+  data-paypal-env={paypal.env}
+  data-paypal-hosted-button-id={paypal.hostedButtonId}
+  data-paypal-business={paypal.business}
+  data-paypal-image-src={paypal.image.src}
+  data-paypal-image-alt={paypal.image.alt}
+  data-paypal-image-title={paypal.image.title}
   aria-hidden="true"
 >
   <div class="dm__backdrop" data-donate-close></div>
@@ -309,7 +336,16 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const methodToggles = modal.querySelectorAll<HTMLElement>("[data-method-toggle]");
     const amountDisplays = modal.querySelectorAll<HTMLElement>("[data-amount-display]");
     const paypalLinks = modal.querySelectorAll<HTMLAnchorElement>("[data-paypal-link]");
+    const paypalButton = modal.querySelector<HTMLElement>("[data-paypal-button]");
+    const paypalFallback = modal.querySelector<HTMLAnchorElement>("[data-paypal-fallback]");
+    const paypalStatus = modal.querySelector<HTMLElement>("[data-paypal-status]");
     const paypalBase = modal.getAttribute("data-paypal-url") ?? "";
+    const paypalEnv = modal.getAttribute("data-paypal-env") || "production";
+    const paypalHostedButtonId = modal.getAttribute("data-paypal-hosted-button-id") ?? "";
+    const paypalBusiness = modal.getAttribute("data-paypal-business") ?? "";
+    const paypalImageSrc = modal.getAttribute("data-paypal-image-src") ?? "";
+    const paypalImageAlt = modal.getAttribute("data-paypal-image-alt") ?? "";
+    const paypalImageTitle = modal.getAttribute("data-paypal-image-title") ?? "";
 
     const countryToggles = modal.querySelectorAll<HTMLElement>("[data-country-toggle]");
 
@@ -317,15 +353,60 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       modal.querySelector<HTMLElement>("[data-amount].is-active")?.getAttribute("data-amount") ?? 50
     );
     let lastFocused: HTMLElement | null = null;
+    let paypalRenderToken = 0;
+    let paypalSdkPromise: Promise<void> | null = null;
 
+    const paypalItemName =
+      "Ayuda inmediata para familias afectadas por el terremoto en Venezuela.";
+    const paypalItemNumber = "donacion-terremoto";
     const formatUsd = (value: number) => `$${Math.round(value)}`;
+    const formatPaypalAmount = (value: number) =>
+      Number.isFinite(value) ? Math.max(1, value).toFixed(2) : "1.00";
+
+    type PayPalDonationButton = {
+      render: (selector: string) => void;
+    };
+
+    type PayPalNamespace = {
+      Donation: {
+        Button: (options: Record<string, unknown>) => PayPalDonationButton;
+      };
+    };
+
+    const getPayPal = () => (window as Window & { PayPal?: PayPalNamespace }).PayPal;
+
+    const buildDonateStateUrl = (state: "paypal-completed" | "paypal-cancelled") => {
+      const url = new URL(window.location.href);
+      url.searchParams.set("donate", state);
+      url.hash = "";
+      return url.toString();
+    };
+
+    const buildPaypalFallbackUrl = () => {
+      const url = new URL(paypalBase || "https://www.paypal.com/donate", window.location.href);
+      if (paypalBusiness) {
+        url.searchParams.delete("hosted_button_id");
+        url.searchParams.set("business", paypalBusiness);
+      } else if (paypalHostedButtonId) {
+        url.searchParams.set("hosted_button_id", paypalHostedButtonId);
+      }
+      url.searchParams.set("amount", formatPaypalAmount(amount));
+      url.searchParams.set("currency_code", "USD");
+      url.searchParams.set("item_name", paypalItemName);
+      url.searchParams.set("item_number", paypalItemNumber);
+      url.searchParams.set("no_shipping", "1");
+      url.searchParams.set("rm", "1");
+      url.searchParams.set("return", buildDonateStateUrl("paypal-completed"));
+      url.searchParams.set("cancel_return", buildDonateStateUrl("paypal-cancelled"));
+      return url.toString();
+    };
 
     const syncAmount = () => {
       amountDisplays.forEach((el) => (el.textContent = formatUsd(amount)));
-      paypalLinks.forEach((link) => {
-        const sep = paypalBase.includes("?") ? "&" : "?";
-        link.href = `${paypalBase}${sep}amount=${Math.round(amount)}&currency_code=USD`;
-      });
+      paypalLinks.forEach((link) => (link.href = buildPaypalFallbackUrl()));
+      if (modal.querySelector('[data-method-item="paypal"]')?.classList.contains("is-open")) {
+        renderPayPalButton();
+      }
     };
 
     const collapseMethods = () => {
@@ -340,6 +421,16 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       );
       if (backBtn) backBtn.disabled = id !== "2";
       scroll?.scrollTo({ top: 0, behavior: "auto" });
+    };
+
+    const openMethod = (methodId: string) => {
+      const item = modal.querySelector<HTMLElement>(`[data-method-item="${methodId}"]`);
+      const toggle = modal.querySelector<HTMLElement>(`[data-method-toggle="${methodId}"]`);
+      if (!item || !toggle) return;
+      collapseMethods();
+      item.classList.add("is-open");
+      toggle.setAttribute("aria-expanded", "true");
+      if (methodId === "paypal") renderPayPalButton();
     };
 
     // Reset to the default state: the first country open, the rest collapsed.
@@ -363,13 +454,14 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         )
       ).filter((el) => el.offsetParent !== null || el === panel);
 
-    const openModal = () => {
+    const openModal = (options: { step?: StepId; methodId?: string } = {}) => {
       lastFocused = document.activeElement as HTMLElement;
       modal.setAttribute("aria-hidden", "false");
       document.body.classList.add("modal-open");
       collapseMethods();
       resetCountries();
-      goToStep("1");
+      goToStep(options.step ?? "1");
+      if (options.methodId) openMethod(options.methodId);
       window.requestAnimationFrame(() => panel?.focus());
     };
 
@@ -379,7 +471,109 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       lastFocused?.focus();
     };
 
-    openers.forEach((btn) => btn.addEventListener("click", openModal));
+    const loadPayPalSdk = () => {
+      if (getPayPal()) return Promise.resolve();
+      if (paypalSdkPromise) return paypalSdkPromise;
+
+      paypalSdkPromise = new Promise<void>((resolve, reject) => {
+        const existing = document.querySelector<HTMLScriptElement>(
+          'script[src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js"]'
+        );
+
+        if (existing) {
+          existing.addEventListener("load", () => resolve(), { once: true });
+          existing.addEventListener("error", () => reject(new Error("PayPal SDK failed to load")), {
+            once: true
+          });
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = "https://www.paypalobjects.com/donate/sdk/donate-sdk.js";
+        script.setAttribute("charset", "UTF-8");
+        script.addEventListener("load", () => resolve(), { once: true });
+        script.addEventListener("error", () => reject(new Error("PayPal SDK failed to load")), {
+          once: true
+        });
+        document.body.append(script);
+      });
+
+      return paypalSdkPromise;
+    };
+
+    const setPaypalStatus = (message: string, visible = true) => {
+      if (!paypalStatus) return;
+      paypalStatus.hidden = !visible;
+      paypalStatus.textContent = message;
+    };
+
+    const renderPayPalButton = async () => {
+      if (!paypalButton || (!paypalHostedButtonId && !paypalBusiness)) return;
+
+      const token = ++paypalRenderToken;
+      paypalButton.replaceChildren();
+      paypalButton.classList.remove("is-loaded");
+      paypalFallback?.classList.remove("is-visible");
+      setPaypalStatus("Cargando PayPal...");
+
+      try {
+        await loadPayPalSdk();
+        if (token !== paypalRenderToken) return;
+
+        const paypal = getPayPal();
+        if (!paypal) throw new Error("PayPal SDK unavailable");
+
+        const config: Record<string, unknown> = {
+          env: paypalEnv,
+          amount: formatPaypalAmount(amount),
+          currency_code: "USD",
+          item_name: paypalItemName,
+          item_number: paypalItemNumber,
+          no_shipping: "1",
+          rm: "1",
+          return: buildDonateStateUrl("paypal-completed"),
+          cancel_return: buildDonateStateUrl("paypal-cancelled"),
+          image: {
+            src: paypalImageSrc,
+            alt: paypalImageAlt,
+            title: paypalImageTitle
+          },
+          onComplete: () => goToStep("done")
+        };
+
+        if (paypalBusiness) {
+          config.business = paypalBusiness;
+        } else if (paypalHostedButtonId) {
+          config.hosted_button_id = paypalHostedButtonId;
+        }
+
+        paypalButton.replaceChildren();
+        paypal.Donation.Button(config).render(`#${paypalButton.id}`);
+        paypalButton.classList.add("is-loaded");
+        setPaypalStatus("", false);
+      } catch {
+        setPaypalStatus("No pudimos cargar el botón de PayPal aquí. Puedes abrirlo en una pestaña nueva.");
+        paypalFallback?.classList.add("is-visible");
+      }
+    };
+
+    const handleInitialDonateState = () => {
+      const url = new URL(window.location.href);
+      const donateState = url.searchParams.get("donate");
+
+      if (donateState === "paypal-completed") {
+        openModal({ step: "done" });
+      } else if (donateState === "paypal-cancelled") {
+        openModal({ step: "2", methodId: "paypal" });
+      } else {
+        return;
+      }
+
+      url.searchParams.delete("donate");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    };
+
+    openers.forEach((btn) => btn.addEventListener("click", () => openModal()));
     closers.forEach((btn) => btn.addEventListener("click", closeModal));
     backBtn?.addEventListener("click", goBack);
     nextBtn?.addEventListener("click", () => goToStep("2"));
@@ -419,6 +613,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         if (willOpen) {
           item.classList.add("is-open");
           toggle.setAttribute("aria-expanded", "true");
+          if (toggle.getAttribute("data-method-toggle") === "paypal") renderPayPalButton();
           window.requestAnimationFrame(() =>
             item.scrollIntoView({ block: "nearest", behavior: "smooth" })
           );
@@ -438,7 +633,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
 
     modal.querySelectorAll<HTMLElement>("[data-done]").forEach((btn) =>
       btn.addEventListener("click", () => {
-        // PayPal opens in a new tab via its href; all methods land on thank-you.
+        // Manual methods land on thank-you after the donor confirms they paid.
         window.setTimeout(() => goToStep("done"), btn.hasAttribute("href") ? 250 : 0);
       })
     );
@@ -487,5 +682,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     });
 
     syncAmount();
+    handleInitialDonateState();
   }
 </script>

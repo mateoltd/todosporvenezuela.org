@@ -9,7 +9,7 @@ interface Method {
   lead: string;
   fields: { label: string; value: string }[];
   steps: string[];
-  action: "link" | "confirm";
+  action: "paypal" | "confirm";
   actionLabel: string;
 }
 
@@ -76,18 +76,22 @@ const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
     </ol>
 
     {
-      method.action === "link" ? (
-        <a
-          class="dm__cta"
-          href={paypalUrl}
-          target="_blank"
-          rel="noopener"
-          data-paypal-link
-          data-done
-        >
-          {method.actionLabel}
-          <Icon name="tabler:external-link" size={19} />
-        </a>
+      method.action === "paypal" ? (
+        <div class="dm__paypal-shell">
+          <div id="dm-paypal-donate-button" class="dm__paypal-button" data-paypal-button></div>
+          <p class="dm__paypal-status" data-paypal-status hidden></p>
+          <a
+            class="dm__cta dm__paypal-fallback"
+            href={paypalUrl}
+            target="_blank"
+            rel="noopener"
+            data-paypal-link
+            data-paypal-fallback
+          >
+            {method.actionLabel}
+            <Icon name="tabler:external-link" size={19} />
+          </a>
+        </div>
       ) : (
         <button class="dm__cta" type="button" data-done>
           {method.actionLabel}
