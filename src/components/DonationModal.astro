@@ -13,7 +13,8 @@ interface PagoMovil {
   banco: string;
   telefono: string;
   documento: string;
-  titular: string;
+  titular?: string;
+  contacto?: string;
 }
 
 interface Binance {
@@ -59,7 +60,7 @@ const {
   ],
   // Datos oficiales pendientes: déjalos vacíos para mostrar el estado
   // "Disponible muy pronto"; al confirmar las cuentas, complétalos aquí.
-  pagoMovil = { banco: "", telefono: "", documento: "", titular: "" },
+  pagoMovil = { banco: "", telefono: "", documento: "", titular: "", contacto: "" },
   binance = { payId: "" }
 } = Astro.props;
 
@@ -122,6 +123,21 @@ const internationalMethods: Method[] = [
   }
 ];
 
+const pagoMovilFields = [
+  { label: "Banco", value: pagoMovil.banco },
+  { label: "Teléfono", value: pagoMovil.telefono },
+  { label: "Cédula o RIF", value: pagoMovil.documento },
+  ...(pagoMovil.titular ? [{ label: "Titular", value: pagoMovil.titular }] : []),
+  ...(pagoMovil.contacto ? [{ label: "Contacto", value: pagoMovil.contacto }] : [])
+];
+
+const pagoMovilSteps = [
+  "Abre la app de tu banco y entra a Pago Móvil.",
+  "Ingresa el banco, teléfono y Cédula/RIF de arriba.",
+  "Envía el monto equivalente en bolívares y conserva tu comprobante.",
+  ...(pagoMovil.contacto ? ["Usa el contacto si necesitas consultar o confirmar el pago."] : [])
+];
+
 const localCountries: { id: string; name: string; flag: string; methods: Method[] }[] = [
   {
     id: "ve",
@@ -134,17 +150,8 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         icon: "tabler:device-mobile",
         desc: "Transferencia en bolívares",
         lead: "Haz una transferencia por Pago Móvil desde la app de tu banco. El monto se calcula al cambio oficial del BCV del día.",
-        fields: [
-          { label: "Banco", value: pagoMovil.banco },
-          { label: "Teléfono", value: pagoMovil.telefono },
-          { label: "Cédula o RIF", value: pagoMovil.documento },
-          { label: "Titular", value: pagoMovil.titular }
-        ],
-        steps: [
-          "Abre la app de tu banco y entra a Pago Móvil.",
-          "Copia y pega los datos de arriba.",
-          "Envía el monto equivalente en bolívares."
-        ],
+        fields: pagoMovilFields,
+        steps: pagoMovilSteps,
         action: "confirm",
         actionLabel: "Ya hice mi pago"
       }

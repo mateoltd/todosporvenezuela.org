@@ -29,6 +29,22 @@ const defaultPaypalUrl =
     donationEnv === "sandbox"
         ? "https://www.sandbox.paypal.com/donate"
         : "https://www.paypal.com/donate";
+const defaultPagoMovil =
+    donationEnv === "production"
+        ? {
+              banco: "Mercantil",
+              telefono: "04123058665",
+              documento: "32532287",
+              titular: "",
+              contacto: "+58 412 3058665",
+          }
+        : {
+              banco: "",
+              telefono: "",
+              documento: "",
+              titular: "",
+              contacto: "",
+          };
 const organizerVideoUrl = getEnv(
     "PUBLIC_ORGANIZER_VIDEO_URL",
     "https://www.instagram.com/p/DaD7tL_vjyc/",
@@ -76,10 +92,23 @@ const donation = {
         { value: 100, note: "Refugio temporal para una familia" },
     ],
     pagoMovil: {
-        banco: getModeEnv("PAGO_MOVIL", "BANCO"),
-        telefono: getModeEnv("PAGO_MOVIL", "TELEFONO"),
-        documento: getModeEnv("PAGO_MOVIL", "DOCUMENTO"),
-        titular: getModeEnv("PAGO_MOVIL", "TITULAR"),
+        banco: getModeEnv("PAGO_MOVIL", "BANCO", defaultPagoMovil.banco),
+        telefono: getModeEnv(
+            "PAGO_MOVIL",
+            "TELEFONO",
+            defaultPagoMovil.telefono,
+        ),
+        documento: getModeEnv(
+            "PAGO_MOVIL",
+            "DOCUMENTO",
+            defaultPagoMovil.documento,
+        ),
+        titular: getModeEnv("PAGO_MOVIL", "TITULAR", defaultPagoMovil.titular),
+        contacto: getModeEnv(
+            "PAGO_MOVIL",
+            "CONTACTO",
+            defaultPagoMovil.contacto,
+        ),
     },
     binance: { payId: getModeEnv("BINANCE", "PAY_ID") },
 };
