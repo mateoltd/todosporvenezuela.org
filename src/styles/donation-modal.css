@@ -260,6 +260,19 @@
   outline-offset: 1px;
 }
 
+.dm__custom input.is-invalid {
+  border-color: #ba1a1a;
+  box-shadow: inset 0 0 0 1px #ba1a1a;
+}
+
+.dm__custom-error {
+  min-height: 18px;
+  color: #ba1a1a;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .dm__cta {
   display: flex;
   align-items: center;
@@ -288,6 +301,15 @@
 
 .dm__cta:hover {
   background: #1d2832;
+}
+
+.dm__cta:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.dm__cta:disabled:hover {
+  background: #101820;
 }
 
 .dm__cta:active {

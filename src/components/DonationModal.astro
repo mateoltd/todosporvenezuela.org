@@ -248,9 +248,17 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
             min="1"
             step="1"
             inputmode="numeric"
-            placeholder="Escribe un monto"
+            placeholder="Escribe un monto entero"
             data-custom-amount
+            aria-describedby="dm-custom-amount-error"
+            aria-errormessage="dm-custom-amount-error"
           />
+          <span
+            class="dm__custom-error"
+            id="dm-custom-amount-error"
+            data-custom-amount-error
+            aria-live="polite"
+          ></span>
         </label>
 
         <button class="dm__cta" type="button" data-next>
@@ -349,7 +357,8 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const steps = modal.querySelectorAll<HTMLElement>("[data-panel]");
     const amountButtons = modal.querySelectorAll<HTMLElement>("[data-amount]");
     const customInput = modal.querySelector<HTMLInputElement>("[data-custom-amount]");
-    const nextBtn = modal.querySelector<HTMLElement>("[data-next]");
+    const customInputError = modal.querySelector<HTMLElement>("[data-custom-amount-error]");
+    const nextBtn = modal.querySelector<HTMLButtonElement>("[data-next]");
     const methodItems = modal.querySelectorAll<HTMLElement>("[data-method-item]");
     const methodToggles = modal.querySelectorAll<HTMLElement>("[data-method-toggle]");
     const amountDisplays = modal.querySelectorAll<HTMLElement>("[data-amount-display]");
@@ -374,6 +383,57 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const formatUsd = (value: number) => `$${Math.round(value)}`;
     const formatPaypalAmount = (value: number) =>
       Number.isFinite(value) ? Math.max(1, value).toFixed(2) : "1.00";
+    const integerAmountPattern = /^\d+$/;
+
+    const getCustomAmount = () => {
+      const value = customInput?.value.trim();
+      if (!value) return null;
+
+      const parsed = Number(value);
+      return integerAmountPattern.test(value) && parsed >= 1 ? parsed : null;
+    };
+
+    const getSelectedPresetAmount = () => {
+      const selected = modal.querySelector<HTMLElement>("[data-amount].is-active");
+      const parsed = Number(selected?.getAttribute("data-amount"));
+      return Number.isFinite(parsed) && parsed >= 1 ? parsed : null;
+    };
+
+    const getAmountValidation = () => {
+      const customValue = customInput?.value.trim() ?? "";
+
+      if (customValue) {
+        const parsed = Number(customValue);
+
+        if (Number.isFinite(parsed) && parsed < 1) {
+          return { message: "Escribe un monto de al menos $1.", valid: false };
+        }
+
+        if (!integerAmountPattern.test(customValue)) {
+          return { message: "Usa un monto entero en dólares, sin centavos.", valid: false };
+        }
+
+        return { amount: parsed, valid: true };
+      }
+
+      const presetAmount = getSelectedPresetAmount();
+      if (presetAmount !== null) return { amount: presetAmount, valid: true };
+
+      return { message: "Elige un monto o escribe un monto entero.", valid: false };
+    };
+
+    const clearPresetSelection = () => {
+      amountButtons.forEach((b) => {
+        b.classList.remove("is-active");
+        b.setAttribute("aria-pressed", "false");
+      });
+    };
+
+    const setCustomInputError = (message = "") => {
+      if (customInputError) customInputError.textContent = message;
+      customInput?.setAttribute("aria-invalid", message ? "true" : "false");
+      customInput?.classList.toggle("is-invalid", Boolean(message));
+    };
 
     type PayPalDonationCheckout = {
       renderTo: (target: Window | WindowProxy) => void;
@@ -415,8 +475,21 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     };
 
     const syncAmount = () => {
+      const validation = getAmountValidation();
+      const validAmount = validation.valid ? validation.amount : null;
+
+      if (validAmount === null) {
+        setCustomInputError(validation.message);
+        if (nextBtn) nextBtn.disabled = true;
+        return false;
+      }
+
+      amount = validAmount;
+      setCustomInputError();
+      if (nextBtn) nextBtn.disabled = false;
       amountDisplays.forEach((el) => (el.textContent = formatUsd(amount)));
       paypalLinks.forEach((link) => (link.href = buildPaypalFallbackUrl()));
+      return true;
     };
 
     const collapseMethods = () => {
@@ -580,12 +653,21 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     closers.forEach((btn) => btn.addEventListener("click", closeModal));
     backBtn?.addEventListener("click", goBack);
     nextBtn?.addEventListener("click", () => {
+      if (!syncAmount()) {
+        customInput?.focus();
+        return;
+      }
       goToStep("2");
       primePayPalCheckout();
     });
 
     paypalLinks.forEach((link) =>
       link.addEventListener("click", (event) => {
+        if (!syncAmount()) {
+          event.preventDefault();
+          customInput?.focus();
+          return;
+        }
         if (!openPayPalCheckout()) return;
         event.preventDefault();
       })
@@ -593,10 +675,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
 
     amountButtons.forEach((btn) =>
       btn.addEventListener("click", () => {
-        amountButtons.forEach((b) => {
-          b.classList.remove("is-active");
-          b.setAttribute("aria-pressed", "false");
-        });
+        clearPresetSelection();
         btn.classList.add("is-active");
         btn.setAttribute("aria-pressed", "true");
         amount = Number(btn.getAttribute("data-amount"));
@@ -606,15 +685,12 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     );
 
     customInput?.addEventListener("input", () => {
-      const value = Number(customInput.value);
-      if (value >= 1) {
-        amount = value;
-        amountButtons.forEach((b) => {
-          b.classList.remove("is-active");
-          b.setAttribute("aria-pressed", "false");
-        });
-        syncAmount();
+      const customAmount = getCustomAmount();
+      if (customInput.value.trim()) {
+        clearPresetSelection();
       }
+      if (customAmount !== null) amount = customAmount;
+      syncAmount();
     });
 
     methodToggles.forEach((toggle) =>
