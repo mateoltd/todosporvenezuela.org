@@ -1,15 +1,22 @@
 ---
 import { Icon } from "astro-icon/components";
-import { Heart } from "@lucide/astro";
+import { CirclePlay, Heart, X } from "@lucide/astro";
+import "plyr/dist/plyr.css";
 import ProgressMeter from "./ProgressMeter.astro";
 import styles from "./HeroSection.module.css";
 
 interface Props {
     raised: number;
     goal: number;
+    organizerVideo?: {
+        src: string;
+        sourceUrl: string;
+        title: string;
+    };
 }
 
-const { raised, goal } = Astro.props;
+const { raised, goal, organizerVideo } = Astro.props;
+const hasOrganizerVideo = Boolean(organizerVideo?.src);
 ---
 
 <section class={styles.hero} aria-labelledby="hero-title">
@@ -42,6 +49,19 @@ const { raised, goal } = Astro.props;
             insumos médicos, alimentos e hidratación a familias golpeadas por
             el terremoto, incluso en comunidades remotas.
         </p>
+        {
+            hasOrganizerVideo && (
+                <button
+                    class={styles.videoCta}
+                    type="button"
+                    data-video-open
+                    aria-haspopup="dialog"
+                >
+                    <CirclePlay size={21} strokeWidth={2.4} />
+                    <span>Ver video de los organizadores</span>
+                </button>
+            )
+        }
     </div>
 
     <div class={styles.donationPanel}>
@@ -67,3 +87,178 @@ const { raised, goal } = Astro.props;
         </div>
     </div>
 </section>
+
+{
+    hasOrganizerVideo && organizerVideo && (
+        <div class={styles.videoModal} data-video-modal aria-hidden="true">
+            <button
+                class={styles.videoBackdrop}
+                type="button"
+                data-video-close
+                aria-label="Cerrar video"
+            />
+
+            <section
+                class={styles.videoDialog}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="organizer-video-title"
+                tabindex="-1"
+            >
+                <header class={styles.videoHeader}>
+                    <div>
+                        <p class={styles.videoEyebrow}>Organizadores</p>
+                        <h2 id="organizer-video-title">Por qué nace esta campaña</h2>
+                    </div>
+                    <button
+                        class={styles.videoClose}
+                        type="button"
+                        data-video-close
+                        aria-label="Cerrar video"
+                    >
+                        <X size={22} strokeWidth={2.2} />
+                    </button>
+                </header>
+
+                <div class={styles.videoFrame} data-video-frame>
+                    <video
+                        data-video-player
+                        title={organizerVideo.title}
+                        playsinline
+                        preload="metadata"
+                    >
+                        <source src={organizerVideo.src} type="video/mp4" />
+                    </video>
+                </div>
+
+                {
+                    organizerVideo.sourceUrl && (
+                        <a
+                            class={styles.videoSource}
+                            href={organizerVideo.sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <span>Abrir video original</span>
+                            <Icon name="tabler:external-link" size={17} />
+                        </a>
+                    )
+                }
+            </section>
+        </div>
+    )
+}
+
+<script>
+    import Plyr from "plyr";
+
+    const videoModal = document.querySelector<HTMLElement>("[data-video-modal]");
+
+    if (videoModal && videoModal.dataset.videoReady !== "true") {
+        videoModal.dataset.videoReady = "true";
+
+        const videoDialog = videoModal.querySelector<HTMLElement>(
+            "[role='dialog']",
+        );
+        const videoPlayer =
+            videoModal.querySelector<HTMLVideoElement>("[data-video-player]");
+        const videoOpeners =
+            document.querySelectorAll<HTMLElement>("[data-video-open]");
+        const videoClosers =
+            videoModal.querySelectorAll<HTMLElement>("[data-video-close]");
+        let lastFocusedVideoElement: HTMLElement | null = null;
+        let organizerPlayer: Plyr | null = null;
+
+        if (videoPlayer) {
+            organizerPlayer = new Plyr(videoPlayer, {
+                clickToPlay: true,
+                controls: [
+                    "play-large",
+                    "play",
+                    "progress",
+                    "current-time",
+                    "mute",
+                    "volume",
+                ],
+                fullscreen: {
+                    enabled: false,
+                    fallback: false,
+                    iosNative: false,
+                },
+                hideControls: true,
+                invertTime: false,
+                keyboard: {
+                    focused: true,
+                    global: false,
+                },
+                ratio: "9:16",
+                resetOnEnd: true,
+                tooltips: {
+                    controls: false,
+                    seek: false,
+                },
+            });
+        }
+
+        const getVideoFocusable = () =>
+            Array.from(
+                videoModal.querySelectorAll<HTMLElement>(
+                    'a[href], button:not([disabled]), video, [tabindex]:not([tabindex="-1"])',
+                ),
+            ).filter((el) => el.offsetParent !== null || el === videoDialog);
+
+        const openVideo = () => {
+            lastFocusedVideoElement = document.activeElement as HTMLElement;
+            videoModal.setAttribute("aria-hidden", "false");
+            document.body.classList.add("modal-open");
+            window.requestAnimationFrame(() => videoDialog?.focus());
+        };
+
+        const closeVideo = () => {
+            videoModal.setAttribute("aria-hidden", "true");
+            document.body.classList.remove("modal-open");
+            if (videoPlayer) {
+                organizerPlayer?.pause();
+            }
+            lastFocusedVideoElement?.focus();
+        };
+
+        videoOpeners.forEach((button) =>
+            button.addEventListener("click", openVideo),
+        );
+        videoClosers.forEach((button) =>
+            button.addEventListener("click", closeVideo),
+        );
+        videoModal
+            .querySelector<HTMLElement>("[data-video-frame]")
+            ?.addEventListener("dblclick", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+            });
+
+        document.addEventListener("keydown", (event) => {
+            if (videoModal.getAttribute("aria-hidden") === "true") return;
+
+            if (event.key === "Escape") {
+                closeVideo();
+                return;
+            }
+
+            if (event.key !== "Tab") return;
+
+            const focusable = getVideoFocusable();
+            if (focusable.length === 0) return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        });
+    }
+</script>

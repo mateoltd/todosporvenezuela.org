@@ -124,6 +124,42 @@
   line-height: 1.45;
 }
 
+.videoCta {
+  position: absolute;
+  top: calc(100% + 18px);
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1.5px solid rgba(16, 24, 32, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    transform 120ms ease;
+}
+
+.videoCta:hover {
+  border-color: rgba(16, 24, 32, 0.34);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.videoCta:active {
+  transform: scale(0.98);
+}
+
+.videoCta svg {
+  flex: 0 0 auto;
+  color: var(--red);
+}
+
 .donationPanel {
   position: relative;
   z-index: 3;
@@ -174,6 +210,202 @@
   justify-content: center;
   color: var(--ink);
   font-weight: 800;
+}
+
+.videoModal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.videoModal[aria-hidden="false"] {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.videoBackdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(7, 16, 24, 0.68);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.videoModal[aria-hidden="false"] .videoBackdrop {
+  opacity: 1;
+}
+
+.videoDialog {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+  width: min(100%, 390px);
+  max-height: calc(100svh - 40px);
+  padding: 18px;
+  overflow: auto;
+  border-radius: 18px;
+  background: var(--paper-strong);
+  box-shadow: 0 30px 90px rgba(7, 16, 24, 0.34);
+  opacity: 0;
+  outline: 0;
+  transform: translateY(16px) scale(0.98);
+  transition:
+    opacity 220ms ease,
+    transform 240ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.videoModal[aria-hidden="false"] .videoDialog {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.videoHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.videoEyebrow {
+  margin-bottom: 6px;
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.videoHeader h2 {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.videoClose {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(16, 24, 32, 0.06);
+  color: var(--ink);
+  transition: background-color 160ms ease;
+}
+
+.videoClose:hover {
+  background: rgba(16, 24, 32, 0.12);
+}
+
+.videoFrame {
+  justify-self: center;
+  width: min(100%, calc((100svh - 196px) * 9 / 16));
+  max-width: 100%;
+  max-height: calc(100svh - 196px);
+  overflow: hidden;
+  border-radius: 12px;
+  background: #101820;
+  aspect-ratio: 9 / 16;
+}
+
+.videoFrame :global(.plyr) {
+  --plyr-color-main: var(--red);
+  --plyr-control-radius: 999px;
+  --plyr-font-family: "Archivo", sans-serif;
+  --plyr-range-fill-background: var(--yellow);
+  --plyr-video-control-background-hover: rgba(255, 255, 255, 0.16);
+  --plyr-video-control-color: #fff;
+  --plyr-video-control-color-hover: #fff;
+
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.videoFrame :global(.plyr__video-wrapper),
+.videoFrame :global(.plyr video) {
+  width: 100%;
+  height: 100%;
+  background: #101820;
+}
+
+.videoFrame :global(.plyr video) {
+  display: block;
+  object-fit: cover;
+}
+
+.videoFrame :global(.plyr--video .plyr__controls) {
+  gap: 8px;
+  padding: 42px 14px 18px;
+  background:
+    linear-gradient(180deg, rgba(16, 24, 32, 0), rgba(16, 24, 32, 0.88) 68%, rgba(16, 24, 32, 0.96));
+}
+
+.videoFrame :global(.plyr__control--overlaid) {
+  width: 62px;
+  height: 62px;
+  border: 2px solid rgba(255, 255, 255, 0.78);
+  background: rgba(226, 18, 42, 0.92);
+  box-shadow: 0 14px 34px rgba(7, 16, 24, 0.3);
+}
+
+.videoFrame :global(.plyr__control--overlaid svg) {
+  left: 2px;
+  width: 24px;
+  height: 24px;
+}
+
+.videoFrame :global(.plyr__control--overlaid:hover) {
+  background: #172029;
+}
+
+.videoFrame :global(.plyr__control svg) {
+  filter: drop-shadow(0 1px 1px rgba(7, 16, 24, 0.28));
+}
+
+.videoFrame :global(.plyr__time) {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.videoFrame :global(.plyr__volume) {
+  min-width: 72px;
+}
+
+.videoFrame :global(.plyr__progress input[type="range"]),
+.videoFrame :global(.plyr__volume input[type="range"]) {
+  color: var(--yellow);
+}
+
+.videoSource {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.videoSource:hover {
+  color: var(--ink);
+}
+
+.videoCta:focus-visible,
+.videoClose:focus-visible,
+.videoBackdrop:focus-visible,
+.videoSource:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 
 @media (max-width: 1120px) {
@@ -232,6 +464,12 @@
   .lede {
     font-size: 26px;
   }
+
+  .videoCta {
+    top: 0;
+    right: 0;
+    left: auto;
+  }
 }
 
 @media (max-width: 560px) {
@@ -247,6 +485,23 @@
 
   .copy {
     font-size: 15px;
+  }
+
+  .videoCta {
+    width: 44px;
+    min-height: 46px;
+    padding: 0;
+    font-size: 13px;
+  }
+
+  .videoCta span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
   .media {
@@ -280,5 +535,38 @@
     gap: 8px;
     margin-top: 10px;
     font-size: 12px;
+  }
+
+  .videoModal {
+    padding: 12px;
+  }
+
+  .videoDialog {
+    width: min(100%, 390px);
+    max-height: calc(100svh - 24px);
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .videoFrame {
+    width: min(100%, calc((100svh - 184px) * 9 / 16));
+    max-height: calc(100svh - 184px);
+  }
+
+  .videoFrame :global(.plyr--video .plyr__controls) {
+    padding: 38px 12px 16px;
+  }
+
+  .videoFrame :global(.plyr__volume) {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .videoCta,
+  .videoBackdrop,
+  .videoDialog,
+  .videoClose {
+    transition: none;
   }
 }

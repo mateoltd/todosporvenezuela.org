@@ -29,6 +29,21 @@ const defaultPaypalUrl =
     donationEnv === "sandbox"
         ? "https://www.sandbox.paypal.com/donate"
         : "https://www.paypal.com/donate";
+const organizerVideoUrl = getEnv(
+    "PUBLIC_ORGANIZER_VIDEO_URL",
+    "https://www.instagram.com/p/DaD7tL_vjyc/",
+);
+const organizerVideo = {
+    src: getEnv(
+        "PUBLIC_ORGANIZER_VIDEO_SRC",
+        "https://media.mateo.ltd/proj/AQOjGu8elxJIMIT21rU3HW79VS3vEg36BXl1x19_ewzoNvDxVhmaYJl2yWMxY1Vdvc0pwnyg75qRn3ej1DwzRFqtK06kXueZ.mp4",
+    ),
+    sourceUrl: organizerVideoUrl,
+    title: getEnv(
+        "PUBLIC_ORGANIZER_VIDEO_TITLE",
+        "Video de los organizadores de Todos por Venezuela",
+    ),
+};
 
 const donation = {
     paypalUrl: getModeEnv("PAYPAL", "DONATE_URL", defaultPaypalUrl),
@@ -99,10 +114,14 @@ const donation = {
         <SiteHeader />
 
         <main>
-            <HeroSection raised={raised} goal={goal} />
+            <HeroSection
+                raised={raised}
+                goal={goal}
+                organizerVideo={organizerVideo}
+            />
 
             {/* <FundsSection /> */}
-            {/* <DevastationCarousel /> */}
+            <DevastationCarousel />
             <OrganizersSection />
             <FaqSection />
         </main>
