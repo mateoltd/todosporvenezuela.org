@@ -1,0 +1,338 @@
+---
+import "../styles/global.css";
+import { Icon } from "astro-icon/components";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import DonationModal from "../components/DonationModal.astro";
+import { buildDonationConfig } from "../lib/donations/config";
+import {
+  language,
+  locale,
+  siteName,
+  siteUrlFallback,
+  socialImage,
+} from "../data/campaign";
+
+Astro.response.status = 404;
+Astro.response.statusText = "Not Found";
+Astro.response.headers.set(
+  "Cache-Control",
+  "no-store, no-cache, max-age=0, must-revalidate",
+);
+Astro.response.headers.set("CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Surrogate-Control", "no-store");
+
+const env = import.meta.env as Record<string, string | undefined>;
+const getEnv = (key: string, fallback = "") => env[key]?.trim() || fallback;
+const normalizeSiteUrl = (value: string) => {
+  const candidate = value.trim() || siteUrlFallback;
+  const withProtocol = /^https?:\/\//i.test(candidate)
+    ? candidate
+    : `https://${candidate}`;
+
+  return new URL(withProtocol).origin;
+};
+
+const siteBaseUrl = normalizeSiteUrl(
+  getEnv("PUBLIC_SITE_URL", Astro.site?.toString() ?? Astro.url.origin),
+);
+const homeUrl = `${siteBaseUrl}/`;
+const socialImageUrl = new URL(socialImage.path, homeUrl).href;
+const isSecureSocialImage = socialImageUrl.startsWith("https://");
+
+const title = `Página no encontrada | ${siteName}`;
+const description =
+  "No encontramos esta página. Vuelve al inicio para seguir la campaña Todos por Venezuela.";
+
+const donation = buildDonationConfig(env, Astro.url.origin);
+---
+
+<!doctype html>
+<html lang={language}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="author" content={siteName} />
+    <meta name="theme-color" content="#f7f7f2" />
+    <meta name="application-name" content={siteName} />
+    <title>{title}</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={locale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={homeUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    {
+      isSecureSocialImage && (
+        <meta property="og:image:secure_url" content={socialImageUrl} />
+      )
+    }
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(socialImage.width)} />
+    <meta property="og:image:height" content={String(socialImage.height)} />
+    <meta property="og:image:alt" content={socialImage.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <meta name="twitter:image:alt" content={socialImage.alt} />
+    <link rel="icon" href="/images/venezuela-flag.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link
+      rel="preload"
+      href="/fonts/instrument-sans-latin-400-700.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/archivo-latin-400-900.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/barlow-condensed-latin-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/barlow-condensed-latin-900.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body>
+    <SiteHeader />
+
+    <main class="notfound" aria-labelledby="notfound-title">
+      <div class="stack">
+        <p class="eyebrow">Error 404</p>
+
+        <p class="code" aria-hidden="true">404</p>
+
+        <h1 id="notfound-title" class="lede">Esta página no existe</h1>
+        <p class="copy">
+          El enlace puede estar roto o la página se movió. Vuelve al inicio para
+          seguir la campaña y ver cómo avanza la ayuda.
+        </p>
+
+        <div class="actions">
+          <a class="primary" href="/">
+            <Icon name="tabler:arrow-left" size={18} aria-hidden="true" />
+            Volver al inicio
+          </a>
+          <nav class="quick" aria-label="Páginas útiles">
+            <a href="/transparencia">Transparencia</a>
+            <a href="/#faq">Preguntas frecuentes</a>
+          </nav>
+        </div>
+      </div>
+    </main>
+
+    <SiteFooter />
+
+    <DonationModal
+      paypalUrl={donation.paypalUrl}
+      paypalNotifyUrl={donation.paypalNotifyUrl}
+      paypal={donation.paypal}
+      amounts={donation.amounts}
+      pagoMovil={donation.pagoMovil}
+      binance={donation.binance}
+    />
+
+    <style>
+      .notfound {
+        /* Tears the error code's lower edge, reusing the hero's torn-paper mask. */
+        --tear-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='400' viewBox='0 0 900 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='0' y2='400'%3E%3Cstop offset='0' stop-color='white' stop-opacity='1'/%3E%3Cstop offset='0.74' stop-color='white' stop-opacity='1'/%3E%3Cstop offset='0.99' stop-color='white' stop-opacity='0'/%3E%3C/linearGradient%3E%3Cfilter id='r' x='-5%25' y='-10%25' width='110%25' height='120%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.028 0.09' numOctaves='3' seed='7' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='26' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='900' height='400' fill='url(%23g)' filter='url(%23r)'/%3E%3C/svg%3E");
+
+        display: grid;
+        place-items: center;
+        min-height: 100svh;
+        padding: calc(var(--header-height) + clamp(28px, 6vw, 72px))
+          var(--page-gutter) clamp(56px, 8vw, 104px);
+      }
+
+      .stack {
+        width: min(100%, 720px);
+        text-align: center;
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: var(--red);
+        font-family: "Archivo", sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .code {
+        margin: clamp(6px, 1.4vw, 14px) 0 clamp(10px, 2vw, 20px);
+        font-family: "Barlow Condensed", "Archivo", sans-serif;
+        font-size: clamp(8rem, 30vw, 21rem);
+        font-weight: 900;
+        line-height: 0.8;
+        letter-spacing: 0.01em;
+        color: var(--ink);
+        -webkit-mask-image: var(--tear-mask);
+        mask-image: var(--tear-mask);
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: 100% 100%;
+        mask-size: 100% 100%;
+      }
+
+      .lede {
+        margin: 0 auto;
+        max-width: 18ch;
+        font-family: "Barlow Condensed", "Archivo", sans-serif;
+        font-size: clamp(2.1rem, 5vw, 3.4rem);
+        font-weight: 500;
+        line-height: 0.98;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .copy {
+        margin: clamp(14px, 1.8vw, 20px) auto 0;
+        max-width: 46ch;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 14px 24px;
+        margin-top: clamp(28px, 3.6vw, 40px);
+      }
+
+      .primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 14px 24px;
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, #172029, #071018);
+        color: #fff;
+        box-shadow: 0 14px 30px rgba(16, 24, 32, 0.2);
+        font-family: "Archivo", sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        transition: gap 160ms ease;
+      }
+
+      .primary svg {
+        transition: transform 160ms ease;
+      }
+
+      .primary:hover svg {
+        transform: translateX(-3px);
+      }
+
+      .quick {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 10px 22px;
+      }
+
+      .quick a {
+        color: var(--ink);
+        font-family: "Archivo", sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        text-decoration: underline;
+        text-decoration-color: var(--red);
+        text-decoration-thickness: 2px;
+        text-underline-offset: 5px;
+        transition: color 160ms ease;
+      }
+
+      .quick a:hover {
+        color: var(--red);
+      }
+
+      .primary:focus-visible,
+      .quick a:focus-visible {
+        outline: 3px solid rgba(0, 70, 184, 0.45);
+        outline-offset: 4px;
+      }
+
+      .stack > * {
+        animation: notfound-rise 560ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+      }
+      .code {
+        animation-duration: 700ms;
+      }
+      .lede {
+        animation-delay: 60ms;
+      }
+      .copy {
+        animation-delay: 110ms;
+      }
+      .actions {
+        animation-delay: 160ms;
+      }
+
+      @keyframes notfound-rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 560px) {
+        .copy {
+          font-size: 15px;
+        }
+
+        .actions {
+          flex-direction: column;
+        }
+
+        .primary {
+          width: 100%;
+          justify-content: center;
+          min-height: 56px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .stack > *,
+        .primary,
+        .primary svg,
+        .quick a {
+          animation: none;
+          transition: none;
+        }
+      }
+    </style>
+  </body>
+</html>
