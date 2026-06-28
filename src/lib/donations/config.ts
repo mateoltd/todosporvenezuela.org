@@ -22,7 +22,7 @@ export interface DonationConfig {
     titular: string;
     contacto: string;
   };
-  binance: { payId: string };
+  binance: { payId: string; coin: string };
 }
 
 // Datos de cobro. Son PUBLIC_* porque se renderizan en el HTML estático
@@ -50,22 +50,19 @@ export function buildDonationConfig(
       ? "https://www.sandbox.paypal.com/donate"
       : "https://www.paypal.com/donate";
 
-  const defaultPagoMovil =
-    donationEnv === "production"
-      ? {
-          banco: "Mercantil",
-          telefono: "04123058665",
-          documento: "32532287",
-          titular: "",
-          contacto: "+58 412 3058665",
-        }
-      : {
-          banco: "",
-          telefono: "",
-          documento: "",
-          titular: "",
-          contacto: "",
-        };
+  const defaultPagoMovil = {
+    banco: "Mercantil",
+    telefono: "04123058665",
+    documento: "32532287",
+    titular: "",
+    contacto: "+58 412 3058665",
+  };
+
+  const getPagoMovilEnv = (key: string, fallback = "") =>
+    getEnv(
+      `PUBLIC_PAGO_MOVIL_${key}`,
+      getEnv(`PUBLIC_PAGO_MOVIL_PRODUCTION_${key}`, fallback),
+    );
 
   return {
     paypalUrl: getModeEnv("PAYPAL", "DONATE_URL", defaultPaypalUrl),
@@ -82,16 +79,15 @@ export function buildDonationConfig(
       { value: 35, note: "Apoyo para zonas remotas" },
     ],
     pagoMovil: {
-      banco: getModeEnv("PAGO_MOVIL", "BANCO", defaultPagoMovil.banco),
-      telefono: getModeEnv("PAGO_MOVIL", "TELEFONO", defaultPagoMovil.telefono),
-      documento: getModeEnv(
-        "PAGO_MOVIL",
-        "DOCUMENTO",
-        defaultPagoMovil.documento,
-      ),
-      titular: getModeEnv("PAGO_MOVIL", "TITULAR", defaultPagoMovil.titular),
-      contacto: getModeEnv("PAGO_MOVIL", "CONTACTO", defaultPagoMovil.contacto),
+      banco: getPagoMovilEnv("BANCO", defaultPagoMovil.banco),
+      telefono: getPagoMovilEnv("TELEFONO", defaultPagoMovil.telefono),
+      documento: getPagoMovilEnv("DOCUMENTO", defaultPagoMovil.documento),
+      titular: getPagoMovilEnv("TITULAR", defaultPagoMovil.titular),
+      contacto: getPagoMovilEnv("CONTACTO", defaultPagoMovil.contacto),
     },
-    binance: { payId: getModeEnv("BINANCE", "PAY_ID") },
+    binance: {
+      payId: getEnv("PUBLIC_BINANCE_PAY_ID"),
+      coin: getEnv("PUBLIC_BINANCE_COIN", "USDT").toUpperCase(),
+    },
   };
 }

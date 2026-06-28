@@ -1,7 +1,13 @@
 ---
 import { Icon } from "astro-icon/components";
-import { faqs } from "../data/campaign";
+import { faqs as defaultFaqs, type CampaignFaq } from "../data/campaign";
 import styles from "./FaqSection.module.css";
+
+interface Props {
+  faqs?: CampaignFaq[];
+}
+
+const { faqs = defaultFaqs } = Astro.props;
 ---
 
 <section class={styles.faqBand} id="faq" aria-labelledby="faq-title" data-faq-root>

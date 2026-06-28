@@ -20,6 +20,7 @@ interface PagoMovil {
 
 interface Binance {
   payId: string;
+  coin?: string;
 }
 
 interface PayPalDonate {
@@ -53,10 +54,11 @@ const {
   ],
   // Datos oficiales pendientes: deja vacío para mostrar "Disponible muy pronto".
   pagoMovil = { banco: "", telefono: "", documento: "", titular: "", contacto: "" },
-  binance = { payId: "" }
+  binance = { payId: "", coin: "USDT" }
 } = Astro.props;
 
 const defaultAmount = amounts.find((a) => a.popular)?.value ?? amounts[0]?.value ?? 10;
+const binanceCoin = (binance.coin?.trim() || "USDT").toUpperCase();
 
 const usd = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -124,16 +126,16 @@ const internationalMethods: Method[] = [
     id: "binance",
     name: "Binance Pay",
     icon: "tabler:brand-binance",
-    desc: "USDT, sin comisiones bancarias",
-    lead: "Envía tu aporte en USDT por Binance Pay. Es una opción directa para donar desde Venezuela o desde el exterior.",
+    desc: `${binanceCoin}, sin comisiones bancarias`,
+    lead: `Envía tu aporte en ${binanceCoin} por Binance Pay. Es una opción directa para donar desde Venezuela o desde el exterior.`,
     fields: [
       { label: "Binance Pay ID", value: binance.payId },
-      { label: "Moneda", value: binance.payId ? "USDT" : "" }
+      { label: "Moneda", value: binance.payId ? binanceCoin : "" }
     ],
     steps: [
       "Abre Binance y entra a la sección Pay.",
       "Toca Enviar y pega el Pay ID.",
-      "Envía el monto en USDT y conserva tu comprobante."
+      `Envía el monto en ${binanceCoin} y conserva tu comprobante.`
     ],
     action: "confirm",
     actionLabel: "Ya hice mi pago"

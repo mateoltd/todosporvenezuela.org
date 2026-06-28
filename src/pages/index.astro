@@ -16,8 +16,8 @@ import {
     devastationSlides,
 } from "../data/devastation-carousel";
 import {
+    buildFaqs,
     campaignKeywords,
-    faqs,
     language,
     locale,
     modifiedDate,
@@ -96,6 +96,7 @@ const donationActionId = `${canonicalUrl}#donate-action`;
 const faqPageId = `${canonicalUrl}#faq-page`;
 
 const donation = buildDonationConfig(env, Astro.url.origin);
+const pageFaqs = buildFaqs(donation.binance.coin);
 
 const heroImageSrcSet = [
     640,
@@ -191,7 +192,11 @@ const structuredData = {
                 "@type": "Thing",
                 name: "Insumos médicos, alimentos e hidratación para familias afectadas por el terremoto",
             },
-            instrument: ["PayPal", "Binance Pay", "Pago Móvil"],
+            instrument: [
+                "PayPal",
+                `Binance Pay (${donation.binance.coin})`,
+                "Pago Móvil",
+            ],
         },
         {
             "@type": "FAQPage",
@@ -200,7 +205,7 @@ const structuredData = {
             name: "Preguntas frecuentes sobre Todos por Venezuela",
             isPartOf: { "@id": webPageId },
             inLanguage: language,
-            mainEntity: faqs.map((faq) => ({
+            mainEntity: pageFaqs.map((faq) => ({
                 "@type": "Question",
                 name: faq.question,
                 acceptedAnswer: {
@@ -329,7 +334,7 @@ const structuredDataJson = JSON.stringify(structuredData).replace(
 
             <DevastationCarousel />
             <OrganizersSection />
-            <FaqSection />
+            <FaqSection faqs={pageFaqs} />
         </main>
 
         <SiteFooter />
