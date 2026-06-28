@@ -58,12 +58,6 @@ export function buildDonationConfig(
     contacto: "+58 412 3058665",
   };
 
-  const getPagoMovilEnv = (key: string, fallback = "") =>
-    getEnv(
-      `PUBLIC_PAGO_MOVIL_${key}`,
-      getEnv(`PUBLIC_PAGO_MOVIL_PRODUCTION_${key}`, fallback),
-    );
-
   return {
     paypalUrl: getModeEnv("PAYPAL", "DONATE_URL", defaultPaypalUrl),
     paypalNotifyUrl: getPayPalNotifyUrl(origin),
@@ -79,11 +73,17 @@ export function buildDonationConfig(
       { value: 35, note: "Apoyo para zonas remotas" },
     ],
     pagoMovil: {
-      banco: getPagoMovilEnv("BANCO", defaultPagoMovil.banco),
-      telefono: getPagoMovilEnv("TELEFONO", defaultPagoMovil.telefono),
-      documento: getPagoMovilEnv("DOCUMENTO", defaultPagoMovil.documento),
-      titular: getPagoMovilEnv("TITULAR", defaultPagoMovil.titular),
-      contacto: getPagoMovilEnv("CONTACTO", defaultPagoMovil.contacto),
+      banco: getEnv("PUBLIC_PAGO_MOVIL_BANCO", defaultPagoMovil.banco),
+      telefono: getEnv("PUBLIC_PAGO_MOVIL_TELEFONO", defaultPagoMovil.telefono),
+      documento: getEnv(
+        "PUBLIC_PAGO_MOVIL_DOCUMENTO",
+        defaultPagoMovil.documento,
+      ),
+      titular: getEnv("PUBLIC_PAGO_MOVIL_TITULAR", defaultPagoMovil.titular),
+      contacto: getEnv(
+        "PUBLIC_PAGO_MOVIL_CONTACTO",
+        defaultPagoMovil.contacto,
+      ),
     },
     binance: {
       payId: getEnv("PUBLIC_BINANCE_PAY_ID"),
