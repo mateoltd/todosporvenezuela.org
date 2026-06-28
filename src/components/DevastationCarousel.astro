@@ -4,10 +4,21 @@ import {
   devastationFallbackImageSrc,
   devastationImageSizes,
   devastationImageSrcSet,
-  devastationSlides as slides
+  devastationSlides as defaultSlides,
+  type DevastationSlide
 } from "../data/devastation-carousel";
+import { getLocaleContent, type CampaignContent } from "../data/campaign";
 import styles from "./DevastationCarousel.module.css";
 
+interface Props {
+  copy?: CampaignContent["devastation"];
+  slides?: readonly DevastationSlide[];
+}
+
+const {
+  copy = getLocaleContent().devastation,
+  slides = defaultSlides,
+} = Astro.props;
 const total = String(slides.length).padStart(2, "0");
 const imagePlaceholder =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3' height='2'/%3E";
@@ -16,24 +27,20 @@ const imagePlaceholder =
 <section class={styles.section} id="impacto" aria-labelledby="devastation-title">
   <div class={styles.head}>
     <div class={styles.intro}>
-      <p class={styles.eyebrow}>Lo que está pasando</p>
+      <p class={styles.eyebrow}>{copy.eyebrow}</p>
       <h2 id="devastation-title">
-        <span>El país</span>
-        <strong>bajo escombros</strong>
+        <span>{copy.titlePrefix}</span>
+        <strong>{copy.titleStrong}</strong>
       </h2>
-      <p class={styles.lede}>
-        Estas son imágenes de prensa de los días posteriores al terremoto.
-        Detrás de cada escombro hay comunidades enteras que hoy necesitan agua,
-        medicinas y un lugar donde dormir.
-      </p>
+      <p class={styles.lede}>{copy.lede}</p>
     </div>
 
     <div class={styles.factline}>
-      <span class={styles.fact}><b>M 7,5</b>Magnitud</span>
-      <span class={styles.fact}><b>10 km</b>Profundidad</span>
-      <span class={styles.fact}><b>24 jun</b>2026</span>
-      <span class={styles.fact}><b>Yumare</b>Epicentro</span>
-      <span class={styles.factSource}>Datos: USGS</span>
+      <span class={styles.fact}><b>M 7,5</b>{copy.facts.magnitude}</span>
+      <span class={styles.fact}><b>10 km</b>{copy.facts.depth}</span>
+      <span class={styles.fact}><b>{copy.facts.date}</b>2026</span>
+      <span class={styles.fact}><b>Yumare</b>{copy.facts.epicenter}</span>
+      <span class={styles.factSource}>{copy.facts.source}</span>
     </div>
   </div>
 
@@ -95,22 +102,24 @@ const imagePlaceholder =
         ))
       }
 
-      <div class={styles.controls} aria-label="Controles del registro visual">
-        <button class={styles.control} type="button" aria-label="Ver imagen anterior" data-carousel-prev>
+      <div class={styles.controls} aria-label={copy.controlsLabel}>
+        <button class={styles.control} type="button" aria-label={copy.previousLabel} data-carousel-prev>
           <Icon name="tabler:chevron-left" size={22} />
         </button>
-        <button class={styles.control} type="button" aria-label="Ver imagen siguiente" data-carousel-next>
+        <button class={styles.control} type="button" aria-label={copy.nextLabel} data-carousel-next>
           <Icon name="tabler:chevron-right" size={22} />
         </button>
       </div>
 
-      <div class={styles.progress} aria-label="Seleccionar imagen">
+      <div class={styles.progress} aria-label={copy.progressLabel}>
         {
           slides.map((slide, index) => (
             <button
               class={styles.progressItem}
               type="button"
-              aria-label={`Ver imagen ${index + 1}: ${slide.title}`}
+              aria-label={copy.dotLabel
+                .replace("{index}", String(index + 1))
+                .replace("{title}", slide.title)}
               aria-current={index === 0 ? "true" : "false"}
               data-carousel-dot
             >
@@ -124,9 +133,31 @@ const imagePlaceholder =
 </section>
 
 <script>
-  const carouselRoots = document.querySelectorAll("[data-devastation-carousel]");
+  const initDevastationCarousels = () => {
+    const carouselWindow = window as Window & {
+      __tpvDevastationCarouselCleanup?: () => void;
+    };
+    const carouselRoots = document.querySelectorAll("[data-devastation-carousel]");
+    const rootList = Array.from(carouselRoots);
+    const hasRoots = rootList.some((carousel) => carousel instanceof HTMLElement);
+    const hasUninitializedRoot = rootList.some(
+      (carousel) => carousel instanceof HTMLElement && carousel.dataset.ready !== "true"
+    );
 
-  carouselRoots.forEach((carousel) => {
+    if (hasRoots && !hasUninitializedRoot) return;
+
+    const cleanupFns: (() => void)[] = [];
+    const carouselController = new AbortController();
+
+    carouselWindow.__tpvDevastationCarouselCleanup?.();
+    carouselWindow.__tpvDevastationCarouselCleanup = () => {
+      carouselController.abort();
+      cleanupFns.forEach((cleanup) => cleanup());
+    };
+
+    if (!hasRoots) return;
+
+    carouselRoots.forEach((carousel) => {
     if (!(carousel instanceof HTMLElement) || carousel.dataset.ready === "true") return;
     carousel.dataset.ready = "true";
 
@@ -200,7 +231,7 @@ const imagePlaceholder =
           () => {
             neighborPreloadId = window.setTimeout(warmNeighbors, 250);
           },
-          { once: true }
+          { once: true, signal: carouselController.signal }
         );
         return;
       }
@@ -248,9 +279,17 @@ const imagePlaceholder =
       startAutoplay();
     };
 
-    prev?.addEventListener("click", () => go(activeIndex - 1));
-    next?.addEventListener("click", () => go(activeIndex + 1));
-    dots.forEach((dot, dotIndex) => dot.addEventListener("click", () => go(dotIndex)));
+    prev?.addEventListener("click", () => go(activeIndex - 1), {
+      signal: carouselController.signal
+    });
+    next?.addEventListener("click", () => go(activeIndex + 1), {
+      signal: carouselController.signal
+    });
+    dots.forEach((dot, dotIndex) =>
+      dot.addEventListener("click", () => go(dotIndex), {
+        signal: carouselController.signal
+      })
+    );
 
     carousel.addEventListener("keydown", (event) => {
       if (event.key === "ArrowLeft") {
@@ -261,28 +300,38 @@ const imagePlaceholder =
         event.preventDefault();
         go(activeIndex + 1);
       }
-    });
+    }, { signal: carouselController.signal });
 
     // Touch swipe support.
     let swipeStartX: number | null = null;
     stage?.addEventListener("pointerdown", (event) => {
       swipeStartX = (event as PointerEvent).clientX;
-    });
+    }, { signal: carouselController.signal });
     stage?.addEventListener("pointerup", (event) => {
       if (swipeStartX === null) return;
       const delta = (event as PointerEvent).clientX - swipeStartX;
       if (Math.abs(delta) > 44) go(activeIndex + (delta < 0 ? 1 : -1));
       swipeStartX = null;
-    });
+    }, { signal: carouselController.signal });
 
-    carousel.addEventListener("mouseenter", stopAutoplay);
-    carousel.addEventListener("mouseleave", startAutoplay);
-    carousel.addEventListener("focusin", stopAutoplay);
+    carousel.addEventListener("mouseenter", stopAutoplay, {
+      signal: carouselController.signal
+    });
+    carousel.addEventListener("mouseleave", startAutoplay, {
+      signal: carouselController.signal
+    });
+    carousel.addEventListener("focusin", stopAutoplay, {
+      signal: carouselController.signal
+    });
     carousel.addEventListener("focusout", (event) => {
       if (!carousel.contains(event.relatedTarget as Node)) startAutoplay();
-    });
+    }, { signal: carouselController.signal });
 
     setActive(0);
+    cleanupFns.push(() => {
+      stopAutoplay();
+      if (neighborPreloadId) window.clearTimeout(neighborPreloadId);
+    });
 
     if ("IntersectionObserver" in window) {
       const preloadObserver = new IntersectionObserver(
@@ -311,11 +360,19 @@ const imagePlaceholder =
       );
       preloadObserver.observe(carousel);
       visibilityObserver.observe(carousel);
+      cleanupFns.push(() => {
+        preloadObserver.disconnect();
+        visibilityObserver.disconnect();
+      });
     } else {
       canLoadCarouselImages = true;
       isCarouselVisible = true;
       loadNearbySlides();
       startAutoplay();
     }
-  });
+    });
+  };
+
+  initDevastationCarousels();
+  document.addEventListener("astro:page-load", initDevastationCarousels);
 </script>

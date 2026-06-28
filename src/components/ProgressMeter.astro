@@ -1,13 +1,15 @@
 ---
 import { getDonationEnvConfig } from "../lib/donations/config";
 import { staticOptimizedImageSrc } from "../data/optimized-images";
+import type { CampaignContent } from "../data/campaign";
 
 interface Props {
   raised: number;
   goal: number;
+  copy: CampaignContent["progress"];
 }
 
-const { raised, goal } = Astro.props;
+const { raised, goal, copy } = Astro.props;
 const meterImageSrc = staticOptimizedImageSrc(
   "venezuela-earthquake-aid-distribution-meter",
   "jpg"
@@ -25,6 +27,10 @@ const currency = (value: number) =>
 
 const raisedLabel = currency(raised);
 const goalLabel = currency(goal);
+const progressAriaLabel = copy.ariaTemplate
+  .replace("{raised}", raisedLabel)
+  .replace("{goal}", goalLabel)
+  .replace("{percent}", String(percent));
 
 // Compact axis labels.
 const compact = (value: number) => {
@@ -89,6 +95,7 @@ const redSpecks = [
   data-progress-events-url="/api/donations/events"
   data-progress-url="/api/donations/progress"
   data-poll-ms={Number.isFinite(pollMs) ? pollMs : 15000}
+  data-aria-template={copy.ariaTemplate}
 >
   <div
     class="bar"
@@ -97,7 +104,7 @@ const redSpecks = [
     aria-valuenow={percent}
     aria-valuemin={0}
     aria-valuemax={100}
-    aria-label={`${raisedLabel} recaudados de ${goalLabel}, ${percent}% de la meta`}
+    aria-label={progressAriaLabel}
   >
     <svg class="flag" viewBox="0 0 1000 130" preserveAspectRatio="none" aria-hidden="true">
       <defs>
@@ -171,15 +178,15 @@ const redSpecks = [
     <div class="labels">
       <div class="lbl lbl--raised">
         <strong data-raised-label>{raisedLabel}</strong>
-        <span>Recaudado</span>
+        <span>{copy.raisedLabel}</span>
       </div>
       <div class="lbl lbl--pct">
         <strong data-percent-label>{percent}%</strong>
-        <span>De la meta</span>
+        <span>{copy.percentLabel}</span>
       </div>
       <div class="lbl lbl--goal">
         <strong data-goal-label>{goalLabel}</strong>
-        <span>Meta</span>
+        <span>{copy.goalLabel}</span>
       </div>
     </div>
 
@@ -214,116 +221,145 @@ const redSpecks = [
     updatedAt?: string | null;
   };
 
-  const donationMeters = Array.from(
-    document.querySelectorAll<HTMLElement>("[data-donation-meter]")
-  );
+  const initDonationProgressMeters = () => {
+    const progressWindow = window as Window & {
+      __tpvDonationProgressCleanup?: () => void;
+    };
+    const cleanupFns: (() => void)[] = [];
+    const progressController = new AbortController();
 
-  const formatDonationCurrency = (value: number, currency: string) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: Number.isInteger(value) ? 0 : 2
-    }).format(value);
+    progressWindow.__tpvDonationProgressCleanup?.();
+    progressWindow.__tpvDonationProgressCleanup = () => {
+      progressController.abort();
+      cleanupFns.forEach((cleanup) => cleanup());
+    };
 
-  const applyDonationProgress = (meter: HTMLElement, progress: DonationProgress) => {
-    const bar = meter.querySelector<HTMLElement>("[data-progress-bar]");
-    const fill = meter.querySelector<HTMLElement>("[data-progress-fill]");
-    const raisedLabel = meter.querySelector<HTMLElement>("[data-raised-label]");
-    const percentLabel = meter.querySelector<HTMLElement>("[data-percent-label]");
-    const goalLabel = meter.querySelector<HTMLElement>("[data-goal-label]");
-    const percent = Math.max(0, Math.min(100, Math.round(progress.percent)));
-    const raised = formatDonationCurrency(progress.raised, progress.currency);
-    const goal = formatDonationCurrency(progress.goal, progress.currency);
+    const donationMeters = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-donation-meter]")
+    );
 
-    if (bar) {
-      bar.setAttribute("aria-valuenow", String(percent));
-      bar.setAttribute("aria-label", `${raised} recaudados de ${goal}, ${percent}% de la meta`);
-    }
-    if (fill) fill.style.width = `${percent}%`;
-    if (raisedLabel) raisedLabel.textContent = raised;
-    if (percentLabel) percentLabel.textContent = `${percent}%`;
-    if (goalLabel) goalLabel.textContent = goal;
-  };
+    if (!donationMeters.length) return;
 
-  const refreshDonationProgress = async (meter: HTMLElement) => {
-    const progressUrl = meter.getAttribute("data-progress-url") || "/api/donations/progress";
-    const url = new URL(progressUrl, window.location.href);
-    url.searchParams.set("_", String(Date.now()));
+    const formatDonationCurrency = (value: number, currency: string) =>
+      new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency,
+        maximumFractionDigits: Number.isInteger(value) ? 0 : 2
+      }).format(value);
 
-    const response = await fetch(url, {
-      cache: "no-store",
-      headers: {
-        "Cache-Control": "no-cache"
+    const applyDonationProgress = (meter: HTMLElement, progress: DonationProgress) => {
+      const bar = meter.querySelector<HTMLElement>("[data-progress-bar]");
+      const fill = meter.querySelector<HTMLElement>("[data-progress-fill]");
+      const raisedLabel = meter.querySelector<HTMLElement>("[data-raised-label]");
+      const percentLabel = meter.querySelector<HTMLElement>("[data-percent-label]");
+      const goalLabel = meter.querySelector<HTMLElement>("[data-goal-label]");
+      const percent = Math.max(0, Math.min(100, Math.round(progress.percent)));
+      const raised = formatDonationCurrency(progress.raised, progress.currency);
+      const goal = formatDonationCurrency(progress.goal, progress.currency);
+      const ariaTemplate =
+        meter.getAttribute("data-aria-template") ||
+        "{raised} raised of {goal}, {percent}% of the goal";
+      const ariaLabel = ariaTemplate
+        .replace("{raised}", raised)
+        .replace("{goal}", goal)
+        .replace("{percent}", String(percent));
+
+      if (bar) {
+        bar.setAttribute("aria-valuenow", String(percent));
+        bar.setAttribute("aria-label", ariaLabel);
+      }
+      if (fill) fill.style.width = `${percent}%`;
+      if (raisedLabel) raisedLabel.textContent = raised;
+      if (percentLabel) percentLabel.textContent = `${percent}%`;
+      if (goalLabel) goalLabel.textContent = goal;
+    };
+
+    const refreshDonationProgress = async (meter: HTMLElement) => {
+      const progressUrl = meter.getAttribute("data-progress-url") || "/api/donations/progress";
+      const url = new URL(progressUrl, window.location.href);
+      url.searchParams.set("_", String(Date.now()));
+
+      const response = await fetch(url, {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache"
+        }
+      });
+      if (!response.ok) throw new Error("Donation progress fetch failed");
+
+      const progress = (await response.json()) as DonationProgress;
+      applyDonationProgress(meter, progress);
+    };
+
+    const connectDonationProgressStream = () => {
+      if (!donationMeters.length || !("EventSource" in window)) return;
+
+      const eventsUrl =
+        donationMeters[0]?.getAttribute("data-progress-events-url") || "/api/donations/events";
+      const url = new URL(eventsUrl, window.location.href);
+      url.searchParams.set("_", String(Date.now()));
+
+      const events = new EventSource(url);
+      cleanupFns.push(() => events.close());
+
+      events.addEventListener("progress", (event) => {
+        try {
+          const progress = JSON.parse((event as MessageEvent).data) as DonationProgress;
+          donationMeters.forEach((meter) => applyDonationProgress(meter, progress));
+        } catch {
+          // Ignore malformed stream events and let the polling fallback continue.
+        }
+      });
+
+      events.addEventListener("error", () => {
+        donationMeters.forEach((meter) => {
+          void refreshDonationProgress(meter).catch(() => undefined);
+        });
+      });
+    };
+
+    donationMeters.forEach((meter) => {
+      void refreshDonationProgress(meter).catch(() => undefined);
+
+      const pollMs = Number(meter.getAttribute("data-poll-ms"));
+      if (Number.isFinite(pollMs) && pollMs > 0) {
+        const pollId = window.setInterval(() => {
+          void refreshDonationProgress(meter).catch(() => undefined);
+        }, pollMs);
+        cleanupFns.push(() => window.clearInterval(pollId));
       }
     });
-    if (!response.ok) throw new Error("Donation progress fetch failed");
 
-    const progress = (await response.json()) as DonationProgress;
-    applyDonationProgress(meter, progress);
-  };
+    connectDonationProgressStream();
 
-  const connectDonationProgressStream = () => {
-    if (!donationMeters.length || !("EventSource" in window)) return;
+    window.addEventListener("donation:paypal-complete", () => {
+      donationMeters.forEach((meter) => {
+        [0, 2000, 6000, 15000].forEach((delay) => {
+          const timeoutId = window.setTimeout(() => {
+            void refreshDonationProgress(meter).catch(() => undefined);
+          }, delay);
+          cleanupFns.push(() => window.clearTimeout(timeoutId));
+        });
+      });
+    }, { signal: progressController.signal });
 
-    const eventsUrl =
-      donationMeters[0]?.getAttribute("data-progress-events-url") || "/api/donations/events";
-    const url = new URL(eventsUrl, window.location.href);
-    url.searchParams.set("_", String(Date.now()));
-
-    const events = new EventSource(url);
-
-    events.addEventListener("progress", (event) => {
-      try {
-        const progress = JSON.parse((event as MessageEvent).data) as DonationProgress;
-        donationMeters.forEach((meter) => applyDonationProgress(meter, progress));
-      } catch {
-        // Ignore malformed stream events and let the polling fallback continue.
-      }
-    });
-
-    events.addEventListener("error", () => {
+    window.addEventListener("pageshow", () => {
       donationMeters.forEach((meter) => {
         void refreshDonationProgress(meter).catch(() => undefined);
       });
-    });
+    }, { signal: progressController.signal });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible") return;
+
+      donationMeters.forEach((meter) => {
+        void refreshDonationProgress(meter).catch(() => undefined);
+      });
+    }, { signal: progressController.signal });
   };
 
-  donationMeters.forEach((meter) => {
-    void refreshDonationProgress(meter).catch(() => undefined);
-
-    const pollMs = Number(meter.getAttribute("data-poll-ms"));
-    if (Number.isFinite(pollMs) && pollMs > 0) {
-      window.setInterval(() => {
-        void refreshDonationProgress(meter).catch(() => undefined);
-      }, pollMs);
-    }
-  });
-
-  connectDonationProgressStream();
-
-  window.addEventListener("donation:paypal-complete", () => {
-    donationMeters.forEach((meter) => {
-      [0, 2000, 6000, 15000].forEach((delay) => {
-        window.setTimeout(() => {
-          void refreshDonationProgress(meter).catch(() => undefined);
-        }, delay);
-      });
-    });
-  });
-
-  window.addEventListener("pageshow", () => {
-    donationMeters.forEach((meter) => {
-      void refreshDonationProgress(meter).catch(() => undefined);
-    });
-  });
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState !== "visible") return;
-
-    donationMeters.forEach((meter) => {
-      void refreshDonationProgress(meter).catch(() => undefined);
-    });
-  });
+  initDonationProgressMeters();
+  document.addEventListener("astro:page-load", initDonationProgressMeters);
 </script>
 
 <style>

@@ -1,14 +1,18 @@
 ---
+import type { CampaignContent } from "../data/campaign";
 import styles from "./SiteFooter.module.css";
+
+interface Props {
+  copy: CampaignContent["footer"];
+}
+
+const { copy } = Astro.props;
 ---
 
-<footer class={styles.siteFooter} aria-label="Créditos del sitio">
+<footer class={styles.siteFooter} aria-label={copy.ariaLabel}>
   <div class={styles.inner}>
-    <p>Hecho con amor el 26 de junio de 2026.</p>
-    <p>
-      Los costos de esta página fueron cubiertos por Mateo, su diseñador, como
-      aporte completamente voluntario al proyecto.
-    </p>
+    <p>{copy.madeWithLove}</p>
+    <p>{copy.costNote}</p>
   </div>
 
   <div class={styles.flagBand} aria-hidden="true">

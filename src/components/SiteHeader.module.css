@@ -9,6 +9,7 @@
   min-height: var(--header-height);
   padding: 16px var(--page-gutter);
   background: var(--paper);
+  view-transition-name: site-header;
   transition:
     min-height 240ms ease,
     padding 240ms ease,
@@ -69,6 +70,7 @@
 
 .brandText {
   font-size: 17px;
+  view-transition-name: site-brand;
 }
 
 .brand:focus-visible,
@@ -115,6 +117,12 @@
 .primaryNav a:hover::after,
 .primaryNav a:focus-visible::after {
   transform: scaleX(1);
+}
+
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .headerDonate {
@@ -211,8 +219,12 @@
     order: 2;
   }
 
-  .headerDonate {
+  .headerActions {
     order: 3;
+    gap: 8px;
+  }
+
+  .headerDonate {
     width: auto;
     min-width: 76px;
     min-height: 44px;
@@ -266,7 +278,7 @@
   }
 
   .brandText {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .siteHeader {

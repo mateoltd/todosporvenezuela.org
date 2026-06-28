@@ -5,12 +5,15 @@ import {
     optimizedImageSrcSet,
     staticOptimizedImageSrc,
 } from "../data/optimized-images";
+import type { CampaignContent } from "../data/campaign";
 import ProgressMeter from "./ProgressMeter.astro";
 import styles from "./HeroSection.module.css";
 
 interface Props {
     raised: number;
     goal: number;
+    copy: CampaignContent["hero"];
+    progressCopy: CampaignContent["progress"];
     organizerVideo?: {
         src: string;
         sourceUrl: string;
@@ -18,7 +21,7 @@ interface Props {
     };
 }
 
-const { raised, goal, organizerVideo } = Astro.props;
+const { raised, goal, copy, progressCopy, organizerVideo } = Astro.props;
 const hasOrganizerVideo = Boolean(organizerVideo?.src);
 const heroImageName = "venezuela-earthquake-hero-aid";
 const heroWidths = [640, 960, 1280, 1680, 2240];
@@ -62,17 +65,13 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
     </div>
 
     <div class={styles.content}>
-        <p class={styles.eyebrow}>Emergencia por terremoto</p>
+        <p class={styles.eyebrow}>{copy.eyebrow}</p>
         <h1 id="hero-title">
-            <span>Todos por</span>
-            <strong>Venezuela</strong>
+            <span>{copy.titlePrefix}</span>
+            <strong>{copy.titleStrong}</strong>
         </h1>
-        <p class={styles.lede}>Ayuda para las zonas afectadas</p>
-        <p class={styles.copy}>
-            Jóvenes venezolanos llevan insumos médicos, alimentos e
-            hidratación a las familias golpeadas por el terremoto, hasta
-            en las comunidades más remotas.
-        </p>
+        <p class={styles.lede}>{copy.lede}</p>
+        <p class={styles.copy}>{copy.copy}</p>
         {
             hasOrganizerVideo && (
                 <button
@@ -82,22 +81,22 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
                     aria-haspopup="dialog"
                 >
                     <Icon name="tabler:player-play" size={21} />
-                    <span>Ver video de los organizadores</span>
+                    <span>{copy.videoCta}</span>
                 </button>
             )
         }
     </div>
 
     <div class={styles.donationPanel} id="donar">
-        <ProgressMeter raised={raised} goal={goal} />
+        <ProgressMeter raised={raised} goal={goal} copy={progressCopy} />
 
         <div class={styles.action}>
             <button class={styles.primaryCta} type="button" data-donate-open>
                 <Icon name="tabler:heart-filled" size={26} />
-                <span>Donar ahora</span>
+                <span>{copy.donateCta}</span>
             </button>
             <p class={styles.paymentNote}>
-                Donación rápida y segura con
+                {copy.paymentNote}
                 <span aria-label="PayPal">
                     <Icon name="tabler:brand-paypal" size={18} />
                 </span>
@@ -119,7 +118,7 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
                 class={styles.videoBackdrop}
                 type="button"
                 data-video-close
-                aria-label="Cerrar video"
+                aria-label={copy.videoCloseLabel}
             />
 
             <section
@@ -131,14 +130,14 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
             >
                 <header class={styles.videoHeader}>
                     <div>
-                        <p class={styles.videoEyebrow}>Organizadores</p>
-                        <h2 id="organizer-video-title">Por qué nace esta campaña</h2>
+                        <p class={styles.videoEyebrow}>{copy.videoModalEyebrow}</p>
+                        <h2 id="organizer-video-title">{copy.videoModalTitle}</h2>
                     </div>
                     <button
                         class={styles.videoClose}
                         type="button"
                         data-video-close
-                        aria-label="Cerrar video"
+                        aria-label={copy.videoCloseLabel}
                     >
                         <Icon name="tabler:x" size={22} />
                     </button>
@@ -163,7 +162,7 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <span>Abrir video original</span>
+                            <span>{copy.videoSourceLabel}</span>
                             <Icon name="tabler:external-link" size={17} />
                         </a>
                     )
@@ -174,8 +173,11 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
 }
 
 <script>
-    document.querySelectorAll("[data-critical-picture]").forEach((picture) => {
+    const initCriticalPictures = () => {
+      document.querySelectorAll("[data-critical-picture]").forEach((picture) => {
         if (!(picture instanceof HTMLElement)) return;
+        if (picture.dataset.criticalPictureReady === "true") return;
+        picture.dataset.criticalPictureReady = "true";
 
         const image = picture.querySelector<HTMLImageElement>(
             "img[data-fallback-src]",
@@ -213,13 +215,29 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
             { once: true },
         );
         image.addEventListener("error", useFallback, { once: true });
-    });
+      });
+    };
+
+    initCriticalPictures();
+    document.addEventListener("astro:page-load", initCriticalPictures);
 </script>
 
 <script>
-    const videoModal = document.querySelector<HTMLElement>("[data-video-modal]");
+    const initHeroVideoModal = () => {
+      const videoModal = document.querySelector<HTMLElement>("[data-video-modal]");
+      const videoWindow = window as Window & {
+          __tpvHeroVideoAbortController?: AbortController;
+      };
 
-    if (videoModal && videoModal.dataset.videoReady !== "true") {
+      if (!videoModal) {
+        videoWindow.__tpvHeroVideoAbortController?.abort();
+        return;
+      }
+
+      if (videoModal.dataset.videoReady !== "true") {
+        videoWindow.__tpvHeroVideoAbortController?.abort();
+        const videoController = new AbortController();
+        videoWindow.__tpvHeroVideoAbortController = videoController;
         videoModal.dataset.videoReady = "true";
 
         const videoDialog = videoModal.querySelector<HTMLElement>(
@@ -354,17 +372,21 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
         };
 
         videoOpeners.forEach((button) =>
-            button.addEventListener("click", openVideo),
+            button.addEventListener("click", openVideo, {
+                signal: videoController.signal,
+            }),
         );
         videoClosers.forEach((button) =>
-            button.addEventListener("click", closeVideo),
+            button.addEventListener("click", closeVideo, {
+                signal: videoController.signal,
+            }),
         );
         videoModal
             .querySelector<HTMLElement>("[data-video-frame]")
             ?.addEventListener("dblclick", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-            });
+            }, { signal: videoController.signal });
 
         document.addEventListener("keydown", (event) => {
             if (videoModal.getAttribute("aria-hidden") === "true") return;
@@ -389,6 +411,10 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
                 event.preventDefault();
                 first.focus();
             }
-        });
-    }
+        }, { signal: videoController.signal });
+      }
+    };
+
+    initHeroVideoModal();
+    document.addEventListener("astro:page-load", initHeroVideoModal);
 </script>

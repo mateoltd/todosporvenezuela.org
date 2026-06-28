@@ -1,26 +1,21 @@
 ---
 import { Icon } from "astro-icon/components";
+import { getLocaleContent, type CampaignContent } from "../data/campaign";
 import styles from "./TransparencySection.module.css";
 
-// What every daily report will carry. This is the data structure, shown up
-// front so the page communicates its purpose before any report exists.
-const reportFields = [
-  {
-    icon: "tabler:cash",
-    label: "Lo recibido",
-    body: "Cuánto entró ese día y por qué medio."
-  },
-  {
-    icon: "tabler:receipt",
-    label: "Lo comprado",
-    body: "Cada compra del día."
-  },
-  {
-    icon: "tabler:truck-delivery",
-    label: "Lo entregado",
-    body: "Qué llegó a quién."
-  }
-];
+interface Props {
+  copy?: CampaignContent["transparency"];
+  links?: {
+    home: string;
+    faq: string;
+  };
+}
+
+const {
+  copy = getLocaleContent().transparency,
+  links = { home: "/es/", faq: "/es/#faq" },
+} = Astro.props;
+const reportFields = copy.fields;
 
 // Faint nodes that trail down the spine to signal a daily, ongoing cadence.
 const futureDays = [2, 3, 4, 5];
@@ -29,25 +24,19 @@ const futureDays = [2, 3, 4, 5];
 <section class={styles.section} aria-labelledby="transparencia-title">
   <div class={styles.wrap}>
     <header class={styles.head}>
-      <p class={styles.eyebrow}>Reporte diario</p>
-      <h1 id="transparencia-title" class={styles.display}>Transparencia</h1>
-      <p class={styles.lede}>
-        Publicamos el trabajo de cada día: lo que recibimos, lo que compramos y
-        lo que entregamos.
-      </p>
+      <p class={styles.eyebrow}>{copy.eyebrow}</p>
+      <h1 id="transparencia-title" class={styles.display}>{copy.heading}</h1>
+      <p class={styles.lede}>{copy.lede}</p>
     </header>
 
     <div class={styles.feed}>
       <ol class={styles.timeline}>
         <li class={styles.entry} data-state="active">
           <span class={styles.node} aria-hidden="true" />
-          <p class={styles.day}>Día 1</p>
+          <p class={styles.day}>{copy.dayLabel.replace("{day}", "1")}</p>
           <div class={styles.entryBody}>
-            <h2 class={styles.entryTitle}>Aún no hay reportes</h2>
-            <p class={styles.entryText}>
-              El primer reporte se publicará en cuanto comience la actividad. A
-              partir de ahí, uno nuevo cada día.
-            </p>
+            <h2 class={styles.entryTitle}>{copy.emptyTitle}</h2>
+            <p class={styles.entryText}>{copy.emptyText}</p>
           </div>
         </li>
 
@@ -55,7 +44,7 @@ const futureDays = [2, 3, 4, 5];
           futureDays.map((day) => (
             <li class={styles.entry} data-state="future" aria-hidden="true">
               <span class={styles.node} />
-              <p class={styles.day}>Día {day}</p>
+              <p class={styles.day}>{copy.dayLabel.replace("{day}", String(day))}</p>
             </li>
           ))
         }
@@ -63,7 +52,7 @@ const futureDays = [2, 3, 4, 5];
     </div>
 
     <div class={styles.fields}>
-      <p class={styles.fieldsLabel}>Qué incluye cada reporte</p>
+      <p class={styles.fieldsLabel}>{copy.fieldsLabel}</p>
       <dl class={styles.fieldList}>
         {
           reportFields.map((field) => (
@@ -80,13 +69,13 @@ const futureDays = [2, 3, 4, 5];
     </div>
 
     <footer class={styles.closing}>
-      <p>Mientras tanto, conoce a quiénes están detrás y cómo funciona la campaña.</p>
+      <p>{copy.closing}</p>
       <div class={styles.closingLinks}>
-        <a href="/#faq" class={styles.linkPrimary}>
-          Preguntas frecuentes
+        <a href={links.faq} class={styles.linkPrimary}>
+          {copy.faqLink}
           <Icon name="tabler:arrow-right" size={18} aria-hidden="true" />
         </a>
-        <a href="/" class={styles.linkGhost}>Volver al inicio</a>
+        <a href={links.home} class={styles.linkGhost}>{copy.homeLink}</a>
       </div>
     </footer>
   </div>

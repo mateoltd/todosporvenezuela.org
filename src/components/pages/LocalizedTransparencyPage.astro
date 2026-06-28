@@ -1,0 +1,55 @@
+---
+import TransparencySection from "../TransparencySection.astro";
+import PublicLayout from "../../layouts/PublicLayout.astro";
+import { getLocaleContent } from "../../data/campaign";
+import { getConfiguredSiteBaseUrl } from "../../lib/config/env";
+import {
+  getAlternateLinks,
+  getLocalizedPath,
+  getLocalizedUrl,
+  type SupportedLocale,
+} from "../../i18n/config";
+
+interface Props {
+  locale: SupportedLocale;
+}
+
+const { locale } = Astro.props;
+const content = getLocaleContent(locale);
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "no-store, no-cache, max-age=0, must-revalidate",
+);
+Astro.response.headers.set("CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Surrogate-Control", "no-store");
+
+const siteBaseUrl = getConfiguredSiteBaseUrl(
+  Astro.site?.toString() ?? Astro.url.origin,
+);
+const canonicalUrl = getLocalizedUrl("transparency", locale, siteBaseUrl);
+const socialImageUrl = new URL(content.socialImage.path, `${siteBaseUrl}/`).href;
+---
+
+<PublicLayout
+  locale={locale}
+  routeKey="transparency"
+  content={content}
+  title={content.transparency.title}
+  description={content.transparency.description}
+  canonicalUrl={canonicalUrl}
+  alternateLinks={getAlternateLinks("transparency", siteBaseUrl)}
+  htmlLang={content.language}
+  socialImageUrl={socialImageUrl}
+>
+  <main>
+    <TransparencySection
+      copy={content.transparency}
+      links={{
+        home: getLocalizedPath("home", locale),
+        faq: `${getLocalizedPath("home", locale)}#faq`,
+      }}
+    />
+  </main>
+</PublicLayout>

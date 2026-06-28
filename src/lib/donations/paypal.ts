@@ -3,6 +3,7 @@ import {
   getDonationSiteBaseUrl,
   parseAmountToCents,
 } from "./config";
+import { getEnv } from "../config/env";
 
 type ParsedIpn =
   | {
@@ -17,7 +18,9 @@ type ParsedIpn =
       raw: Record<string, string>;
     };
 
-export const getPayPalItemName = () => getDonationEnvConfig().paypalItemName;
+export const getPayPalItemName = (
+  fallback = "Ayuda para insumos médicos, alimentación e hidratación en Venezuela.",
+) => getEnv("DONATION_PAYPAL_ITEM_NAME", fallback);
 
 export const getPayPalItemNumber = () => getDonationEnvConfig().paypalItemNumber;
 

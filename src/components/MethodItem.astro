@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import { getLocaleContent, type DonationModalCopy } from "../data/campaign";
 
 interface Method {
   id: string;
@@ -18,9 +19,14 @@ interface Method {
 interface Props {
   method: Method;
   paypalUrl?: string;
+  copy?: DonationModalCopy["methodItem"];
 }
 
-const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
+const {
+  method,
+  paypalUrl = "https://www.paypal.com/donate",
+  copy = getLocaleContent().donationModal.methodItem,
+} = Astro.props;
 ---
 
 <div class="dm__method" data-method-item={method.id}>
@@ -55,17 +61,17 @@ const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
     {
       method.conversion === "bcv-ves" && (
         <div class="dm__conversion" data-ves-conversion data-rate-endpoint="/api/bcv-usd">
-          <span class="dm__field-label">Monto en bolívares</span>
+          <span class="dm__field-label">{copy.vesAmountLabel}</span>
           <button
             type="button"
             class="dm__field-copy dm__conversion-copy"
             data-copy=""
             data-ves-copy
-            aria-label="Copiar monto en bolívares"
+            aria-label={copy.copyVesAmountLabel}
             disabled
           >
             <span class="dm__field-value dm__conversion-value" data-ves-amount>
-              Calculando...
+              {copy.calculatingLabel}
             </span>
             <span class="dm__copy-icon">
               <Icon name="tabler:copy" size={17} />
@@ -75,7 +81,7 @@ const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
             </span>
           </button>
           <span class="dm__conversion-meta" data-ves-rate aria-live="polite">
-            Consultando tasa oficial
+            {copy.queryingRateLabel}
           </span>
         </div>
       )
@@ -92,7 +98,7 @@ const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
                   type="button"
                   class="dm__field-copy"
                   data-copy={field.value}
-                  aria-label={`Copiar ${field.label}`}
+                  aria-label={copy.copyFieldLabel.replace("{field}", field.label)}
                 >
                   <span class="dm__field-value">{field.value}</span>
                   <span class="dm__copy-icon">
@@ -103,7 +109,7 @@ const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
                   </span>
                 </button>
               ) : (
-                <span class="dm__field-pending">Disponible muy pronto</span>
+                <span class="dm__field-pending">{copy.pendingLabel}</span>
               )}
             </div>
           ))}

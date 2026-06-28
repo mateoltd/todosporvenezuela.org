@@ -98,6 +98,52 @@ body.modal-open {
   overflow: hidden;
 }
 
+@keyframes tpv-page-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.998);
+  }
+}
+
+@keyframes tpv-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.998);
+  }
+}
+
+@keyframes tpv-header-crossfade {
+  from {
+    opacity: 0;
+  }
+}
+
+@supports (view-transition-name: root) {
+  ::view-transition-old(root) {
+    animation: tpv-page-out 190ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  ::view-transition-new(root) {
+    animation: tpv-page-in 280ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  ::view-transition-group(site-header) {
+    z-index: 20;
+  }
+
+  ::view-transition-old(site-header),
+  ::view-transition-new(site-header),
+  ::view-transition-old(site-brand),
+  ::view-transition-new(site-brand) {
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  ::view-transition-new(site-brand) {
+    animation-name: tpv-header-crossfade;
+  }
+}
+
 button,
 input {
   font: inherit;
@@ -130,5 +176,11 @@ p {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
