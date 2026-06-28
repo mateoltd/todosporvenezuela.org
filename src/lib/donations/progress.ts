@@ -38,9 +38,13 @@ type UpstashResponse<T> = {
 };
 
 const env = import.meta.env as Record<string, string | undefined>;
+const runtimeEnv =
+  typeof process === "undefined"
+    ? {}
+    : (process.env as Record<string, string | undefined>);
 
 export const getDonationEnv = (key: string, fallback = "") =>
-  env[key]?.trim() || fallback;
+  env[key]?.trim() || runtimeEnv[key]?.trim() || fallback;
 
 const getFirstDonationEnv = (keys: string[], fallback = "") => {
   for (const key of keys) {
