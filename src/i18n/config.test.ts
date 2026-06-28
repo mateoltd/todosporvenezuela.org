@@ -42,6 +42,18 @@ describe("i18n config", () => {
     );
   });
 
+  it("normalizes preferred locale codes by case and whitespace", () => {
+    expect(resolveRequestLocale({ preferredLocale: "ES-VE" })).toBe("es");
+    expect(resolveRequestLocale({ preferredLocale: "  en-GB  " })).toBe("en");
+  });
+
+  it("falls back to the default locale for unknown or empty input", () => {
+    expect(resolveRequestLocale({ preferredLocale: "pt" })).toBe(defaultLocale);
+    expect(resolveRequestLocale({ preferredLocale: "" })).toBe(defaultLocale);
+    expect(resolveRequestLocale({ cookieValue: "fr" })).toBe(defaultLocale);
+    expect(resolveRequestLocale({})).toBe(defaultLocale);
+  });
+
   it("generates deduped alternate links with Spanish x-default", () => {
     const links = getAlternateLinks("home", "https://example.org");
     const hreflangs = links.map((link) => link.hreflang);

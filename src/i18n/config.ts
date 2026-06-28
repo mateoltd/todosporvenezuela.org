@@ -12,7 +12,6 @@ export interface AlternateLink {
 export interface LanguageSelectorOption {
   locale: SupportedLocale;
   href: string;
-  flagEmoji: string;
   label: string;
   shortLabel: string;
 }
@@ -23,7 +22,6 @@ export const localeDefinitions: Record<
     path: SupportedLocale;
     codes: readonly string[];
     htmlLang: string;
-    flagEmoji: string;
     ogLocale: string;
     label: string;
     shortLabel: string;
@@ -32,7 +30,6 @@ export const localeDefinitions: Record<
   es: {
     path: "es",
     codes: ["es", "es-VE", "es-ES", "es-419", "es-US"],
-    flagEmoji: "🇻🇪",
     htmlLang: "es-VE",
     ogLocale: "es_VE",
     label: "Español",
@@ -41,7 +38,6 @@ export const localeDefinitions: Record<
   en: {
     path: "en",
     codes: ["en", "en-US", "en-GB", "en-CA"],
-    flagEmoji: "🇺🇸",
     htmlLang: "en-US",
     ogLocale: "en_US",
     label: "English",
