@@ -9,8 +9,6 @@ export type {
   CampaignContent,
   CampaignFaq,
   CampaignOrganizer,
-  DonationAmountCopy,
-  DonationMethodCopy,
   DonationModalCopy,
 } from "./types";
 export { buildFaqs };
