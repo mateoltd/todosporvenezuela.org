@@ -1,0 +1,75 @@
+---
+import styles from "./DonateButton.module.css";
+
+interface Props {
+    label: string;
+    ariaLabel?: string;
+    variant?: "hero" | "faq" | "compact";
+    class?: string;
+}
+
+const {
+    label,
+    ariaLabel,
+    variant = "hero",
+    class: className,
+} = Astro.props;
+
+const uid = `donate-${Math.random().toString(36).slice(2, 9)}`;
+const fillId = `${uid}-fill`;
+const flagId = `${uid}-flag`;
+
+const heartSize = variant === "hero" ? 26 : variant === "faq" ? 22 : 18;
+const heartPath =
+    "M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.572a5 5 0 1 1 7.5 6.572z";
+---
+
+<button
+    class:list={[styles.button, styles[variant], className]}
+    type="button"
+    data-donate-open
+    aria-label={ariaLabel}
+>
+    <svg
+        class={styles.heart}
+        viewBox="0 0 24 24"
+        width={heartSize}
+        height={heartSize}
+        fill="none"
+        aria-hidden="true"
+        focusable="false"
+    >
+        <defs>
+            <clipPath id={fillId}>
+                <path d={heartPath} />
+            </clipPath>
+            <linearGradient
+                id={flagId}
+                gradientUnits="userSpaceOnUse"
+                x1="12"
+                y1="5"
+                x2="12"
+                y2="20"
+            >
+                <stop offset="0" stop-color="#ffcc00" />
+                <stop offset="0.3333" stop-color="#ffcc00" />
+                <stop offset="0.3333" stop-color="#00247d" />
+                <stop offset="0.6667" stop-color="#00247d" />
+                <stop offset="0.6667" stop-color="#cf142b" />
+                <stop offset="1" stop-color="#cf142b" />
+            </linearGradient>
+        </defs>
+        <g clip-path={`url(#${fillId})`}>
+            <g class="heart-rise">
+                <g class="heart-ripple">
+                    <path
+                        d="M -12 2 q 3 -2 6 0 t 6 0 t 6 0 t 6 0 t 6 0 t 6 0 t 6 0 t 6 0 L 36 40 L -12 40 Z"
+                        fill={`url(#${flagId})`}
+                    />
+                </g>
+            </g>
+        </g>
+        <path class="heart-outline" d={heartPath} />
+    </svg>
+    <span class={styles.label}>{label}</span>
+</button>

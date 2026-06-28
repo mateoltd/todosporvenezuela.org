@@ -1,0 +1,162 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #172029, #071018);
+  color: #fff;
+  font-family: "Archivo", sans-serif;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.button:focus-visible {
+  outline: 3px solid rgba(0, 70, 184, 0.45);
+  outline-offset: 4px;
+}
+
+.hero {
+  min-width: min(100%, 356px);
+  min-height: 62px;
+  gap: 18px;
+  box-shadow: 0 18px 42px rgba(16, 24, 32, 0.24);
+  font-size: 20px;
+}
+
+.faq {
+  min-width: min(100%, 326px);
+  min-height: 60px;
+  gap: 14px;
+  box-shadow: 0 18px 42px rgba(16, 24, 32, 0.2);
+  font-size: 17px;
+}
+
+.compact {
+  min-height: 48px;
+  padding: 0 20px;
+  gap: 9px;
+  box-shadow: 0 12px 26px rgba(16, 24, 32, 0.2);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.faq:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 48px rgba(16, 24, 32, 0.25);
+}
+
+.compact:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(16, 24, 32, 0.26);
+}
+
+.heart {
+  flex: none;
+  overflow: visible;
+}
+
+.heart :global(.heart-outline) {
+  fill: rgba(255, 255, 255, 0.12);
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  transition: fill 480ms ease;
+}
+
+.heart :global(.heart-rise) {
+  transform-box: fill-box;
+  transform: translateY(108%);
+  transition: transform 900ms cubic-bezier(0.32, 0.6, 0.22, 1);
+}
+
+.heart :global(.heart-ripple) {
+  transform-box: fill-box;
+  transform: translateX(0);
+}
+
+.button:hover .heart :global(.heart-rise),
+.button:focus-visible .heart :global(.heart-rise) {
+  transform: translateY(0);
+}
+
+.button:hover .heart :global(.heart-ripple),
+.button:focus-visible .heart :global(.heart-ripple) {
+  animation: heart-ripple 1900ms ease-in-out both;
+}
+
+.button:hover .heart :global(.heart-outline),
+.button:focus-visible .heart :global(.heart-outline) {
+  fill: rgba(255, 255, 255, 0);
+}
+
+@keyframes heart-ripple {
+  0% {
+    transform: translateX(0);
+  }
+  22% {
+    transform: translateX(-1.5px);
+  }
+  46% {
+    transform: translateX(1px);
+  }
+  68% {
+    transform: translateX(-0.55px);
+  }
+  86% {
+    transform: translateX(0.25px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 860px) {
+  .hero {
+    min-width: 100%;
+    min-height: 58px;
+    font-size: 17px;
+  }
+
+  .compact {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    gap: 0;
+  }
+
+  .compact .label {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .faq {
+    width: 100%;
+    min-height: 56px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+
+  .button:hover {
+    transform: none;
+  }
+
+  .button:hover .heart :global(.heart-ripple),
+  .button:focus-visible .heart :global(.heart-ripple) {
+    animation: none;
+  }
+
+  .heart :global(.heart-rise) {
+    transition-duration: 220ms;
+  }
+}

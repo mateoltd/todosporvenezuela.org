@@ -3,6 +3,7 @@ import { Icon } from "astro-icon/components";
 import type { CampaignContent } from "../data/campaign";
 import type { LanguageSelectorOption, SupportedLocale } from "../i18n/config";
 import LanguageSelector from "./LanguageSelector.astro";
+import DonateButton from "./DonateButton.astro";
 import styles from "./SiteHeader.module.css";
 
 interface Props {
@@ -71,10 +72,11 @@ const { copy, links, currentLocale, languageOptions } = Astro.props;
       options={languageOptions}
     />
 
-    <button class={styles.headerDonate} type="button" aria-label={copy.donateAriaLabel} data-donate-open>
-      <span class={styles.donateTextFull}>{copy.donateFull}</span>
-      <span class={styles.donateTextCompact} aria-hidden="true">{copy.donateCompact}</span>
-    </button>
+    <DonateButton
+      variant="compact"
+      label={copy.donateCompact}
+      ariaLabel={copy.donateAriaLabel}
+    />
   </div>
 
   <span class={styles.flagRule} aria-hidden="true"></span>

@@ -129,7 +129,6 @@ export interface CampaignContent {
       faq: string;
     };
     donateAriaLabel: string;
-    donateFull: string;
     donateCompact: string;
     languageSwitchLabel: string;
   };

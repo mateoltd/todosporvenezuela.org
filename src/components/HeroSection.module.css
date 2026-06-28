@@ -175,25 +175,6 @@
   text-align: center;
 }
 
-.primaryCta {
-  display: inline-flex;
-  min-width: min(100%, 356px);
-  min-height: 62px;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  border: 0;
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, #172029, #071018);
-  color: #fff;
-  box-shadow: 0 18px 42px rgba(16, 24, 32, 0.24);
-  font-family: "Archivo", sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
 .paymentNote {
   display: flex;
   flex-wrap: wrap;
@@ -537,13 +518,6 @@
 
   .videoCta {
     margin-top: 14px;
-  }
-
-  .primaryCta {
-    min-width: 100%;
-    min-height: 58px;
-    font-size: 17px;
-    letter-spacing: 0;
   }
 
   .action {

@@ -7,6 +7,7 @@ import {
 } from "../data/optimized-images";
 import type { CampaignContent } from "../data/campaign";
 import ProgressMeter from "./ProgressMeter.astro";
+import DonateButton from "./DonateButton.astro";
 import styles from "./HeroSection.module.css";
 
 interface Props {
@@ -91,10 +92,7 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
         <ProgressMeter raised={raised} goal={goal} copy={progressCopy} />
 
         <div class={styles.action}>
-            <button class={styles.primaryCta} type="button" data-donate-open>
-                <Icon name="tabler:heart-filled" size={26} />
-                <span>{copy.donateCta}</span>
-            </button>
+            <DonateButton variant="hero" label={copy.donateCta} />
             <p class={styles.paymentNote}>
                 {copy.paymentNote}
                 <span aria-label="PayPal">

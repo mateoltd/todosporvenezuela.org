@@ -53,7 +53,6 @@ export const enContent: CampaignContent = {
         faq: "FAQ",
       },
       donateAriaLabel: "Donate now",
-      donateFull: "Donate now",
       donateCompact: "Donate",
       languageSwitchLabel: "Change language",
     },

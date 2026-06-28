@@ -52,7 +52,6 @@ export const esContent: CampaignContent = {
         faq: "FAQ",
       },
       donateAriaLabel: "Donar ahora",
-      donateFull: "Donar ahora",
       donateCompact: "Donar",
       languageSwitchLabel: "Cambiar idioma",
     },

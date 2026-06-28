@@ -6,6 +6,7 @@ import {
   type CampaignContent,
   type CampaignFaq,
 } from "../data/campaign";
+import DonateButton from "./DonateButton.astro";
 import styles from "./FaqSection.module.css";
 
 interface Props {
@@ -67,10 +68,7 @@ const { faqs = buildFaqs(), copy = fallbackContent.faqSection } = Astro.props;
     </div>
 
     <div class={styles.action}>
-      <button class={styles.donateCta} type="button" data-donate-open>
-        <Icon name="tabler:heart-filled" size={22} aria-hidden="true" />
-        <span>{copy.donateCta}</span>
-      </button>
+      <DonateButton variant="faq" label={copy.donateCta} />
     </div>
   </div>
 </section>
