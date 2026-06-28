@@ -1,20 +1,11 @@
 import type { APIRoute } from "astro";
+import { getConfiguredSiteBaseUrl } from "../lib/config/env";
 import {
   modifiedDate,
   pageDescription,
   pageTitle,
-  siteUrlFallback,
   socialImage
 } from "../data/campaign";
-
-const normalizeSiteUrl = (value: string) => {
-  const candidate = value.trim() || siteUrlFallback;
-  const withProtocol = /^https?:\/\//i.test(candidate)
-    ? candidate
-    : `https://${candidate}`;
-
-  return new URL(withProtocol).origin;
-};
 
 const escapeXml = (value: string) =>
   value
@@ -25,9 +16,7 @@ const escapeXml = (value: string) =>
     .replaceAll("'", "&apos;");
 
 export const GET: APIRoute = ({ site, url }) => {
-  const siteBaseUrl = normalizeSiteUrl(
-    import.meta.env.PUBLIC_SITE_URL || site?.toString() || url.origin
-  );
+  const siteBaseUrl = getConfiguredSiteBaseUrl(site?.toString() || url.origin);
   const homeUrl = new URL("/", `${siteBaseUrl}/`).href;
   const transparencyUrl = new URL("/transparencia", `${siteBaseUrl}/`).href;
   const imageUrl = new URL(socialImage.path, homeUrl).href;

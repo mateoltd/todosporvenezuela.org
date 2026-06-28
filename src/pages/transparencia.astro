@@ -1,10 +1,10 @@
 ---
 import TransparencySection from "../components/TransparencySection.astro";
 import PublicLayout from "../layouts/PublicLayout.astro";
+import { getConfiguredSiteBaseUrl } from "../lib/config/env";
 import {
   language,
   siteName,
-  siteUrlFallback,
   socialImage,
 } from "../data/campaign";
 
@@ -16,19 +16,8 @@ Astro.response.headers.set("CDN-Cache-Control", "no-store");
 Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
 Astro.response.headers.set("Surrogate-Control", "no-store");
 
-const env = import.meta.env as Record<string, string | undefined>;
-const getEnv = (key: string, fallback = "") => env[key]?.trim() || fallback;
-const normalizeSiteUrl = (value: string) => {
-  const candidate = value.trim() || siteUrlFallback;
-  const withProtocol = /^https?:\/\//i.test(candidate)
-    ? candidate
-    : `https://${candidate}`;
-
-  return new URL(withProtocol).origin;
-};
-
-const siteBaseUrl = normalizeSiteUrl(
-  getEnv("PUBLIC_SITE_URL", Astro.site?.toString() ?? Astro.url.origin),
+const siteBaseUrl = getConfiguredSiteBaseUrl(
+  Astro.site?.toString() ?? Astro.url.origin,
 );
 const canonicalUrl = new URL(Astro.url.pathname, `${siteBaseUrl}/`).href;
 const socialImageUrl = new URL(socialImage.path, `${siteBaseUrl}/`).href;

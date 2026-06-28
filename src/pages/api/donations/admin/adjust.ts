@@ -4,9 +4,9 @@ import {
   getDonationAdminHeaders,
   requireDonationAdminApiAuth,
 } from "../../../../lib/donations/adminAuth";
+import { getDonationEnvConfig } from "../../../../lib/donations/config";
 import {
   donationJson,
-  getDonationEnv,
   recordDonation,
 } from "../../../../lib/donations/progress";
 
@@ -44,12 +44,8 @@ const normalizeSource = (value: unknown) =>
     .replace(/^_+|_+$/g, "")
     .slice(0, 40);
 
-const maxTopUpCents = () => {
-  const configured = parseAdminAmountToCents(getDonationEnv("DONATION_ADMIN_MAX_TOP_UP_USD"));
-  return configured > 0 ? configured : 1_000_000;
-};
-
 export const POST: APIRoute = async ({ request }) => {
+  const config = getDonationEnvConfig();
   const auth = requireDonationAdminApiAuth(request);
 
   if (!auth.ok) {
@@ -71,7 +67,7 @@ export const POST: APIRoute = async ({ request }) => {
   const source = normalizeSource(body?.source);
   const reference = String(body?.reference || "").trim();
   const note = String(body?.note || "").trim();
-  const currency = String(body?.currency || getDonationEnv("DONATION_CURRENCY", "USD")).toUpperCase();
+  const currency = String(body?.currency || config.currency).toUpperCase();
 
   if (!body || amountCents <= 0) {
     return donationJson({ ok: false, error: "invalid_amount" }, { status: 400 });
@@ -93,7 +89,7 @@ export const POST: APIRoute = async ({ request }) => {
     return donationJson({ ok: false, error: "note_too_long" }, { status: 400 });
   }
 
-  if (amountCents > maxTopUpCents()) {
+  if (amountCents > config.adminMaxTopUpCents) {
     return donationJson({ ok: false, error: "amount_too_large" }, { status: 400 });
   }
 

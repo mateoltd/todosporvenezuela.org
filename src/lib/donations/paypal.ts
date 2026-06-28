@@ -1,8 +1,8 @@
 import {
-  getDonationConfig,
-  getDonationEnv,
+  getDonationEnvConfig,
+  getDonationSiteBaseUrl,
   parseAmountToCents,
-} from "./progress";
+} from "./config";
 
 type ParsedIpn =
   | {
@@ -17,33 +17,17 @@ type ParsedIpn =
       raw: Record<string, string>;
     };
 
-const csv = (value: string) =>
-  value
-    .split(",")
-    .map((item) => item.trim().toLowerCase())
-    .filter(Boolean);
+export const getPayPalItemName = () => getDonationEnvConfig().paypalItemName;
 
-export const getPayPalItemName = () =>
-  getDonationEnv(
-    "DONATION_PAYPAL_ITEM_NAME",
-    "Ayuda para insumos médicos, alimentación e hidratación en Venezuela.",
-  );
-
-export const getPayPalItemNumber = () =>
-  getDonationEnv("DONATION_PAYPAL_ITEM_NUMBER", "donacion-terremoto");
+export const getPayPalItemNumber = () => getDonationEnvConfig().paypalItemNumber;
 
 export const getPayPalNotifyUrl = (fallbackSiteUrl = "") => {
-  const siteUrl = getDonationEnv("PUBLIC_SITE_URL", fallbackSiteUrl).replace(/\/+$/, "");
+  const siteUrl = getDonationSiteBaseUrl(fallbackSiteUrl);
   return siteUrl ? new URL("/api/donations/paypal/ipn", siteUrl).toString() : "";
 };
 
 export const getPayPalIpnVerifyUrl = () => {
-  const override = getDonationEnv("PAYPAL_IPN_VERIFY_URL");
-  if (override) return override;
-
-  return getDonationEnv("PUBLIC_DONATION_ENV", "production") === "sandbox"
-    ? "https://ipnpb.sandbox.paypal.com/cgi-bin/webscr"
-    : "https://ipnpb.paypal.com/cgi-bin/webscr";
+  return getDonationEnvConfig().paypalIpnVerifyUrl;
 };
 
 export const verifyPayPalIpn = async (rawBody: string) => {
@@ -70,8 +54,8 @@ const paramsToRecord = (params: URLSearchParams) =>
   }, {});
 
 const receiverIsAllowed = (raw: Record<string, string>) => {
-  const allowedEmails = csv(getDonationEnv("PAYPAL_RECEIVER_EMAILS"));
-  const allowedIds = csv(getDonationEnv("PAYPAL_RECEIVER_IDS"));
+  const { paypalReceiverEmails: allowedEmails, paypalReceiverIds: allowedIds } =
+    getDonationEnvConfig();
 
   if (!allowedEmails.length && !allowedIds.length) return true;
 
@@ -85,7 +69,7 @@ const receiverIsAllowed = (raw: Record<string, string>) => {
 };
 
 export const parsePayPalIpnDonation = (params: URLSearchParams): ParsedIpn => {
-  const config = getDonationConfig();
+  const config = getDonationEnvConfig();
   const raw = paramsToRecord(params);
   const status = raw.payment_status || "";
   const currency = (raw.mc_currency || "").toUpperCase();

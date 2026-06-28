@@ -1,16 +1,9 @@
-type DonationConfig = {
-  baselineCents: number;
-  currency: string;
-  goalCents: number;
-  keys: {
-    recentEvents: string;
-    total: string;
-    updatedAt: string;
-  };
-  redisRestReadOnlyToken: string;
-  redisRestToken: string;
-  redisRestUrl: string;
-};
+import {
+  getDonationEnvConfig,
+  type DonationRuntimeConfig,
+} from "./config";
+
+export { getDonationEnv, parseAmountToCents } from "./config";
 
 export type DonationSnapshot = {
   currency: string;
@@ -37,43 +30,7 @@ type UpstashResponse<T> = {
   result?: T;
 };
 
-const env = import.meta.env as Record<string, string | undefined>;
-const runtimeEnv =
-  typeof process === "undefined"
-    ? {}
-    : (process.env as Record<string, string | undefined>);
-
-export const getDonationEnv = (key: string, fallback = "") =>
-  env[key]?.trim() || runtimeEnv[key]?.trim() || fallback;
-
-const getFirstDonationEnv = (keys: string[], fallback = "") => {
-  for (const key of keys) {
-    const value = getDonationEnv(key);
-    if (value) return value;
-  }
-
-  return fallback;
-};
-
-export const parseAmountToCents = (value: number | string | null | undefined) => {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? Math.round(value * 100) : 0;
-  }
-
-  const normalized = String(value ?? "")
-    .trim()
-    .replace(/[$,\s]/g, "");
-  const parsed = Number.parseFloat(normalized);
-
-  return Number.isFinite(parsed) ? Math.round(parsed * 100) : 0;
-};
-
 export const centsToAmount = (cents: number) => Number((cents / 100).toFixed(2));
-
-const toPositiveCents = (value: string, fallback: string) => {
-  const cents = parseAmountToCents(value || fallback);
-  return cents > 0 ? cents : parseAmountToCents(fallback);
-};
 
 const cleanKeyPart = (value: string) =>
   value
@@ -81,44 +38,7 @@ const cleanKeyPart = (value: string) =>
     .replace(/[^\w:.-]+/g, "_")
     .slice(0, 180);
 
-export const getDonationConfig = (): DonationConfig => {
-  const prefix = getDonationEnv("DONATION_REDIS_PREFIX", "tpv:donations");
-  const currency = getDonationEnv(
-    "DONATION_CURRENCY",
-    getDonationEnv("PUBLIC_DONATION_CURRENCY", "USD"),
-  ).toUpperCase();
-
-  return {
-    baselineCents: toPositiveCents(
-      getDonationEnv(
-        "DONATION_BASELINE_RAISED_USD",
-        getDonationEnv("PUBLIC_DONATION_INITIAL_RAISED_USD"),
-      ),
-      "100",
-    ),
-    currency,
-    goalCents: toPositiveCents(
-      getDonationEnv("DONATION_GOAL_USD", getDonationEnv("PUBLIC_DONATION_GOAL_USD")),
-      "800",
-    ),
-    keys: {
-      recentEvents: `${prefix}:events:recent`,
-      total: `${prefix}:raised_cents`,
-      updatedAt: `${prefix}:updated_at`,
-    },
-    redisRestReadOnlyToken: getFirstDonationEnv([
-      "UPSTASH_REDIS_REST_READ_ONLY_TOKEN",
-      "KV_REST_API_READ_ONLY_TOKEN",
-      "UPSTASH_REDIS_REST_TOKEN",
-      "KV_REST_API_TOKEN",
-    ]),
-    redisRestToken: getFirstDonationEnv(["UPSTASH_REDIS_REST_TOKEN", "KV_REST_API_TOKEN"]),
-    redisRestUrl: getFirstDonationEnv(["UPSTASH_REDIS_REST_URL", "KV_REST_API_URL"]).replace(
-      /\/+$/,
-      "",
-    ),
-  };
-};
+export const getDonationConfig = (): DonationRuntimeConfig => getDonationEnvConfig();
 
 export const hasRedisConfig = (config = getDonationConfig()) =>
   Boolean(config.redisRestUrl && config.redisRestToken);
@@ -127,7 +47,7 @@ export const hasRedisReadConfig = (config = getDonationConfig()) =>
   Boolean(config.redisRestUrl && (config.redisRestReadOnlyToken || config.redisRestToken));
 
 const buildSnapshot = (
-  config: DonationConfig,
+  config: DonationRuntimeConfig,
   redisRaisedCents: number,
   source: DonationSnapshot["source"],
   updatedAt: string | null,
@@ -151,7 +71,7 @@ const buildSnapshot = (
 };
 
 const redisCommand = async <T>(
-  config: DonationConfig,
+  config: DonationRuntimeConfig,
   command: unknown[],
   options: { readOnly?: boolean } = {},
 ): Promise<T> => {
@@ -228,9 +148,7 @@ export const recordDonation = async (input: DonationRecordInput) => {
   }
 
   const receivedAt = input.receivedAt || new Date().toISOString();
-  const eventKey = `${getDonationEnv("DONATION_REDIS_PREFIX", "tpv:donations")}:event:${cleanKeyPart(
-    input.id,
-  )}`;
+  const eventKey = `${config.redisPrefix}:event:${cleanKeyPart(input.id)}`;
   const payload = JSON.stringify({
     amountCents: input.amountCents,
     currency: input.currency.toUpperCase(),

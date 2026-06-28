@@ -1,14 +1,10 @@
 import type { APIRoute } from "astro";
-import { getDonationEnv, getDonationSnapshot } from "../../../lib/donations/progress";
+import { getDonationEnvConfig } from "../../../lib/donations/config";
+import { getDonationSnapshot } from "../../../lib/donations/progress";
 
 export const prerender = false;
 
 const encoder = new TextEncoder();
-
-const toPositiveNumber = (value: string, fallback: number) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-};
 
 const encodeEvent = (event: string, data: unknown) =>
   encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -19,8 +15,8 @@ const isClosedControllerError = (error: unknown) =>
     error.message.toLowerCase().includes("controller is already closed"));
 
 export const GET: APIRoute = () => {
-  const intervalMs = toPositiveNumber(getDonationEnv("DONATION_SSE_INTERVAL_MS"), 3000);
-  const maxDurationMs = toPositiveNumber(getDonationEnv("DONATION_SSE_MAX_DURATION_MS"), 25000);
+  const { sseIntervalMs: intervalMs, sseMaxDurationMs: maxDurationMs } =
+    getDonationEnvConfig();
   let closed = false;
   let intervalId: ReturnType<typeof setInterval> | undefined;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;

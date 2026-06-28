@@ -6,6 +6,8 @@ import OrganizersSection from "../components/OrganizersSection.astro";
 import PublicLayout from "../layouts/PublicLayout.astro";
 import { getDonationSnapshot } from "../lib/donations/progress";
 import { buildDonationConfig } from "../lib/donations/config";
+import { getConfiguredSiteBaseUrl } from "../lib/config/env";
+import { getOrganizerVideoConfig } from "../lib/config/public";
 import {
     optimizedImageSrc,
     optimizedImageSrcSet,
@@ -21,7 +23,6 @@ import {
     pageTitle,
     publishedDate,
     siteName,
-    siteUrlFallback,
     socialDescription,
     socialImage,
     socialTitle,
@@ -39,34 +40,10 @@ Astro.response.headers.set("CDN-Cache-Control", "no-store");
 Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
 Astro.response.headers.set("Surrogate-Control", "no-store");
 
-const env = import.meta.env as Record<string, string | undefined>;
-const getEnv = (key: string, fallback = "") => env[key]?.trim() || fallback;
-const normalizeSiteUrl = (value: string) => {
-    const candidate = value.trim() || siteUrlFallback;
-    const withProtocol = /^https?:\/\//i.test(candidate)
-        ? candidate
-        : `https://${candidate}`;
-
-    return new URL(withProtocol).origin;
-};
-const organizerVideoUrl = getEnv(
-    "PUBLIC_ORGANIZER_VIDEO_URL",
-    "https://www.instagram.com/p/DaD7tL_vjyc/",
-);
-const organizerVideo = {
-    src: getEnv(
-        "PUBLIC_ORGANIZER_VIDEO_SRC",
-        "https://media.mateo.ltd/proj/AQOjGu8elxJIMIT21rU3HW79VS3vEg36BXl1x19_ewzoNvDxVhmaYJl2yWMxY1Vdvc0pwnyg75qRn3ej1DwzRFqtK06kXueZ.mp4",
-    ),
-    sourceUrl: organizerVideoUrl,
-    title: getEnv(
-        "PUBLIC_ORGANIZER_VIDEO_TITLE",
-        "Video de los organizadores de Todos por Venezuela",
-    ),
-};
-
-const siteBaseUrl = normalizeSiteUrl(
-    getEnv("PUBLIC_SITE_URL", Astro.site?.toString() ?? Astro.url.origin),
+const organizerVideo = getOrganizerVideoConfig();
+const organizerVideoUrl = organizerVideo.sourceUrl;
+const siteBaseUrl = getConfiguredSiteBaseUrl(
+    Astro.site?.toString() ?? Astro.url.origin,
 );
 const canonicalUrl = new URL(Astro.url.pathname, `${siteBaseUrl}/`).href;
 const donateUrl = new URL("#donar", canonicalUrl).href;
@@ -88,7 +65,7 @@ const primaryImageId = `${canonicalUrl}#primaryimage`;
 const donationActionId = `${canonicalUrl}#donate-action`;
 const faqPageId = `${canonicalUrl}#faq-page`;
 
-const donation = buildDonationConfig(env, Astro.url.origin);
+const donation = buildDonationConfig(Astro.url.origin);
 const pageFaqs = buildFaqs(donation.binance.coin);
 
 const heroImageName = "venezuela-earthquake-hero-aid";

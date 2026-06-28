@@ -1,5 +1,5 @@
 import { createHmac, randomBytes } from "node:crypto";
-import { getDonationEnv } from "./progress";
+import { getDonationEnvConfig } from "./config";
 
 type AdminAuth =
   | { ok: true; method: "basic" | "bearer" | "session" }
@@ -83,9 +83,9 @@ const getBearerToken = (request: Request) => {
   return token || request.headers.get("x-donation-admin-token") || "";
 };
 
-const getAdminUsername = () => getDonationEnv("DONATION_ADMIN_USERNAME");
-const getAdminPassword = () => getDonationEnv("DONATION_ADMIN_PASSWORD");
-const getAdminToken = () => getDonationEnv("DONATION_ADMIN_TOKEN");
+const getAdminUsername = () => getDonationEnvConfig().adminUsername;
+const getAdminPassword = () => getDonationEnvConfig().adminPassword;
+const getAdminToken = () => getDonationEnvConfig().adminToken;
 
 const hasBasicAdminCredentials = () => Boolean(getAdminUsername() && getAdminPassword());
 
@@ -112,7 +112,7 @@ const normalizedOrigin = (value: string) => {
 const getAllowedOrigins = (request: Request) => {
   const requestUrl = new URL(request.url);
   const origins = new Set([requestUrl.origin]);
-  const publicSiteUrl = getDonationEnv("PUBLIC_SITE_URL");
+  const publicSiteUrl = getDonationEnvConfig().publicSiteUrl;
   const forwardedHost =
     firstHeaderValue(request.headers.get("x-forwarded-host")) ||
     firstHeaderValue(request.headers.get("host"));

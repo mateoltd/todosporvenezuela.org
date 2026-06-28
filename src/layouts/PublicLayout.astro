@@ -52,10 +52,7 @@ const ogType = props.ogType ?? "website";
 const ogLocale = props.ogLocale ?? defaultLocale;
 const ogUrl = props.ogUrl ?? canonicalUrl;
 const isSecureSocialImage = props.socialImageUrl.startsWith("https://");
-const donation = buildDonationConfig(
-  import.meta.env as Record<string, string | undefined>,
-  Astro.url.origin,
-);
+const donation = buildDonationConfig(Astro.url.origin);
 const microsoftClarityProjectId = "xduul4uyvv";
 const googleAnalyticsMeasurementId = "G-EX089GZ90V";
 const microsoftClarityScript = `
