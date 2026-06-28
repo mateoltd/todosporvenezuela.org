@@ -119,25 +119,15 @@ export const getAlternateLinks = (
   routeKey: LocalizedRouteKey,
   siteBaseUrl: string,
 ): AlternateLink[] => {
-  const links = supportedLocales.flatMap((locale) => {
-    const href = getLocalizedUrl(routeKey, locale, siteBaseUrl);
-    const languageCode = localeDefinitions[locale].htmlLang;
-
-    return [
-      { hreflang: locale, href },
-      { hreflang: languageCode, href },
-    ];
-  });
+  const links: AlternateLink[] = supportedLocales.map((locale) => ({
+    hreflang: locale,
+    href: getLocalizedUrl(routeKey, locale, siteBaseUrl),
+  }));
 
   links.push({
     hreflang: "x-default",
     href: getLocalizedUrl(routeKey, defaultLocale, siteBaseUrl),
   });
 
-  const seen = new Set<string>();
-  return links.filter((link) => {
-    if (seen.has(link.hreflang)) return false;
-    seen.add(link.hreflang);
-    return true;
-  });
+  return links;
 };

@@ -54,18 +54,11 @@ describe("i18n config", () => {
     expect(resolveRequestLocale({})).toBe(defaultLocale);
   });
 
-  it("generates deduped alternate links with Spanish x-default", () => {
-    const links = getAlternateLinks("home", "https://example.org");
-    const hreflangs = links.map((link) => link.hreflang);
-
-    expect(new Set(hreflangs).size).toBe(hreflangs.length);
-    expect(links).toContainEqual({
-      hreflang: "x-default",
-      href: "https://example.org/es/",
-    });
-    expect(links).toContainEqual({
-      hreflang: "en-US",
-      href: "https://example.org/en/",
-    });
+  it("generates language-level alternate links with Spanish x-default", () => {
+    expect(getAlternateLinks("home", "https://example.org")).toEqual([
+      { hreflang: "es", href: "https://example.org/es/" },
+      { hreflang: "en", href: "https://example.org/en/" },
+      { hreflang: "x-default", href: "https://example.org/es/" },
+    ]);
   });
 });
