@@ -1,10 +1,16 @@
 ---
+import { staticOptimizedImageSrc } from "../data/optimized-images";
+
 interface Props {
   raised: number;
   goal: number;
 }
 
 const { raised, goal } = Astro.props;
+const meterImageSrc = staticOptimizedImageSrc(
+  "venezuela-earthquake-aid-distribution-meter",
+  "jpg"
+);
 
 const percent = goal > 0 ? Math.max(0, Math.min(100, Math.round((raised / goal) * 100))) : 0;
 const pollMs = Number(import.meta.env.PUBLIC_DONATION_PROGRESS_POLL_MS ?? 15000);
@@ -125,7 +131,7 @@ const redSpecks = [
 
       <rect x="-10" y="-5" width="375" height="140" fill="#f6bf00" />
       <image
-        href="/images/optimized/venezuela-earthquake-aid-distribution-meter.jpg"
+        href={meterImageSrc}
         x="0"
         y="0"
         width="360"

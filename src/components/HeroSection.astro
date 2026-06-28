@@ -1,5 +1,10 @@
 ---
 import { Icon } from "astro-icon/components";
+import {
+    optimizedImageSrc,
+    optimizedImageSrcSet,
+    staticOptimizedImageSrc,
+} from "../data/optimized-images";
 import ProgressMeter from "./ProgressMeter.astro";
 import styles from "./HeroSection.module.css";
 
@@ -15,32 +20,32 @@ interface Props {
 
 const { raised, goal, organizerVideo } = Astro.props;
 const hasOrganizerVideo = Boolean(organizerVideo?.src);
+const heroImageName = "venezuela-earthquake-hero-aid";
 const heroWidths = [640, 960, 1280, 1680, 2240];
 const heroSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
 const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
-    heroWidths
-        .map(
-            (width) =>
-                `/images/optimized/venezuela-earthquake-hero-aid-${width}.${format} ${width}w`,
-        )
-        .join(", ");
+    optimizedImageSrcSet(heroImageName, heroWidths, format);
+const heroFallbackSrc = optimizedImageSrc(heroImageName, 1280, "jpg");
+const heroPlaceholderSrc = staticOptimizedImageSrc(
+    "venezuela-earthquake-hero-aid-lqip",
+    "jpg",
+);
 ---
 
 <section class={styles.hero} aria-labelledby="hero-title">
-    <div class={styles.media} aria-hidden="true">
-        <picture>
-            <source
-                srcset={heroSrcSet("avif")}
-                sizes={heroSizes}
-                type="image/avif"
-            />
+    <div
+        class={styles.media}
+        aria-hidden="true"
+        style={`--hero-placeholder-image: url("${heroPlaceholderSrc}")`}
+    >
+        <picture data-critical-picture>
             <source
                 srcset={heroSrcSet("webp")}
                 sizes={heroSizes}
                 type="image/webp"
             />
             <img
-                src="/images/optimized/venezuela-earthquake-hero-aid-1280.jpg"
+                src={heroFallbackSrc}
                 srcset={heroSrcSet("jpg")}
                 sizes={heroSizes}
                 alt=""
@@ -49,6 +54,9 @@ const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
                 decoding="async"
                 loading="eager"
                 fetchpriority="high"
+                data-fallback-src={heroFallbackSrc}
+                data-fallback-srcset={heroSrcSet("jpg")}
+                data-fallback-sizes={heroSizes}
             />
         </picture>
     </div>
@@ -164,6 +172,49 @@ const heroSrcSet = (format: "avif" | "webp" | "jpg") =>
         </div>
     )
 }
+
+<script>
+    document.querySelectorAll("[data-critical-picture]").forEach((picture) => {
+        if (!(picture instanceof HTMLElement)) return;
+
+        const image = picture.querySelector<HTMLImageElement>(
+            "img[data-fallback-src]",
+        );
+        if (!(image instanceof HTMLImageElement)) return;
+
+        let usedFallback = false;
+        let watchdogId: number | undefined;
+
+        const useFallback = () => {
+            if (usedFallback || (image.complete && image.naturalWidth > 0)) return;
+
+            usedFallback = true;
+            picture.querySelectorAll("source").forEach((source) => source.remove());
+
+            if (image.dataset.fallbackSrcset) {
+                image.srcset = image.dataset.fallbackSrcset;
+            }
+            if (image.dataset.fallbackSizes) {
+                image.sizes = image.dataset.fallbackSizes;
+            }
+            if (image.dataset.fallbackSrc) {
+                image.src = image.dataset.fallbackSrc;
+            }
+        };
+
+        if (image.complete && image.naturalWidth > 0) return;
+
+        watchdogId = window.setTimeout(useFallback, 8000);
+        image.addEventListener(
+            "load",
+            () => {
+                if (watchdogId) window.clearTimeout(watchdogId);
+            },
+            { once: true },
+        );
+        image.addEventListener("error", useFallback, { once: true });
+    });
+</script>
 
 <script>
     const videoModal = document.querySelector<HTMLElement>("[data-video-modal]");

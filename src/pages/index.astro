@@ -7,11 +7,9 @@ import PublicLayout from "../layouts/PublicLayout.astro";
 import { getDonationSnapshot } from "../lib/donations/progress";
 import { buildDonationConfig } from "../lib/donations/config";
 import {
-    devastationImageSizes,
-    devastationImageSrc,
-    devastationImageSrcSet,
-    devastationSlides,
-} from "../data/devastation-carousel";
+    optimizedImageSrc,
+    optimizedImageSrcSet,
+} from "../data/optimized-images";
 import {
     buildFaqs,
     campaignKeywords,
@@ -93,27 +91,15 @@ const faqPageId = `${canonicalUrl}#faq-page`;
 const donation = buildDonationConfig(env, Astro.url.origin);
 const pageFaqs = buildFaqs(donation.binance.coin);
 
-const heroImageSrcSet = [
-    640,
-    960,
-    1280,
-    1680,
-    2240,
-].map(
-    (width) =>
-        `/images/optimized/venezuela-earthquake-hero-aid-${width}.avif ${width}w`,
-).join(", ");
+const heroImageName = "venezuela-earthquake-hero-aid";
+const heroImageWidths = [640, 960, 1280, 1680, 2240];
+const heroImageSrc = optimizedImageSrc(heroImageName, 1280, "webp");
+const heroImageSrcSet = optimizedImageSrcSet(
+    heroImageName,
+    heroImageWidths,
+    "webp",
+);
 const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
-const firstCarouselSlide = devastationSlides[0];
-const firstCarouselImageSrcSet = devastationImageSrcSet(
-    firstCarouselSlide,
-    "avif",
-);
-const firstCarouselImageHref = devastationImageSrc(
-    firstCarouselSlide.image,
-    720,
-    "avif",
-);
 const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -232,20 +218,11 @@ const structuredDataJson = JSON.stringify(structuredData).replace(
         <link
             rel="preload"
             as="image"
-            href="/images/optimized/venezuela-earthquake-hero-aid-1280.avif"
-            type="image/avif"
+            href={heroImageSrc}
+            type="image/webp"
             imagesrcset={heroImageSrcSet}
             imagesizes={heroImageSizes}
             fetchpriority="high"
-        />
-        <link
-            rel="preload"
-            as="image"
-            href={firstCarouselImageHref}
-            type="image/avif"
-            imagesrcset={firstCarouselImageSrcSet}
-            imagesizes={devastationImageSizes}
-            fetchpriority="low"
         />
         <script type="application/ld+json" set:html={structuredDataJson}></script>
     </Fragment>

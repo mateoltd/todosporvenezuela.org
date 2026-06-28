@@ -1,3 +1,9 @@
+import {
+    optimizedImageSrc,
+    optimizedImageSrcSet,
+    type OptimizedImageFormat,
+} from "./optimized-images";
+
 // Fotos de prensa verificadas via NPR.
 const nprDayOf =
     "https://www.npr.org/2026/06/24/nx-s1-5869817/2-major-earthquakes-strike-northern-venezuela-near-caracas";
@@ -73,24 +79,21 @@ export const devastationSlides = [
 ] as const;
 
 export type DevastationSlide = (typeof devastationSlides)[number];
-export type DevastationImageFormat = "avif" | "webp" | "jpg";
+export type DevastationImageFormat = OptimizedImageFormat;
 
 export const devastationImageSizes = "100vw";
 export const devastationFallbackImageWidth = 720;
 
 export const devastationImageSrc = (
-    name: string,
+    name: DevastationSlide["image"],
     width: number,
     format: DevastationImageFormat,
-) => `/images/optimized/${name}-${width}.${format}`;
+) => optimizedImageSrc(name, width, format);
 
-export const devastationFallbackImageSrc = (name: string) =>
+export const devastationFallbackImageSrc = (name: DevastationSlide["image"]) =>
     devastationImageSrc(name, devastationFallbackImageWidth, "jpg");
 
 export const devastationImageSrcSet = (
     slide: DevastationSlide,
     format: DevastationImageFormat,
-) =>
-    slide.widths
-        .map((width) => `${devastationImageSrc(slide.image, width, format)} ${width}w`)
-        .join(", ");
+) => optimizedImageSrcSet(slide.image, slide.widths, format);

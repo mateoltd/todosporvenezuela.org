@@ -73,9 +73,9 @@ const imagePlaceholder =
                 alt={slide.alt}
                 width={slide.width}
                 height={slide.height}
-                loading={index === 0 ? "eager" : "lazy"}
+                loading="lazy"
                 decoding="async"
-                fetchpriority={index === 0 ? "auto" : "low"}
+                fetchpriority="low"
               />
             </picture>
             <figcaption class={styles.caption}>
