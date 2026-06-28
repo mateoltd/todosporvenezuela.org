@@ -6,7 +6,7 @@ import {
   requireDonationAdminPageAuth,
 } from "../../../lib/donations/adminAuth";
 import { getDonationSnapshot } from "../../../lib/donations/progress";
-import { language, siteName } from "../../../data/campaign";
+import { getLocaleContent } from "../../../data/campaign";
 
 export const prerender = false;
 
@@ -25,9 +25,10 @@ if (!auth.ok && !showsLogin) {
 const snapshot = auth.ok ? await getDonationSnapshot() : null;
 const csrfToken = auth.ok ? createDonationAdminCsrfToken() : "";
 const currency = snapshot?.currency || "USD";
+const content = getLocaleContent("es");
 const title = auth.ok
-  ? `Top-up de donaciones | ${siteName}`
-  : `Acceso privado | ${siteName}`;
+  ? `Top-up de donaciones | ${content.siteName}`
+  : `Acceso privado | ${content.siteName}`;
 
 const money = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -47,7 +48,7 @@ const updatedLabel = snapshot?.updatedAt
 ---
 
 <!doctype html>
-<html lang={language}>
+<html lang={content.language}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

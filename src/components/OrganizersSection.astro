@@ -1,26 +1,40 @@
 ---
 import { Icon } from "astro-icon/components";
-import { affiliationText, organizers } from "../data/campaign";
+import {
+  getLocaleContent,
+  type CampaignContent,
+  type CampaignOrganizer,
+} from "../data/campaign";
 import styles from "./OrganizersSection.module.css";
+
+interface Props {
+  copy?: CampaignContent["organizersSection"];
+  organizers?: CampaignOrganizer[];
+}
+
+const fallbackContent = getLocaleContent();
+const {
+  copy = fallbackContent.organizersSection,
+  organizers = fallbackContent.organizers,
+} = Astro.props;
 ---
 
 <section class={styles.section} id="transparencia" aria-labelledby="organizers-title">
   <div class={styles.inner}>
     <div class={styles.heading}>
-      <p class={styles.eyebrow}>Coordinación local</p>
+      <p class={styles.eyebrow}>{copy.eyebrow}</p>
       <h2 id="organizers-title">
-        <span>Equipo <strong>humano</strong></span>
+        <span>{copy.titlePrefix} <strong>{copy.titleStrong}</strong></span>
       </h2>
       <p>
-        Cuatro voluntarios coordinan compras, entregas y reportes desde Venezuela.
-        Forman parte de {affiliationText}.
+        {copy.bodyPrefix} {copy.affiliationText}.
       </p>
 
       <aside class={styles.callout}>
         <span class={styles.calloutIcon} aria-hidden="true">
           <Icon name="tabler:heart-handshake" size={28} />
         </span>
-        <p>Trabajamos en conjunto para convertir cada donación en ayuda verificable para familias afectadas.</p>
+        <p>{copy.callout}</p>
       </aside>
     </div>
 
@@ -33,14 +47,14 @@ import styles from "./OrganizersSection.module.css";
               href={person.instagram}
               target="_blank"
               rel="noreferrer"
-              aria-label={`Instagram de ${person.name}`}
+              aria-label={copy.instagramLabel.replace("{name}", person.name)}
             >
               <picture>
                 <source srcset={`${person.image}.webp`} type="image/webp" />
                 <img
                   class={styles.photo}
                   src={`${person.image}.jpg`}
-                  alt={`Foto de perfil de ${person.name}`}
+                  alt={copy.photoAlt.replace("{name}", person.name)}
                   width="384"
                   height="384"
                   loading="lazy"
@@ -54,11 +68,11 @@ import styles from "./OrganizersSection.module.css";
               <h3>{person.name}</h3>
             </div>
 
-            <div class={styles.socials} aria-label={`Redes sociales de ${person.name}`}>
-              <a href={person.instagram} target="_blank" rel="noreferrer" aria-label={`Instagram de ${person.name}`}>
+            <div class={styles.socials} aria-label={copy.socialsLabel.replace("{name}", person.name)}>
+              <a href={person.instagram} target="_blank" rel="noreferrer" aria-label={copy.instagramLabel.replace("{name}", person.name)}>
                 <Icon name="tabler:brand-instagram" size={20} aria-hidden="true" />
               </a>
-              <a href={person.tiktok} target="_blank" rel="noreferrer" aria-label={`TikTok de ${person.name}`}>
+              <a href={person.tiktok} target="_blank" rel="noreferrer" aria-label={copy.tiktokLabel.replace("{name}", person.name)}>
                 <Icon name="tabler:brand-tiktok" size={19} aria-hidden="true" />
               </a>
             </div>

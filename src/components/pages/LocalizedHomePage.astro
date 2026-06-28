@@ -1,0 +1,226 @@
+---
+import DevastationCarousel from "../DevastationCarousel.astro";
+import FaqSection from "../FaqSection.astro";
+import HeroSection from "../HeroSection.astro";
+import OrganizersSection from "../OrganizersSection.astro";
+import PublicLayout from "../../layouts/PublicLayout.astro";
+import { getDonationSnapshot } from "../../lib/donations/progress";
+import { buildDonationConfig } from "../../lib/donations/config";
+import { getConfiguredSiteBaseUrl } from "../../lib/config/env";
+import { getOrganizerVideoConfig } from "../../lib/config/public";
+import {
+    optimizedImageSrc,
+    optimizedImageSrcSet,
+} from "../../data/optimized-images";
+import {
+    buildFaqs,
+    getLocaleContent,
+    modifiedDate,
+    publishedDate,
+} from "../../data/campaign";
+import { getDevastationSlides } from "../../data/devastation-carousel";
+import {
+    getAlternateLinks,
+    getLocalizedUrl,
+    type SupportedLocale,
+} from "../../i18n/config";
+
+interface Props {
+    locale: SupportedLocale;
+}
+
+const { locale } = Astro.props;
+const content = getLocaleContent(locale);
+const donationSnapshot = await getDonationSnapshot();
+const raised = donationSnapshot.raised;
+const goal = donationSnapshot.goal;
+
+Astro.response.headers.set(
+    "Cache-Control",
+    "no-store, no-cache, max-age=0, must-revalidate",
+);
+Astro.response.headers.set("CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Surrogate-Control", "no-store");
+
+const organizerVideo = getOrganizerVideoConfig();
+const organizerVideoUrl = organizerVideo.sourceUrl;
+const siteBaseUrl = getConfiguredSiteBaseUrl(
+    Astro.site?.toString() ?? Astro.url.origin,
+);
+const canonicalUrl = getLocalizedUrl("home", locale, siteBaseUrl);
+const donateUrl = new URL("#donar", canonicalUrl).href;
+const faqUrl = new URL("#faq", canonicalUrl).href;
+const absoluteUrl = (path: string) => new URL(path, canonicalUrl).href;
+const siteDomain = new URL(canonicalUrl).hostname;
+const socialImageUrl = absoluteUrl(content.socialImage.path);
+const logoUrl = absoluteUrl(content.organizationLogo.path);
+const sameAsUrls = Array.from(
+    new Set([
+        organizerVideoUrl,
+        ...content.organizers.flatMap((person) => [person.instagram, person.tiktok]),
+    ]),
+);
+const organizationId = `${canonicalUrl}#organization`;
+const websiteId = `${canonicalUrl}#website`;
+const webPageId = `${canonicalUrl}#webpage`;
+const primaryImageId = `${canonicalUrl}#primaryimage`;
+const donationActionId = `${canonicalUrl}#donate-action`;
+const faqPageId = `${canonicalUrl}#faq-page`;
+
+const donation = buildDonationConfig(Astro.url.origin);
+const pageFaqs = buildFaqs(donation.binance.coin, locale);
+const slides = getDevastationSlides(locale);
+
+const heroImageName = "venezuela-earthquake-hero-aid";
+const heroImageWidths = [640, 960, 1280, 1680, 2240];
+const heroImageSrc = optimizedImageSrc(heroImageName, 1280, "webp");
+const heroImageSrcSet = optimizedImageSrcSet(
+    heroImageName,
+    heroImageWidths,
+    "webp",
+);
+const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1600px)";
+const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Organization",
+            "@id": organizationId,
+            name: content.siteName,
+            url: canonicalUrl,
+            logo: {
+                "@type": "ImageObject",
+                url: logoUrl,
+                width: content.organizationLogo.width,
+                height: content.organizationLogo.height,
+            },
+            sameAs: sameAsUrls,
+            knowsAbout: content.structuredData.knowsAbout,
+        },
+        {
+            "@type": "WebSite",
+            "@id": websiteId,
+            url: `${siteBaseUrl}/`,
+            name: content.siteName,
+            inLanguage: content.language,
+            publisher: { "@id": organizationId },
+        },
+        {
+            "@type": "ImageObject",
+            "@id": primaryImageId,
+            url: socialImageUrl,
+            width: content.socialImage.width,
+            height: content.socialImage.height,
+            caption: content.socialImage.alt,
+            inLanguage: content.language,
+        },
+        {
+            "@type": "WebPage",
+            "@id": webPageId,
+            url: canonicalUrl,
+            name: content.pageTitle,
+            description: content.pageDescription,
+            keywords: content.campaignKeywords,
+            isPartOf: { "@id": websiteId },
+            about: { "@id": organizationId },
+            primaryImageOfPage: { "@id": primaryImageId },
+            inLanguage: content.language,
+            datePublished: publishedDate,
+            dateModified: modifiedDate,
+            mainEntity: { "@id": faqPageId },
+            potentialAction: { "@id": donationActionId },
+        },
+        {
+            "@type": "DonateAction",
+            "@id": donationActionId,
+            name: content.structuredData.donateActionName,
+            description: content.socialDescription,
+            target: {
+                "@type": "EntryPoint",
+                urlTemplate: donateUrl,
+                actionPlatform: [
+                    "https://schema.org/DesktopWebPlatform",
+                    "https://schema.org/MobileWebPlatform",
+                ],
+            },
+            recipient: { "@id": organizationId },
+            object: {
+                "@type": "Thing",
+                name: content.structuredData.donateObjectName,
+            },
+            instrument: [
+                "PayPal",
+                `Binance Pay (${donation.binance.coin})`,
+                "Pago Movil",
+            ],
+        },
+        {
+            "@type": "FAQPage",
+            "@id": faqPageId,
+            url: faqUrl,
+            name: content.structuredData.faqPageName,
+            isPartOf: { "@id": webPageId },
+            inLanguage: content.language,
+            mainEntity: pageFaqs.map((faq) => ({
+                "@type": "Question",
+                name: faq.question,
+                acceptedAnswer: {
+                    "@type": "Answer",
+                    text: faq.answer,
+                },
+            })),
+        },
+    ],
+};
+const structuredDataJson = JSON.stringify(structuredData).replace(
+    /</g,
+    "\\u003c",
+);
+---
+
+<PublicLayout
+    locale={locale}
+    routeKey="home"
+    content={content}
+    title={content.pageTitle}
+    description={content.pageDescription}
+    canonicalUrl={canonicalUrl}
+    alternateLinks={getAlternateLinks("home", siteBaseUrl)}
+    robots="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    socialTitle={content.socialTitle}
+    socialDescription={content.socialDescription}
+    socialImageUrl={socialImageUrl}
+    twitterDomain={siteDomain}
+    twitterUrl={canonicalUrl}
+>
+    <Fragment slot="head">
+        <link
+            rel="preload"
+            as="image"
+            href={heroImageSrc}
+            type="image/webp"
+            imagesrcset={heroImageSrcSet}
+            imagesizes={heroImageSizes}
+            fetchpriority="high"
+        />
+        <script type="application/ld+json" set:html={structuredDataJson}></script>
+    </Fragment>
+
+    <main>
+        <HeroSection
+            raised={raised}
+            goal={goal}
+            copy={content.hero}
+            progressCopy={content.progress}
+            organizerVideo={organizerVideo}
+        />
+
+        <DevastationCarousel copy={content.devastation} slides={slides} />
+        <OrganizersSection
+            copy={content.organizersSection}
+            organizers={content.organizers}
+        />
+        <FaqSection copy={content.faqSection} faqs={pageFaqs} />
+    </main>
+</PublicLayout>
