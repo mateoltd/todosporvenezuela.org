@@ -65,7 +65,11 @@
   --red: #e2122a;
   --shadow: 0 28px 80px rgba(16, 24, 32, 0.14);
   --radius: 8px;
-  --page-gutter: 44px;
+  --page-gutter: clamp(32px, calc(4.7vw - 8px), 120px);
+  --w-prose: 760px;
+  --w-read: 940px;
+  --w-content: 1340px;
+  --w-wide: 1600px;
   --header-height: 84px;
   --header-compact-height: 68px;
 }
@@ -113,12 +117,6 @@ h2,
 h3,
 p {
   margin: 0;
-}
-
-@media (max-width: 1120px) {
-  :root {
-    --page-gutter: 32px;
-  }
 }
 
 @media (max-width: 860px) {

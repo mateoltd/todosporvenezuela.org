@@ -14,7 +14,7 @@
 .inner {
   display: grid;
   gap: clamp(34px, 4.4vw, 62px);
-  width: min(100%, 1260px);
+  width: min(100%, var(--w-content));
   margin: 0 auto;
 }
 
@@ -41,7 +41,7 @@
   max-width: min(100%, 760px);
   margin: 0;
   font-family: "Barlow Condensed", "Archivo", sans-serif;
-  font-size: clamp(5rem, 7.3vw, 7.4rem);
+  font-size: clamp(5rem, 7.3vw, 8.6rem);
   font-weight: 400;
   line-height: 0.8;
   letter-spacing: 0;
@@ -89,7 +89,7 @@
   gap: clamp(16px, 2vw, 30px);
   align-items: center;
   width: 100%;
-  min-height: clamp(88px, 7vw, 112px);
+  min-height: clamp(88px, 7vw, 132px);
   padding: clamp(16px, 1.8vw, 24px) clamp(16px, 2.2vw, 28px);
   border: 0;
   background: transparent;
@@ -102,7 +102,7 @@
   align-self: center;
   color: rgba(16, 24, 32, 0.34);
   font-family: "Barlow Condensed", "Archivo", sans-serif;
-  font-size: clamp(2.45rem, 4.2vw, 4rem);
+  font-size: clamp(2.45rem, 4.2vw, 4.6rem);
   font-weight: 900;
   line-height: 0.78;
   letter-spacing: 0;
@@ -119,7 +119,7 @@
 .question {
   min-width: 0;
   font-family: "Barlow Condensed", "Archivo", sans-serif;
-  font-size: clamp(2.2rem, 3.9vw, 4.25rem);
+  font-size: clamp(2.2rem, 3.9vw, 4.9rem);
   font-weight: 900;
   line-height: 0.86;
   letter-spacing: 0;

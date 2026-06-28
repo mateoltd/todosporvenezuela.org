@@ -1,40 +1,49 @@
 .section {
   position: relative;
   z-index: 4;
-  background: var(--paper);
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(247, 247, 242, 0.98), rgba(255, 255, 255, 0.82) 46%, rgba(247, 247, 242, 0.98)),
+    var(--paper);
 }
 
 .wrap {
-  width: min(100%, 940px);
+  width: min(100%, var(--w-read));
   margin: 0 auto;
   padding: calc(var(--header-height) + clamp(40px, 6vw, 84px)) var(--page-gutter)
     clamp(72px, 8vw, 120px);
 }
 
-/* ---------- Header (kept modest: the data is the point) ---------- */
-
 .head {
-  max-width: 62ch;
+  max-width: 760px;
 }
 
 .eyebrow {
-  margin: 0 0 14px;
+  margin: 0 0 clamp(18px, 1.8vw, 24px);
   color: var(--red);
-  font-family: "Archivo", sans-serif;
   font-size: 13px;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.16em;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.display {
+  margin: 0;
+  font-family: "Barlow Condensed", "Archivo", sans-serif;
+  font-size: clamp(3.4rem, 6vw, 6.4rem);
+  font-weight: 900;
+  line-height: 0.82;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .lede {
-  margin: 0;
-  font-family: "Barlow Condensed", "Archivo", sans-serif;
-  font-size: clamp(2rem, 3.4vw, 3rem);
-  font-weight: 500;
-  line-height: 1.04;
-  letter-spacing: 0;
+  max-width: 56ch;
+  margin: clamp(20px, 2vw, 28px) 0 0;
+  color: var(--muted);
+  font-size: clamp(16px, 1.2vw, 20px);
+  line-height: 1.55;
 }
 
 /* ---------- Daily feed timeline ---------- */
@@ -168,7 +177,7 @@
 .entryTitle {
   margin: 0 0 8px;
   font-family: "Archivo", sans-serif;
-  font-size: clamp(20px, 1.8vw, 24px);
+  font-size: clamp(20px, 1.8vw, 28px);
   font-weight: 900;
   line-height: 1.1;
   letter-spacing: -0.01em;

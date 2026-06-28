@@ -3,11 +3,13 @@
   --hero-top: calc(var(--header-height) + 28px);
   --hero-bottom: 34px;
   --hero-flow-gap: 24px;
-  --hero-title-size: clamp(6.25rem, 9vw, 8.75rem);
+  --hero-title-size: clamp(6.25rem, 9vw, 10.5rem);
   --hero-eyebrow-gap: 26px;
   --hero-title-gap: 14px;
   --hero-copy-gap: 14px;
   --hero-action-gap: 18px;
+  --hero-band: clamp(560px, calc(100svh - 188px), 1180px);
+  --hero-meter-overlap: 96px;
   /* Align the meter with the lower edge of the hero media. */
   --meter-drop: 64px;
   /* Ragged mask for the hero media edge. */
@@ -29,8 +31,8 @@
 .media {
   position: absolute;
   inset: 0 0 auto auto;
-  width: min(96vw, 1680px);
-  height: 650px;
+  width: min(96vw, var(--w-wide));
+  height: var(--hero-band);
   -webkit-mask-image: var(--hero-media-mask);
   mask-image: var(--hero-media-mask);
   -webkit-mask-repeat: no-repeat;
@@ -76,7 +78,7 @@
 .content {
   position: relative;
   z-index: 2;
-  width: min(68vw, 1020px);
+  width: min(72vw, 1100px);
 }
 
 .eyebrow {
@@ -415,13 +417,34 @@
 
   .media {
     width: min(94vw, 1280px);
-    height: 520px;
   }
 
   .content {
     width: min(74vw, 890px);
   }
 
+}
+
+@media (min-width: 861px) {
+  .hero {
+    grid-template-rows: minmax(
+        calc(var(--hero-band) - var(--hero-top) - var(--hero-meter-overlap)),
+        auto
+      )
+      auto;
+    row-gap: 0;
+    --meter-drop: 0px;
+  }
+
+  .content {
+    align-self: start;
+  }
+
+  .videoCta {
+    position: static;
+    inset: auto;
+    margin-top: 22px;
+  }
 }
 
 @media (max-width: 860px) {

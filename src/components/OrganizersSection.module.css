@@ -15,9 +15,9 @@
 .inner {
   display: grid;
   grid-template-columns: minmax(340px, 0.76fr) minmax(520px, 0.94fr);
-  gap: clamp(42px, 5.2vw, 82px);
+  gap: clamp(42px, 5.2vw, 92px);
   align-items: start;
-  width: min(100%, 1320px);
+  width: min(100%, var(--w-wide));
   margin: 0 auto;
 }
 
@@ -44,7 +44,7 @@
   max-width: 500px;
   margin: 0;
   font-family: "Barlow Condensed", "Archivo", sans-serif;
-  font-size: clamp(4.9rem, 7.2vw, 7.8rem);
+  font-size: clamp(4.9rem, 7.2vw, 8.8rem);
   font-weight: 400;
   line-height: 0.78;
   letter-spacing: 0;
@@ -100,7 +100,7 @@
 
   display: grid;
   width: 100%;
-  max-width: 720px;
+  max-width: 880px;
   gap: 0;
   min-width: 0;
   justify-self: end;

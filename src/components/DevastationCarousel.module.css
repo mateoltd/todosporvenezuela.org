@@ -22,7 +22,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: clamp(20px, 2.4vw, 30px);
-  width: min(100%, 1260px);
+  width: min(100%, var(--w-content));
   margin: 0 auto;
   padding: clamp(58px, 6vw, 92px) var(--page-gutter) clamp(34px, 3.6vw, 50px);
   text-align: center;
@@ -47,7 +47,7 @@
 .intro h2 {
   margin: 0;
   font-family: "Barlow Condensed", "Archivo", sans-serif;
-  font-size: clamp(2.8rem, 5vw, 4.6rem);
+  font-size: clamp(2.8rem, 5vw, 5.4rem);
   font-weight: 400;
   line-height: 0.84;
   letter-spacing: 0;
@@ -120,7 +120,7 @@
 .stage {
   position: relative;
   width: 100%;
-  height: clamp(440px, 60vh, 680px);
+  height: clamp(440px, 58vh, 820px);
   overflow: hidden;
   background: transparent;
   touch-action: pan-y;
