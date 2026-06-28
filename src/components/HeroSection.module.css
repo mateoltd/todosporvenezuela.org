@@ -11,7 +11,9 @@
   /* Align the meter with the lower edge of the hero media. */
   --meter-drop: 64px;
   /* Ragged mask for the hero media edge. */
-  --hero-media-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='400' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='3' y1='-11' x2='997' y2='411'%3E%3Cstop offset='0.48' stop-color='white' stop-opacity='0'/%3E%3Cstop offset='0.5' stop-color='white' stop-opacity='1'/%3E%3C/linearGradient%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.07' numOctaves='3' seed='31' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='12' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='1000' height='400' fill='url(%23g)' filter='url(%23r)'/%3E%3C/svg%3E");
+  /* Hard-edged gradient torn by a coarse + fine displacement pass (like the
+     meter's m-paint) so the edge reads as torn paper, not a soft cloud. */
+  --hero-media-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='400' viewBox='0 0 1000 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='3' y1='-11' x2='997' y2='411'%3E%3Cstop offset='0.494' stop-color='white' stop-opacity='0'/%3E%3Cstop offset='0.5' stop-color='white' stop-opacity='1'/%3E%3C/linearGradient%3E%3Cfilter id='r' x='-14%25' y='-30%25' width='128%25' height='160%25' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.015 0.09' numOctaves='3' seed='31' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='30' xChannelSelector='R' yChannelSelector='G' result='d'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8 0.65' numOctaves='2' seed='7' result='n2'/%3E%3CfeDisplacementMap in='d' in2='n2' scale='6' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='1000' height='400' fill='url(%23g)' filter='url(%23r)'/%3E%3C/svg%3E");
 
   position: relative;
   isolation: isolate;
