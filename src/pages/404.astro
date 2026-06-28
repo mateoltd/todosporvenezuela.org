@@ -3,10 +3,12 @@ import { Icon } from "astro-icon/components";
 import PublicLayout from "../layouts/PublicLayout.astro";
 import { getConfiguredSiteBaseUrl } from "../lib/config/env";
 import {
-  language,
-  siteName,
-  socialImage,
+  getLocaleContent,
 } from "../data/campaign";
+import {
+  getLocalizedPath,
+  resolveRequestLocale,
+} from "../i18n/config";
 
 Astro.response.status = 404;
 Astro.response.statusText = "Not Found";
@@ -21,42 +23,46 @@ Astro.response.headers.set("Surrogate-Control", "no-store");
 const siteBaseUrl = getConfiguredSiteBaseUrl(
   Astro.site?.toString() ?? Astro.url.origin,
 );
-const homeUrl = `${siteBaseUrl}/`;
-const socialImageUrl = new URL(socialImage.path, homeUrl).href;
-
-const title = `Página no encontrada | ${siteName}`;
-const description =
-  "No encontramos esta página. Vuelve al inicio para seguir la campaña Todos por Venezuela.";
+const locale = resolveRequestLocale({
+  cookieValue: Astro.cookies.get("tpv_locale")?.value,
+  pathname: Astro.url.pathname,
+  preferredLocale: Astro.preferredLocale,
+});
+const content = getLocaleContent(locale);
+const homePath = getLocalizedPath("home", locale);
+const homeUrl = new URL(homePath, `${siteBaseUrl}/`).href;
+const socialImageUrl = new URL(content.socialImage.path, homeUrl).href;
 ---
 
 <PublicLayout
-  title={title}
-  description={description}
+  locale={locale}
+  content={content}
+  title={content.notFound.title}
+  description={content.notFound.description}
   robots="noindex, follow"
-  htmlLang={language}
+  htmlLang={content.language}
   socialImageUrl={socialImageUrl}
   ogUrl={homeUrl}
 >
   <main class="notfound" aria-labelledby="notfound-title">
     <div class="stack">
-      <p class="eyebrow">Error 404</p>
+      <p class="eyebrow">{content.notFound.eyebrow}</p>
 
       <p class="code" aria-hidden="true">404</p>
 
-      <h1 id="notfound-title" class="lede">Esta página no existe</h1>
-      <p class="copy">
-        El enlace puede estar roto o la página se movió. Vuelve al inicio para
-        seguir la campaña y ver cómo avanza la ayuda.
-      </p>
+      <h1 id="notfound-title" class="lede">{content.notFound.heading}</h1>
+      <p class="copy">{content.notFound.copy}</p>
 
       <div class="actions">
-        <a class="primary" href="/">
+        <a class="primary" href={homePath}>
           <Icon name="tabler:arrow-left" size={18} aria-hidden="true" />
-          Volver al inicio
+          {content.notFound.homeLink}
         </a>
-        <nav class="quick" aria-label="Páginas útiles">
-          <a href="/transparencia">Transparencia</a>
-          <a href="/#faq">Preguntas frecuentes</a>
+        <nav class="quick" aria-label={content.notFound.usefulPagesLabel}>
+          <a href={getLocalizedPath("transparency", locale)}>
+            {content.notFound.transparencyLink}
+          </a>
+          <a href={`${homePath}#faq`}>{content.notFound.faqLink}</a>
         </nav>
       </div>
     </div>
