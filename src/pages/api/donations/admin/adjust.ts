@@ -1,8 +1,12 @@
 import type { APIRoute } from "astro";
 import {
+  getDonationAdminChallengeHeaders,
+  getDonationAdminHeaders,
+  requireDonationAdminApiAuth,
+} from "../../../../lib/donations/adminAuth";
+import {
   donationJson,
   getDonationEnv,
-  parseAmountToCents,
   recordDonation,
 } from "../../../../lib/donations/progress";
 
@@ -11,31 +15,62 @@ export const prerender = false;
 type AdjustmentBody = {
   amount?: number | string;
   currency?: string;
+  note?: string;
   reference?: string;
   source?: string;
 };
 
-const getBearerToken = (request: Request) => {
-  const authorization = request.headers.get("authorization") || "";
-  const [, token] = authorization.match(/^Bearer\s+(.+)$/i) ?? [];
-  return token || request.headers.get("x-donation-admin-token") || "";
+const parseAdminAmountToCents = (value: AdjustmentBody["amount"]) => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? Math.round(value * 100) : 0;
+  }
+
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(/[$,\s]/g, "");
+
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {
+    return 0;
+  }
+
+  return Math.round(Number(normalized) * 100);
+};
+
+const normalizeSource = (value: unknown) =>
+  String(value || "manual")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
+
+const maxTopUpCents = () => {
+  const configured = parseAdminAmountToCents(getDonationEnv("DONATION_ADMIN_MAX_TOP_UP_USD"));
+  return configured > 0 ? configured : 1_000_000;
 };
 
 export const POST: APIRoute = async ({ request }) => {
-  const adminToken = getDonationEnv("DONATION_ADMIN_TOKEN");
+  const auth = requireDonationAdminApiAuth(request);
 
-  if (!adminToken) {
-    return donationJson({ ok: false, error: "admin_adjustment_not_configured" }, { status: 503 });
-  }
+  if (!auth.ok) {
+    const shouldChallenge = auth.status === 401 && !request.headers.has("origin");
 
-  if (getBearerToken(request) !== adminToken) {
-    return donationJson({ ok: false, error: "unauthorized" }, { status: 401 });
+    return donationJson(
+      { ok: false, error: auth.error },
+      {
+        status: auth.status,
+        headers: shouldChallenge
+          ? getDonationAdminChallengeHeaders()
+          : getDonationAdminHeaders(),
+      },
+    );
   }
 
   const body = (await request.json().catch(() => null)) as AdjustmentBody | null;
-  const amountCents = parseAmountToCents(body?.amount);
-  const source = String(body?.source || "manual").trim().toLowerCase();
+  const amountCents = parseAdminAmountToCents(body?.amount);
+  const source = normalizeSource(body?.source);
   const reference = String(body?.reference || "").trim();
+  const note = String(body?.note || "").trim();
   const currency = String(body?.currency || getDonationEnv("DONATION_CURRENCY", "USD")).toUpperCase();
 
   if (!body || amountCents <= 0) {
@@ -46,12 +81,28 @@ export const POST: APIRoute = async ({ request }) => {
     return donationJson({ ok: false, error: "reference_required" }, { status: 400 });
   }
 
+  if (!source) {
+    return donationJson({ ok: false, error: "invalid_source" }, { status: 400 });
+  }
+
+  if (reference.length > 140) {
+    return donationJson({ ok: false, error: "reference_too_long" }, { status: 400 });
+  }
+
+  if (note.length > 240) {
+    return donationJson({ ok: false, error: "note_too_long" }, { status: 400 });
+  }
+
+  if (amountCents > maxTopUpCents()) {
+    return donationJson({ ok: false, error: "amount_too_large" }, { status: 400 });
+  }
+
   try {
     const result = await recordDonation({
       amountCents,
       currency,
       id: `admin:${source}:${reference}`,
-      raw: { reference },
+      raw: { note: note || null, reference },
       source: `admin:${source}`,
     });
 

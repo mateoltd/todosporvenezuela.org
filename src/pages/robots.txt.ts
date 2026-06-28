@@ -15,9 +15,15 @@ export const GET: APIRoute = ({ site, url }) => {
     import.meta.env.PUBLIC_SITE_URL || site?.toString() || url.origin
   );
   const sitemapUrl = new URL("/sitemap.xml", `${siteBaseUrl}/`).href;
-  const body = ["User-agent: *", "Allow: /", "", `Sitemap: ${sitemapUrl}`, ""].join(
-    "\n"
-  );
+  const body = [
+    "User-agent: *",
+    "Allow: /",
+    "Disallow: /admin/",
+    "Disallow: /api/donations/admin/",
+    "",
+    `Sitemap: ${sitemapUrl}`,
+    "",
+  ].join("\n");
 
   return new Response(body, {
     headers: {

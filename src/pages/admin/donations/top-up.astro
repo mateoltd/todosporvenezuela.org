@@ -1,0 +1,676 @@
+---
+import "../../../styles/global.css";
+import {
+  createDonationAdminCsrfToken,
+  getDonationAdminHeaders,
+  requireDonationAdminPageAuth,
+} from "../../../lib/donations/adminAuth";
+import { getDonationSnapshot } from "../../../lib/donations/progress";
+import { language, siteName } from "../../../data/campaign";
+
+export const prerender = false;
+
+const auth = requireDonationAdminPageAuth(Astro.request);
+const showsLogin = !auth.ok && auth.status === 401;
+const responseHeaders = getDonationAdminHeaders();
+
+Object.entries(responseHeaders).forEach(([key, value]) => {
+  Astro.response.headers.set(key, value);
+});
+
+if (!auth.ok && !showsLogin) {
+  Astro.response.status = auth.status;
+}
+
+const snapshot = auth.ok ? await getDonationSnapshot() : null;
+const csrfToken = auth.ok ? createDonationAdminCsrfToken() : "";
+const currency = snapshot?.currency || "USD";
+const title = auth.ok
+  ? `Top-up de donaciones | ${siteName}`
+  : `Acceso privado | ${siteName}`;
+
+const money = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    currency,
+    maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    style: "currency",
+  }).format(value);
+
+const raisedLabel = snapshot ? money(snapshot.raised) : "";
+const goalLabel = snapshot ? money(snapshot.goal) : "";
+const updatedLabel = snapshot?.updatedAt
+  ? new Intl.DateTimeFormat("es-VE", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(snapshot.updatedAt))
+  : "Sin movimientos registrados";
+---
+
+<!doctype html>
+<html lang={language}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="theme-color" content="#f7f7f2" />
+    <title>{title}</title>
+    <link rel="icon" href="/images/venezuela-flag.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/favicon.png" type="image/png" />
+    <link
+      rel="preload"
+      href="/fonts/instrument-sans-latin-400-700.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/archivo-latin-400-900.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/barlow-condensed-latin-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body>
+    {
+      snapshot ? (
+        <main class="admin-shell" data-admin-shell data-currency={currency}>
+          <header class="admin-head">
+            <a class="brand" href="/" aria-label="Volver al inicio">
+              <span class="brand-mark" aria-hidden="true">
+                <img src="/images/tpv-emblem.png" alt="" width="44" height="44" />
+              </span>
+              <span>Todos por<br />Venezuela</span>
+            </a>
+            <div class="admin-meta">
+              <p>Panel privado</p>
+              <button class="logout-button" type="button" data-logout>
+                Salir
+              </button>
+            </div>
+          </header>
+
+          <section class="panel" aria-labelledby="top-up-title">
+            <div class="summary">
+              <p class="eyebrow">Recaudacion actual</p>
+              <h1 id="top-up-title">{raisedLabel}</h1>
+              <p>
+                Meta {goalLabel}. Avance {snapshot.percent}%. {updatedLabel}
+              </p>
+            </div>
+
+            <form class="form" data-top-up-form>
+              <input type="hidden" name="csrf" value={csrfToken} />
+              <div class="field">
+                <label for="amount">Monto en {currency}</label>
+                <input
+                  id="amount"
+                  name="amount"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="source">Origen</label>
+                <select id="source" name="source" required>
+                  <option value="pago_movil">Pago Movil</option>
+                  <option value="binance">Binance</option>
+                  <option value="manual">Manual</option>
+                  <option value="paypal">PayPal</option>
+                </select>
+              </div>
+
+              <div class="field field-wide">
+                <label for="reference">Referencia unica</label>
+                <input
+                  id="reference"
+                  name="reference"
+                  type="text"
+                  maxlength="140"
+                  autocomplete="off"
+                  placeholder="ID de transaccion o comprobante"
+                  required
+                />
+              </div>
+
+              <div class="field field-wide">
+                <label for="note">Nota opcional</label>
+                <input
+                  id="note"
+                  name="note"
+                  type="text"
+                  maxlength="240"
+                  autocomplete="off"
+                  placeholder="Detalle interno"
+                />
+              </div>
+
+              <div class="actions">
+                <button type="submit">Registrar top-up</button>
+                <p class="status" data-top-up-status role="status" aria-live="polite"></p>
+              </div>
+            </form>
+          </section>
+        </main>
+      ) : showsLogin ? (
+        <main class="login-shell">
+          <section class="login-panel" aria-labelledby="login-title">
+            <a class="brand" href="/" aria-label="Volver al inicio">
+              <span class="brand-mark" aria-hidden="true">
+                <img src="/images/tpv-emblem.png" alt="" width="44" height="44" />
+              </span>
+              <span>Todos por<br />Venezuela</span>
+            </a>
+
+            <div class="login-copy">
+              <p class="eyebrow">Panel privado</p>
+              <h1 id="login-title">Acceso privado</h1>
+              <p>Registro manual de aportes para tesoreria.</p>
+            </div>
+
+            <form class="login-form" data-login-form>
+              <div class="field">
+                <label for="admin-username">Usuario</label>
+                <input
+                  id="admin-username"
+                  name="username"
+                  type="text"
+                  autocomplete="username"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="admin-password">Contrasena</label>
+                <input
+                  id="admin-password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+
+              <div class="login-actions">
+                <button type="submit">Entrar</button>
+                <p class="status" data-login-status role="status" aria-live="polite"></p>
+              </div>
+            </form>
+          </section>
+        </main>
+      ) : (
+        <main class="gate">
+          <a class="brand" href="/" aria-label="Volver al inicio">
+            <span class="brand-mark" aria-hidden="true">
+              <img src="/images/tpv-emblem.png" alt="" width="44" height="44" />
+            </span>
+            <span>Todos por<br />Venezuela</span>
+          </a>
+          <p>Acceso privado.</p>
+        </main>
+      )
+    }
+
+    <script>
+      type DonationProgress = {
+        currency: string;
+        goal: number;
+        percent: number;
+        raised: number;
+        updatedAt?: string | null;
+      };
+
+      type DonationResponse = {
+        ok: boolean;
+        error?: string;
+        inserted?: boolean;
+        progress?: DonationProgress;
+      };
+
+      const shell = document.querySelector<HTMLElement>("[data-admin-shell]");
+      const topUpForm = document.querySelector<HTMLFormElement>("[data-top-up-form]");
+      const topUpStatus = document.querySelector<HTMLElement>("[data-top-up-status]");
+      const loginForm = document.querySelector<HTMLFormElement>("[data-login-form]");
+      const loginStatus = document.querySelector<HTMLElement>("[data-login-status]");
+      const logoutButton = document.querySelector<HTMLButtonElement>("[data-logout]");
+      const summaryTitle = document.querySelector<HTMLHeadingElement>(".summary h1");
+      const summaryMeta = document.querySelector<HTMLElement>(".summary p:last-child");
+
+      const formatMoney = (value: number, currency: string) =>
+        new Intl.NumberFormat("en-US", {
+          currency,
+          maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
+          style: "currency",
+        }).format(value);
+
+      const formatUpdated = (value?: string | null) =>
+        value
+          ? new Intl.DateTimeFormat("es-VE", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            }).format(new Date(value))
+          : "Sin movimientos registrados";
+
+      const setStatus = (
+        element: HTMLElement | null,
+        message: string,
+        state: "idle" | "error" | "success" = "idle",
+      ) => {
+        if (!element) return;
+        element.textContent = message;
+        element.dataset.state = state;
+      };
+
+      const applyProgress = (progress: DonationProgress) => {
+        if (!summaryTitle || !summaryMeta) return;
+
+        summaryTitle.textContent = formatMoney(progress.raised, progress.currency);
+        summaryMeta.textContent = `Meta ${formatMoney(progress.goal, progress.currency)}. Avance ${progress.percent}%. ${formatUpdated(progress.updatedAt)}`;
+      };
+
+      loginForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const submitButton = loginForm.querySelector<HTMLButtonElement>("button[type='submit']");
+        const data = new FormData(loginForm);
+
+        setStatus(loginStatus, "Entrando...");
+        if (submitButton) submitButton.disabled = true;
+
+        try {
+          const response = await fetch("/api/donations/admin/session", {
+            body: JSON.stringify({
+              password: String(data.get("password") || ""),
+              username: String(data.get("username") || ""),
+            }),
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+          });
+          const result = (await response.json().catch(() => ({}))) as DonationResponse;
+
+          if (!response.ok || !result.ok) {
+            throw new Error(
+              response.status === 401
+                ? "Credenciales incorrectas."
+                : result.error || "No se pudo entrar.",
+            );
+          }
+
+          window.location.reload();
+        } catch (error) {
+          setStatus(
+            loginStatus,
+            error instanceof Error ? error.message : "No se pudo entrar.",
+            "error",
+          );
+        } finally {
+          if (submitButton) submitButton.disabled = false;
+        }
+      });
+
+      logoutButton?.addEventListener("click", async () => {
+        logoutButton.disabled = true;
+
+        try {
+          await fetch("/api/donations/admin/session", {
+            credentials: "same-origin",
+            method: "DELETE",
+          });
+        } finally {
+          window.location.reload();
+        }
+      });
+
+      topUpForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const submitButton = topUpForm.querySelector<HTMLButtonElement>("button[type='submit']");
+        const data = new FormData(topUpForm);
+        const csrf = String(data.get("csrf") || "");
+        const currency = shell?.dataset.currency || "USD";
+
+        setStatus(topUpStatus, "Registrando...");
+        if (submitButton) submitButton.disabled = true;
+
+        try {
+          const response = await fetch("/api/donations/admin/adjust", {
+            body: JSON.stringify({
+              amount: String(data.get("amount") || ""),
+              currency,
+              note: String(data.get("note") || ""),
+              reference: String(data.get("reference") || ""),
+              source: String(data.get("source") || "manual"),
+            }),
+            credentials: "same-origin",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Donation-Admin-CSRF": csrf,
+            },
+            method: "POST",
+          });
+          const result = (await response.json().catch(() => ({}))) as DonationResponse;
+
+          if (!response.ok || !result.ok) {
+            throw new Error(result.error || `HTTP ${response.status}`);
+          }
+
+          if (result.progress) {
+            applyProgress(result.progress);
+          }
+
+          setStatus(
+            topUpStatus,
+            result.inserted
+              ? "Top-up registrado."
+              : "Esa referencia ya existia; el total no cambio.",
+            result.inserted ? "success" : "idle",
+          );
+
+          if (result.inserted) {
+            topUpForm.reset();
+          }
+        } catch (error) {
+          setStatus(
+            topUpStatus,
+            error instanceof Error ? error.message : "No se pudo registrar.",
+            "error",
+          );
+        } finally {
+          if (submitButton) submitButton.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .admin-shell,
+  .gate,
+  .login-shell {
+    width: min(100%, 760px);
+    min-height: 100svh;
+    margin: 0 auto;
+    padding: calc(var(--header-height) + 28px) var(--page-gutter) 64px;
+  }
+
+  .gate {
+    display: grid;
+    align-content: center;
+    gap: 24px;
+  }
+
+  .gate p {
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  .login-shell {
+    display: grid;
+    align-content: center;
+  }
+
+  .login-panel {
+    display: grid;
+    gap: 30px;
+    padding-top: 32px;
+    border-top: 2px solid var(--ink);
+  }
+
+  .login-copy {
+    display: grid;
+    gap: 10px;
+  }
+
+  .login-copy h1 {
+    font-family: "Barlow Condensed", "Archivo", sans-serif;
+    font-size: clamp(3.5rem, 10vw, 5.75rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: 0;
+  }
+
+  .login-copy p:last-child {
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .login-form {
+    display: grid;
+    gap: 18px;
+    width: min(100%, 460px);
+  }
+
+  .login-actions {
+    display: grid;
+    gap: 12px;
+    padding-top: 4px;
+  }
+
+  .admin-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: clamp(36px, 6vw, 64px);
+  }
+
+  .admin-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink);
+    font-family: "Archivo", sans-serif;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 0.94;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .brand-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--paper-strong);
+    box-shadow: 0 10px 24px rgba(16, 24, 32, 0.12);
+    overflow: hidden;
+  }
+
+  .brand-mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .admin-head p {
+    color: var(--muted);
+    font-family: "Archivo", sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .panel {
+    display: grid;
+    gap: clamp(28px, 4vw, 40px);
+    padding-top: clamp(28px, 4vw, 40px);
+    border-top: 2px solid var(--ink);
+  }
+
+  .summary {
+    display: grid;
+    gap: 10px;
+  }
+
+  .eyebrow {
+    color: var(--red);
+    font-family: "Archivo", sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .summary h1 {
+    font-family: "Barlow Condensed", "Archivo", sans-serif;
+    font-size: clamp(3.5rem, 10vw, 6rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: 0;
+  }
+
+  .summary p:last-child {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .field-wide,
+  .actions {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    color: var(--ink);
+    font-family: "Archivo", sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  input,
+  select {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid rgba(16, 24, 32, 0.18);
+    border-radius: var(--radius);
+    background: var(--paper-strong);
+    color: var(--ink);
+    font-size: 16px;
+    padding: 0 14px;
+  }
+
+  input:focus,
+  select:focus,
+  button:focus-visible,
+  .brand:focus-visible {
+    outline: 3px solid rgba(0, 70, 184, 0.42);
+    outline-offset: 3px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 18px;
+    padding-top: 4px;
+  }
+
+  button {
+    min-height: 50px;
+    border: 0;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #172029, #071018);
+    color: #fff;
+    font-family: "Archivo", sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    padding: 0 22px;
+    text-transform: uppercase;
+  }
+
+  .logout-button {
+    min-height: 38px;
+    border: 1px solid rgba(16, 24, 32, 0.18);
+    background: rgba(255, 255, 255, 0.58);
+    color: var(--ink);
+    font-size: 12px;
+    padding: 0 14px;
+  }
+
+  button:disabled {
+    cursor: wait;
+    opacity: 0.62;
+  }
+
+  .status {
+    min-height: 1.4em;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .status[data-state="success"] {
+    color: #0f7a44;
+    font-weight: 700;
+  }
+
+  .status[data-state="error"] {
+    color: var(--red);
+    font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    .admin-head {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .admin-meta {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .form {
+      grid-template-columns: 1fr;
+    }
+
+    button {
+      width: 100%;
+    }
+
+    .logout-button {
+      width: auto;
+    }
+
+    .status {
+      width: 100%;
+    }
+  }
+</style>
