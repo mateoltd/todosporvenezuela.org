@@ -9,6 +9,7 @@ interface Method {
   lead: string;
   fields: { label: string; value: string }[];
   steps: string[];
+  conversion?: "bcv-ves";
   action: "paypal" | "confirm";
   actionLabel: string;
 }
@@ -40,6 +41,35 @@ const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
 
   <div class="dm__method-body">
     <p class="dm__instr-lead">{method.lead}</p>
+
+    {
+      method.conversion === "bcv-ves" && (
+        <div class="dm__conversion" data-ves-conversion data-rate-endpoint="/api/bcv-usd">
+          <span class="dm__field-label">Monto en bolívares</span>
+          <button
+            type="button"
+            class="dm__field-copy dm__conversion-copy"
+            data-copy=""
+            data-ves-copy
+            aria-label="Copiar monto en bolívares"
+            disabled
+          >
+            <span class="dm__field-value dm__conversion-value" data-ves-amount>
+              Calculando...
+            </span>
+            <span class="dm__copy-icon">
+              <Icon name="tabler:copy" size={17} />
+            </span>
+            <span class="dm__check-icon">
+              <Icon name="tabler:check" size={17} />
+            </span>
+          </button>
+          <span class="dm__conversion-meta" data-ves-rate aria-live="polite">
+            Consultando tasa oficial
+          </span>
+        </div>
+      )
+    }
 
     {
       method.fields.length > 0 && (
