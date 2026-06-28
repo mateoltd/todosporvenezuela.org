@@ -9,6 +9,14 @@ export interface AlternateLink {
   href: string;
 }
 
+export interface LanguageSelectorOption {
+  locale: SupportedLocale;
+  href: string;
+  flagEmoji: string;
+  label: string;
+  shortLabel: string;
+}
+
 export const localeDefinitions: Record<
   SupportedLocale,
   {
@@ -60,22 +68,10 @@ const codeToLocale = new Map<string, SupportedLocale>(
   ),
 );
 
-const normalizePathname = (pathname: string) =>
-  pathname.replace(/\/+$/, "") || "/";
-
-const routeKeyByPathname = new Map<string, LocalizedRouteKey>(
-  Object.entries(localizedRoutes).flatMap(([routeKey, routes]) =>
-    supportedLocales.map((locale) => [
-      normalizePathname(routes[locale]),
-      routeKey as LocalizedRouteKey,
-    ]),
-  ),
-);
-
-export const isSupportedLocale = (value: string | undefined | null): value is SupportedLocale =>
+const isSupportedLocale = (value: string | undefined | null): value is SupportedLocale =>
   supportedLocales.includes(value as SupportedLocale);
 
-export const resolvePreferredLocalePath = (
+const resolvePreferredLocalePath = (
   code: string | undefined | null,
 ): SupportedLocale | undefined => {
   if (!code) return undefined;
@@ -89,7 +85,7 @@ export const resolvePreferredLocalePath = (
   return codeToLocale.get(language);
 };
 
-export const getLocaleFromPathname = (
+const getLocaleFromPathname = (
   pathname: string,
 ): SupportedLocale | undefined => {
   const firstSegment = pathname.split("/").filter(Boolean)[0];
@@ -148,13 +144,4 @@ export const getAlternateLinks = (
     seen.add(link.hreflang);
     return true;
   });
-};
-
-export const getOtherLocale = (locale: SupportedLocale): SupportedLocale =>
-  locale === "es" ? "en" : "es";
-
-export const getRouteKeyFromPathname = (
-  pathname: string,
-): LocalizedRouteKey | undefined => {
-  return routeKeyByPathname.get(normalizePathname(pathname));
 };

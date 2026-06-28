@@ -86,12 +86,14 @@
 
 .menu {
   width: 212px;
+  margin: 0;
   padding: 6px;
   border: 1px solid rgba(16, 24, 32, 0.14);
   border-radius: var(--radius);
   background: var(--paper-strong);
   box-shadow: 0 22px 54px rgba(16, 24, 32, 0.18);
   font-family: "Archivo", sans-serif;
+  list-style: none;
 }
 
 .option {

@@ -13,6 +13,7 @@ import {
   getLocalizedPath,
   localeDefinitions,
   supportedLocales,
+  type LanguageSelectorOption,
   type LocalizedRouteKey,
   type SupportedLocale,
 } from "../i18n/config";
@@ -88,7 +89,7 @@ const headerLinks = {
   transparency: getLocalizedPath("transparency", currentLocale),
   faq: `${currentHomePath}#faq`,
 };
-const languageOptions = supportedLocales.map((locale) => {
+const languageOptions: LanguageSelectorOption[] = supportedLocales.map((locale) => {
   const href = getLocalizedPath(routeKey, locale);
   const definition = localeDefinitions[locale];
 

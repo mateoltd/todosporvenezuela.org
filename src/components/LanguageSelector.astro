@@ -1,17 +1,9 @@
 ---
-import type { SupportedLocale } from "../i18n/config";
+import type { LanguageSelectorOption } from "../i18n/config";
 import styles from "./LanguageSelector.module.css";
 
-export interface LanguageSelectorOption {
-  locale: SupportedLocale;
-  href: string;
-  flagEmoji: string;
-  label: string;
-  shortLabel: string;
-}
-
 interface Props {
-  currentLocale: SupportedLocale;
+  currentLocale: LanguageSelectorOption["locale"];
   label: string;
   options: LanguageSelectorOption[];
 }
@@ -27,7 +19,6 @@ const menuId = `language-menu-${currentLocale}`;
     class={styles.trigger}
     type="button"
     aria-label={label}
-    aria-haspopup="menu"
     aria-expanded="false"
     aria-controls={menuId}
     data-language-trigger
@@ -41,11 +32,9 @@ const menuId = `language-menu-${currentLocale}`;
   </button>
 
   <div class={styles.positioner} data-language-positioner>
-    <div
+    <ul
       class={styles.menu}
       id={menuId}
-      role="menu"
-      aria-label={label}
       data-language-menu
     >
       {
@@ -53,24 +42,25 @@ const menuId = `language-menu-${currentLocale}`;
           const isCurrent = option.locale === currentLocale;
 
           return (
-            <a
-              class={styles.option}
-              href={option.href}
-              role="menuitem"
-              aria-current={isCurrent ? "true" : undefined}
-              data-current={isCurrent ? "" : undefined}
-              data-locale={option.locale}
-            >
-              <span class={styles.optionFlag} aria-hidden="true">
-                {option.flagEmoji}
-              </span>
-              <span class={styles.optionLabel}>{option.label}</span>
-              <span class={styles.optionCode}>{option.shortLabel}</span>
-            </a>
+            <li>
+              <a
+                class={styles.option}
+                href={option.href}
+                aria-current={isCurrent ? "true" : undefined}
+                data-current={isCurrent ? "" : undefined}
+                data-locale={option.locale}
+              >
+                <span class={styles.optionFlag} aria-hidden="true">
+                  {option.flagEmoji}
+                </span>
+                <span class={styles.optionLabel}>{option.label}</span>
+                <span class={styles.optionCode}>{option.shortLabel}</span>
+              </a>
+            </li>
           );
         })
       }
-    </div>
+    </ul>
   </div>
 </div>
 

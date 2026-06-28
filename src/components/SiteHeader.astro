@@ -1,17 +1,9 @@
 ---
 import { Icon } from "astro-icon/components";
 import type { CampaignContent } from "../data/campaign";
-import type { SupportedLocale } from "../i18n/config";
+import type { LanguageSelectorOption, SupportedLocale } from "../i18n/config";
 import LanguageSelector from "./LanguageSelector.astro";
 import styles from "./SiteHeader.module.css";
-
-interface LanguageSelectorOption {
-  locale: SupportedLocale;
-  href: string;
-  flagEmoji: string;
-  label: string;
-  shortLabel: string;
-}
 
 interface Props {
   copy: CampaignContent["header"];
