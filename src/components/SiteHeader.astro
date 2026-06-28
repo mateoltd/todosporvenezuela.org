@@ -170,13 +170,9 @@ const { copy, links, currentLocale, languageOptions } = Astro.props;
       }
     };
 
-    if (typeof desktopNav.addEventListener === "function") {
-      desktopNav.addEventListener("change", syncMenuForViewport, {
-        signal: headerController.signal
-      });
-    } else {
-      desktopNav.addListener(syncMenuForViewport);
-    }
+    desktopNav.addEventListener("change", syncMenuForViewport, {
+      signal: headerController.signal
+    });
     syncMenuForViewport();
 
     const scrolledClass = header.getAttribute("data-scrolled-class");

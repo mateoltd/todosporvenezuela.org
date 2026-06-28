@@ -2,6 +2,12 @@
 import { Icon } from "astro-icon/components";
 import MethodItem from "./MethodItem.astro";
 import "../styles/donation-modal.css";
+import {
+  getLocaleContent,
+  localizeCoinText,
+  type DonationModalCopy,
+} from "../data/campaign";
+import type { SupportedLocale } from "../i18n/config";
 import { getPayPalItemName, getPayPalItemNumber } from "../lib/donations/paypal";
 
 interface AmountOption {
@@ -30,6 +36,8 @@ interface PayPalDonate {
 }
 
 interface Props {
+  locale?: SupportedLocale;
+  copy?: DonationModalCopy;
   /** Fallback PayPal donate URL. */
   paypalUrl?: string;
   paypalNotifyUrl?: string;
@@ -39,6 +47,9 @@ interface Props {
   binance?: Binance;
 }
 
+const props = Astro.props;
+const locale = props.locale ?? "es";
+const copy = props.copy ?? getLocaleContent(locale).donationModal;
 const {
   paypalUrl = "https://www.paypal.com/donate",
   paypalNotifyUrl = "",
@@ -46,16 +57,11 @@ const {
     env: "production",
     hostedButtonId: ""
   },
-  amounts = [
-    { value: 5, note: "Hidratación para quien lo necesita" },
-    { value: 10, note: "Alimentación básica", popular: true },
-    { value: 20, note: "Insumos médicos y primeros auxilios" },
-    { value: 35, note: "Apoyo para zonas remotas" }
-  ],
+  amounts = copy.amounts,
   // Datos oficiales pendientes: deja vacío para mostrar "Disponible muy pronto".
   pagoMovil = { banco: "", telefono: "", documento: "", titular: "", contacto: "" },
   binance = { payId: "", coin: "USDT" }
-} = Astro.props;
+} = props;
 
 const defaultAmount = amounts.find((a) => a.popular)?.value ?? amounts[0]?.value ?? 10;
 const binanceCoin = (binance.coin?.trim() || "USDT").toUpperCase();
@@ -67,7 +73,7 @@ const usd = (value: number) =>
     maximumFractionDigits: 0
   }).format(value);
 
-const paypalItemName = getPayPalItemName();
+const paypalItemName = getPayPalItemName(copy.paypalItemName);
 const paypalItemNumber = getPayPalItemNumber();
 const formatPaypalAmount = (value: number) =>
   Number.isFinite(value) ? Math.max(1, value).toFixed(2) : "1.00";
@@ -110,72 +116,62 @@ type Method = {
 const internationalMethods: Method[] = [
   {
     id: "paypal",
-    name: "Tarjeta o PayPal",
+    name: copy.methods.paypal.name,
     icon: "tabler:brand-paypal",
     marks: ["tabler:brand-visa", "tabler:brand-mastercard", "tabler:credit-card"],
-    desc: "Paga con tarjeta o con tu cuenta PayPal.",
-    lead: "Te llevamos a la ventana segura de PayPal. Puedes pagar con tu tarjeta de crédito o débito, o con tu cuenta PayPal si ya tienes una.",
+    desc: copy.methods.paypal.desc,
+    lead: copy.methods.paypal.lead,
     fields: [],
-    steps: [
-      "Toca el botón para abrir la ventana segura de PayPal.",
-      "Elige pagar con tarjeta o inicia sesión en PayPal.",
-      "Confirma el monto y completa el pago."
-    ],
+    steps: copy.methods.paypal.steps,
     action: "paypal",
-    actionLabel: "Ir a PayPal"
+    actionLabel: copy.methods.paypal.actionLabel
   },
   {
     id: "binance",
-    name: "Binance Pay",
+    name: copy.methods.binance.name,
     icon: "tabler:brand-binance",
-    desc: `${binanceCoin}, sin comisiones bancarias`,
-    lead: `Envía tu aporte en ${binanceCoin} por Binance Pay. Es una opción directa para donar desde Venezuela o desde el exterior.`,
+    desc: localizeCoinText(copy.methods.binance.desc, binanceCoin),
+    lead: localizeCoinText(copy.methods.binance.lead, binanceCoin),
     fields: [
-      { label: "Binance Pay ID", value: binance.payId },
-      { label: "Moneda", value: binance.payId ? binanceCoin : "" }
+      { label: copy.methods.binance.fields?.binancePayId ?? "Binance Pay ID", value: binance.payId },
+      { label: copy.methods.binance.fields?.coin ?? "Coin", value: binance.payId ? binanceCoin : "" }
     ],
-    steps: [
-      "Abre Binance y entra a la sección Pay.",
-      "Toca Enviar y pega el Pay ID.",
-      `Envía el monto en ${binanceCoin} y conserva tu comprobante.`
-    ],
+    steps: copy.methods.binance.steps.map((step) => localizeCoinText(step, binanceCoin)),
     action: "confirm",
-    actionLabel: "Ya hice mi pago"
+    actionLabel: copy.methods.binance.actionLabel
   }
 ];
 
 const pagoMovilFields = [
-  { label: "Banco", value: pagoMovil.banco },
-  { label: "Teléfono", value: pagoMovil.telefono },
-  { label: "Cédula o RIF", value: pagoMovil.documento },
-  ...(pagoMovil.titular ? [{ label: "Titular", value: pagoMovil.titular }] : []),
-  ...(pagoMovil.contacto ? [{ label: "Contacto", value: pagoMovil.contacto }] : [])
+  { label: copy.methods.pagoMovil.fields?.bank ?? "Bank", value: pagoMovil.banco },
+  { label: copy.methods.pagoMovil.fields?.phone ?? "Phone", value: pagoMovil.telefono },
+  { label: copy.methods.pagoMovil.fields?.document ?? "ID", value: pagoMovil.documento },
+  ...(pagoMovil.titular ? [{ label: copy.methods.pagoMovil.fields?.holder ?? "Holder", value: pagoMovil.titular }] : []),
+  ...(pagoMovil.contacto ? [{ label: copy.methods.pagoMovil.fields?.contact ?? "Contact", value: pagoMovil.contacto }] : [])
 ];
 
 const pagoMovilSteps = [
-  "Abre la app de tu banco y entra a Pago Móvil.",
-  "Ingresa el banco, teléfono y Cédula/RIF de arriba.",
-  "Envía el monto equivalente en bolívares y conserva tu comprobante.",
-  ...(pagoMovil.contacto ? ["Usa el contacto si necesitas consultar o confirmar el pago."] : [])
+  ...copy.methods.pagoMovil.steps,
+  ...(pagoMovil.contacto && copy.methods.pagoMovil.contactStep ? [copy.methods.pagoMovil.contactStep] : [])
 ];
 
 const localCountries: { id: string; name: string; flag: string; methods: Method[] }[] = [
   {
     id: "ve",
-    name: "Venezuela",
+    name: copy.countryName,
     flag: "circle-flags:ve",
     methods: [
       {
         id: "pagomovil",
-        name: "Pago Móvil",
+        name: copy.methods.pagoMovil.name,
         icon: "tabler:device-mobile",
-        desc: "Transferencia en bolívares",
-        lead: "Aporta en bolívares desde la app de tu banco. Es la opción local para quienes están en Venezuela.",
+        desc: copy.methods.pagoMovil.desc,
+        lead: copy.methods.pagoMovil.lead,
         fields: pagoMovilFields,
         steps: pagoMovilSteps,
         conversion: "bcv-ves",
         action: "confirm",
-        actionLabel: "Ya hice mi pago"
+        actionLabel: copy.methods.pagoMovil.actionLabel
       }
     ]
   }
@@ -191,6 +187,10 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
   data-paypal-hosted-button-id={paypal.hostedButtonId}
   data-paypal-business={paypal.business}
   data-paypal-notify-url={paypalNotifyUrl}
+  data-paypal-item-name={paypalItemName}
+  data-paypal-item-number={paypalItemNumber}
+  data-locale={locale}
+  data-modal-copy={JSON.stringify(copy.client)}
   aria-hidden="true"
 >
   <div class="dm__backdrop" data-donate-close></div>
@@ -205,7 +205,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     <span class="dm__handle" aria-hidden="true"></span>
 
     <header class="dm__bar">
-      <button class="dm__iconbtn dm__back" type="button" aria-label="Volver" data-back disabled>
+      <button class="dm__iconbtn dm__back" type="button" aria-label={copy.backLabel} data-back disabled>
         <Icon name="tabler:arrow-left" size={20} />
       </button>
 
@@ -215,7 +215,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         <span class="dm__band dm__band--3"></span>
       </div>
 
-      <button class="dm__iconbtn dm__close" type="button" aria-label="Cerrar" data-donate-close>
+      <button class="dm__iconbtn dm__close" type="button" aria-label={copy.closeLabel} data-donate-close>
         <Icon name="tabler:x" size={20} />
       </button>
     </header>
@@ -223,15 +223,12 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     <div class="dm__scroll">
       <div class="dm__step is-active" data-panel="1">
         <div class="dm__step-head">
-          <p class="dm__eyebrow">Haz tu aporte</p>
-          <h2 class="dm__title" id="dm-title">¿Cuánto quieres aportar?</h2>
-          <p class="dm__lead">
-            Tu aporte ayuda a comprar insumos médicos, alimentación e hidratación
-            para personas necesitadas, incluso en zonas remotas.
-          </p>
+          <p class="dm__eyebrow">{copy.amountEyebrow}</p>
+          <h2 class="dm__title" id="dm-title">{copy.amountTitle}</h2>
+          <p class="dm__lead">{copy.amountLead}</p>
         </div>
 
-        <div class="dm__amounts" role="group" aria-label="Elige un monto">
+        <div class="dm__amounts" role="group" aria-label={copy.amountGroupLabel}>
           {
             amounts.map((amount) => (
               <button
@@ -240,7 +237,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
                 data-amount={amount.value}
                 aria-pressed={amount.value === defaultAmount ? "true" : "false"}
               >
-                {amount.popular && <span class="dm__amount-tag">Más elegido</span>}
+                {amount.popular && <span class="dm__amount-tag">{copy.popularAmountLabel}</span>}
                 <span class="dm__amount-value">{usd(amount.value)}</span>
                 <span class="dm__amount-note">{amount.note}</span>
               </button>
@@ -249,13 +246,13 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         </div>
 
         <label class="dm__custom">
-          <span>Otro monto en dólares</span>
+          <span>{copy.customAmountLabel}</span>
           <input
             type="number"
             min="1"
             step="1"
             inputmode="numeric"
-            placeholder="Escribe un monto entero"
+            placeholder={copy.customAmountPlaceholder}
             data-custom-amount
             aria-describedby="dm-custom-amount-error"
             aria-errormessage="dm-custom-amount-error"
@@ -269,7 +266,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         </label>
 
         <button class="dm__cta" type="button" data-next>
-          Continuar
+          {copy.continueLabel}
           <Icon name="tabler:chevron-right" size={20} />
         </button>
       </div>
@@ -277,23 +274,23 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       <div class="dm__step" data-panel="2">
         <div class="dm__step-head">
           <p class="dm__amountchip">
-            Tu aporte
+            {copy.amountChipLabel}
             <strong data-amount-display>{usd(defaultAmount)}</strong>
           </p>
-          <p class="dm__eyebrow">Método de pago</p>
-          <h2 class="dm__title">¿Cómo quieres pagar?</h2>
-          <p class="dm__lead">Elige el método que te quede más fácil.</p>
+          <p class="dm__eyebrow">{copy.methodEyebrow}</p>
+          <h2 class="dm__title">{copy.methodTitle}</h2>
+          <p class="dm__lead">{copy.methodLead}</p>
         </div>
 
         <div class="dm__group">
           <p class="dm__group-label">
             <Icon name="tabler:world" size={15} />
-            Desde cualquier país
+            {copy.internationalGroupLabel}
           </p>
 
           <div class="dm__methods">
             {internationalMethods.map((method) => (
-              <MethodItem method={method} paypalUrl={method.id === "paypal" ? paypalInitialUrl : paypalUrl} />
+              <MethodItem method={method} paypalUrl={method.id === "paypal" ? paypalInitialUrl : paypalUrl} copy={copy.methodItem} />
             ))}
           </div>
         </div>
@@ -301,7 +298,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         <div class="dm__group">
           <p class="dm__group-label">
             <Icon name="tabler:map-pin" size={15} />
-            Pago local
+            {copy.localGroupLabel}
           </p>
 
           {
@@ -326,7 +323,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
                 <div class="dm__country-body">
                   <div class="dm__methods">
                     {country.methods.map((method) => (
-                      <MethodItem method={method} paypalUrl={paypalUrl} />
+                      <MethodItem method={method} paypalUrl={paypalUrl} copy={copy.methodItem} />
                     ))}
                   </div>
                 </div>
@@ -340,13 +337,10 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         <span class="dm__done-icon" aria-hidden="true">
           <Icon name="tabler:heart-handshake" size={36} />
         </span>
-        <p class="dm__eyebrow">Aporte enviado</p>
-        <h2 class="dm__title">¡Gracias por tu aporte!</h2>
-        <p class="dm__lead">
-          Tu aporte suma en un momento difícil para Venezuela. Publicaremos
-          reportes transparentes todos los días.
-        </p>
-        <button class="dm__cta" type="button" data-donate-close>Cerrar</button>
+        <p class="dm__eyebrow">{copy.doneEyebrow}</p>
+        <h2 class="dm__title">{copy.doneTitle}</h2>
+        <p class="dm__lead">{copy.doneLead}</p>
+        <button class="dm__cta" type="button" data-donate-close>{copy.doneCloseLabel}</button>
       </div>
     </div>
   </section>
@@ -355,9 +349,19 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
 <script>
   type StepId = "1" | "2" | "done";
 
-  const modal = document.querySelector<HTMLElement>("[data-donate-modal]");
+  const initDonationModal = () => {
+    const modal = document.querySelector<HTMLElement>("[data-donate-modal]");
+    if (!modal || modal.dataset.donateReady === "true") return;
 
-  if (modal) {
+    const donationWindow = window as Window & {
+      __tpvDonationModalAbortController?: AbortController;
+    };
+
+    donationWindow.__tpvDonationModalAbortController?.abort();
+    const donationController = new AbortController();
+    donationWindow.__tpvDonationModalAbortController = donationController;
+    modal.dataset.donateReady = "true";
+
     const panel = modal.querySelector<HTMLElement>(".dm__panel");
     const scroll = modal.querySelector<HTMLElement>(".dm__scroll");
     const openers = document.querySelectorAll<HTMLElement>("[data-donate-open]");
@@ -381,6 +385,24 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const paypalHostedButtonId = modal.getAttribute("data-paypal-hosted-button-id") ?? "";
     const paypalBusiness = modal.getAttribute("data-paypal-business") ?? "";
     const paypalNotifyUrl = modal.getAttribute("data-paypal-notify-url") ?? "";
+    const paypalItemName =
+      modal.getAttribute("data-paypal-item-name") ||
+      "Ayuda para insumos médicos, alimentación e hidratación en Venezuela.";
+    const paypalItemNumber = modal.getAttribute("data-paypal-item-number") || "donacion-terremoto";
+    const locale = modal.getAttribute("data-locale") === "en" ? "en-US" : "es-VE";
+    const modalCopy = JSON.parse(modal.getAttribute("data-modal-copy") || "{}") as {
+      minAmount?: string;
+      integerAmount?: string;
+      chooseAmount?: string;
+      calculating?: string;
+      queryingRate?: string;
+      unavailable?: string;
+      rateUnavailable?: string;
+      officialRatePrefix?: string;
+      rateUnit?: string;
+      rateDatePrefix?: string;
+      copied?: string;
+    };
 
     const countryToggles = modal.querySelectorAll<HTMLElement>("[data-country-toggle]");
 
@@ -391,9 +413,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     let paypalSdkPromise: Promise<void> | null = null;
     let officialUsdRatePromise: Promise<BcvUsdRate | null> | null = null;
 
-    const paypalItemName =
-      "Ayuda para insumos médicos, alimentación e hidratación en Venezuela.";
-    const paypalItemNumber = "donacion-terremoto";
     const formatUsd = (value: number) => `$${Math.round(value)}`;
     const formatVesDisplay = (value: number) =>
       `Bs. ${new Intl.NumberFormat("es-VE", {
@@ -416,7 +435,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return "";
 
-      return new Intl.DateTimeFormat("es-VE", {
+      return new Intl.DateTimeFormat(locale, {
         day: "2-digit",
         month: "short",
         year: "numeric"
@@ -457,11 +476,11 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         const parsed = Number(customValue);
 
         if (Number.isFinite(parsed) && parsed < 1) {
-          return { message: "Escribe un monto de al menos $1.", valid: false };
+          return { message: modalCopy.minAmount ?? "Enter an amount of at least $1.", valid: false };
         }
 
         if (!integerAmountPattern.test(customValue)) {
-          return { message: "Usa un monto entero en dólares, sin centavos.", valid: false };
+          return { message: modalCopy.integerAmount ?? "Use a whole dollar amount, without cents.", valid: false };
         }
 
         return { amount: parsed, valid: true };
@@ -470,7 +489,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       const presetAmount = getSelectedPresetAmount();
       if (presetAmount !== null) return { amount: presetAmount, valid: true };
 
-      return { message: "Elige un monto o escribe un monto entero.", valid: false };
+      return { message: modalCopy.chooseAmount ?? "Choose an amount or enter a whole amount.", valid: false };
     };
 
     const clearPresetSelection = () => {
@@ -515,7 +534,13 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         textArea.setSelectionRange(0, value.length);
 
         try {
-          return document.execCommand("copy");
+          const execCommand = (
+            document as Document & {
+              execCommand?: (commandId: string) => boolean;
+            }
+          ).execCommand;
+
+          return execCommand?.call(document, "copy") ?? false;
         } catch {
           return false;
         } finally {
@@ -557,8 +582,8 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       );
 
     const setVesConversionPending = () => {
-      vesAmountDisplays.forEach((el) => (el.textContent = "Calculando..."));
-      vesRateDisplays.forEach((el) => (el.textContent = "Consultando tasa oficial"));
+      vesAmountDisplays.forEach((el) => (el.textContent = modalCopy.calculating ?? "Calculating..."));
+      vesRateDisplays.forEach((el) => (el.textContent = modalCopy.queryingRate ?? "Checking official rate"));
       vesCopyButtons.forEach((btn) => {
         btn.disabled = true;
         btn.setAttribute("data-copy", "");
@@ -567,8 +592,8 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     };
 
     const setVesConversionUnavailable = () => {
-      vesAmountDisplays.forEach((el) => (el.textContent = "No disponible"));
-      vesRateDisplays.forEach((el) => (el.textContent = "Tasa oficial no disponible ahora"));
+      vesAmountDisplays.forEach((el) => (el.textContent = modalCopy.unavailable ?? "Unavailable"));
+      vesRateDisplays.forEach((el) => (el.textContent = modalCopy.rateUnavailable ?? "Official rate is unavailable right now"));
       vesCopyButtons.forEach((btn) => {
         btn.disabled = true;
         btn.setAttribute("data-copy", "");
@@ -615,8 +640,8 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         const vesDisplay = formatVesDisplay(vesAmount);
         const vesCopy = formatVesCopy(vesAmount);
         const rateDate = formatRateDate(rate.valueDate);
-        const rateMeta = `Tasa oficial: ${formatVesRate(rate.rate)} por $1${
-          rateDate ? `. Fecha: ${rateDate}` : ""
+        const rateMeta = `${modalCopy.officialRatePrefix ?? "Official rate:"} ${formatVesRate(rate.rate)} ${modalCopy.rateUnit ?? "per $1"}${
+          rateDate ? `. ${modalCopy.rateDatePrefix ?? "Date:"} ${rateDate}` : ""
         }`;
 
         vesAmountDisplays.forEach((el) => (el.textContent = vesDisplay));
@@ -805,9 +830,19 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
     };
 
-    openers.forEach((btn) => btn.addEventListener("click", () => openModal()));
-    closers.forEach((btn) => btn.addEventListener("click", closeModal));
-    backBtn?.addEventListener("click", goBack);
+    openers.forEach((btn) =>
+      btn.addEventListener("click", () => openModal(), {
+        signal: donationController.signal
+      })
+    );
+    closers.forEach((btn) =>
+      btn.addEventListener("click", closeModal, {
+        signal: donationController.signal
+      })
+    );
+    backBtn?.addEventListener("click", goBack, {
+      signal: donationController.signal
+    });
     nextBtn?.addEventListener("click", () => {
       if (!syncAmount()) {
         customInput?.focus();
@@ -815,7 +850,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       }
       goToStep("2");
       primePayPalCheckout();
-    });
+    }, { signal: donationController.signal });
 
     paypalLinks.forEach((link) =>
       link.addEventListener("click", (event) => {
@@ -826,7 +861,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         }
         if (!openPayPalCheckout()) return;
         event.preventDefault();
-      })
+      }, { signal: donationController.signal })
     );
 
     amountButtons.forEach((btn) =>
@@ -837,7 +872,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         amount = Number(btn.getAttribute("data-amount"));
         if (customInput) customInput.value = "";
         syncAmount();
-      })
+      }, { signal: donationController.signal })
     );
 
     customInput?.addEventListener("input", () => {
@@ -847,7 +882,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       }
       if (customAmount !== null) amount = customAmount;
       syncAmount();
-    });
+    }, { signal: donationController.signal });
 
     methodToggles.forEach((toggle) =>
       toggle.addEventListener("click", () => {
@@ -864,7 +899,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
             item.scrollIntoView({ block: "nearest", behavior: "smooth" })
           );
         }
-      })
+      }, { signal: donationController.signal })
     );
 
     countryToggles.forEach((toggle) =>
@@ -874,14 +909,14 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         const willOpen = !item.classList.contains("is-open");
         item.classList.toggle("is-open", willOpen);
         toggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
-      })
+      }, { signal: donationController.signal })
     );
 
     modal.querySelectorAll<HTMLElement>("[data-done]").forEach((btn) =>
       btn.addEventListener("click", () => {
         // Manual methods move to thanks after confirmation.
         window.setTimeout(() => goToStep("done"), btn.hasAttribute("href") ? 250 : 0);
-      })
+      }, { signal: donationController.signal })
     );
 
     modal.querySelectorAll<HTMLElement>("[data-copy]").forEach((btn) =>
@@ -896,12 +931,12 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         }
         btn.classList.add("is-copied");
         const label = btn.getAttribute("aria-label") ?? "";
-        btn.setAttribute("aria-label", "Copiado");
+        btn.setAttribute("aria-label", modalCopy.copied ?? "Copied");
         window.setTimeout(() => {
           btn.classList.remove("is-copied");
           btn.setAttribute("aria-label", label);
         }, 1600);
-      })
+      }, { signal: donationController.signal })
     );
 
     document.addEventListener("keydown", (event) => {
@@ -923,9 +958,12 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
           first.focus();
         }
       }
-    });
+    }, { signal: donationController.signal });
 
     syncAmount();
     handleInitialDonateState();
-  }
+  };
+
+  initDonationModal();
+  document.addEventListener("astro:page-load", initDonationModal);
 </script>

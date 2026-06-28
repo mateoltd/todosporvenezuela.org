@@ -64,6 +64,20 @@ const ogType = props.ogType ?? "website";
 const ogLocale = props.ogLocale ?? content.locale;
 const ogUrl = props.ogUrl ?? canonicalUrl;
 const isSecureSocialImage = props.socialImageUrl.startsWith("https://");
+const socialImageTypes: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
+const socialImageExtension = content.socialImage.path
+  .split("?")[0]
+  .split(".")
+  .pop()
+  ?.toLowerCase();
+const socialImageType = socialImageExtension
+  ? socialImageTypes[socialImageExtension] ?? "image/jpeg"
+  : "image/jpeg";
 const donation = buildDonationConfig(Astro.url.origin);
 const routeKey = props.routeKey ?? "home";
 const currentHomePath = getLocalizedPath("home", currentLocale);
@@ -134,7 +148,7 @@ const googleAnalyticsScript = `
         <meta property="og:image:secure_url" content={props.socialImageUrl} />
       )
     }
-    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:type" content={socialImageType} />
     <meta property="og:image:width" content={String(content.socialImage.width)} />
     <meta property="og:image:height" content={String(content.socialImage.height)} />
     <meta property="og:image:alt" content={content.socialImage.alt} />
@@ -179,11 +193,12 @@ const googleAnalyticsScript = `
     <slot name="head" />
     <ClientRouter fallback="animate" />
     <script
+      is:inline
       async
       src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsMeasurementId}`}
     ></script>
-    <script set:html={googleAnalyticsScript}></script>
-    <script type="text/javascript" set:html={microsoftClarityScript}></script>
+    <script is:inline set:html={googleAnalyticsScript}></script>
+    <script is:inline type="text/javascript" set:html={microsoftClarityScript}></script>
   </head>
   <body>
     <SiteHeader
