@@ -8,8 +8,8 @@
   --hero-title-gap: 14px;
   --hero-copy-gap: 14px;
   --hero-action-gap: 18px;
-  --hero-band: clamp(560px, calc(100svh - 188px), 1180px);
-  --hero-meter-overlap: 96px;
+  --hero-meter-overlap: 52px;
+  --hero-band: clamp(560px, calc(100svh - 284px + var(--hero-meter-overlap)), 1180px);
   /* Align the meter with the lower edge of the hero media. */
   --meter-drop: 64px;
   /* Ragged mask for the hero media edge. */
