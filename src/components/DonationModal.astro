@@ -97,6 +97,7 @@ type Method = {
   id: string;
   name: string;
   icon: string;
+  marks?: string[];
   desc: string;
   lead: string;
   fields: { label: string; value: string }[];
@@ -109,15 +110,16 @@ type Method = {
 const internationalMethods: Method[] = [
   {
     id: "paypal",
-    name: "PayPal",
+    name: "Tarjeta o PayPal",
     icon: "tabler:brand-paypal",
-    desc: "Tarjeta o cuenta PayPal",
-    lead: "Para aportar desde el exterior, te llevamos a PayPal. Puedes pagar con tarjeta o cuenta PayPal.",
+    marks: ["tabler:brand-visa", "tabler:brand-mastercard", "tabler:credit-card"],
+    desc: "Paga con tarjeta o con tu cuenta PayPal.",
+    lead: "Te llevamos a la ventana segura de PayPal. Puedes pagar con tu tarjeta de crédito o débito, o con tu cuenta PayPal si ya tienes una.",
     fields: [],
     steps: [
-      "Toca el botón de PayPal para abrir la ventana segura.",
-      "Confirma el monto y completa el pago.",
-      "Tu aporte ayudará a comprar insumos, alimentos e hidratación."
+      "Toca el botón para abrir la ventana segura de PayPal.",
+      "Elige pagar con tarjeta o inicia sesión en PayPal.",
+      "Confirma el monto y completa el pago."
     ],
     action: "paypal",
     actionLabel: "Ir a PayPal"

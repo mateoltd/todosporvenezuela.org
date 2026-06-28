@@ -5,6 +5,7 @@ interface Method {
   id: string;
   name: string;
   icon: string;
+  marks?: string[];
   desc: string;
   lead: string;
   fields: { label: string; value: string }[];
@@ -35,6 +36,15 @@ const { method, paypalUrl = "https://www.paypal.com/donate" } = Astro.props;
     <span class="dm__method-text">
       <strong>{method.name}</strong>
       <span>{method.desc}</span>
+      {
+        method.marks && method.marks.length > 0 && (
+          <span class="dm__method-marks" aria-hidden="true">
+            {method.marks.map((mark) => (
+              <Icon class="dm__method-mark" name={mark} size={26} />
+            ))}
+          </span>
+        )
+      }
     </span>
     <Icon class="dm__method-chevron" name="tabler:chevron-down" size={20} />
   </button>

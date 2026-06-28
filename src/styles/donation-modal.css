@@ -494,6 +494,18 @@
   font-weight: 800;
 }
 
+.dm__method-marks {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: rgba(16, 24, 32, 0.6);
+}
+
+.dm__method-mark {
+  flex: none;
+}
+
 .dm__method-text span {
   color: var(--muted);
   font-size: 13px;
