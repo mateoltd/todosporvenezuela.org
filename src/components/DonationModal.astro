@@ -425,6 +425,9 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const formatPaypalAmount = (value: number) =>
       Number.isFinite(value) ? Math.max(1, value).toFixed(2) : "1.00";
     const integerAmountPattern = /^\d+$/;
+    type AmountValidation =
+      | { amount: number; valid: true }
+      | { message: string; valid: false };
 
     type BcvUsdRate = {
       rate: number;
@@ -447,7 +450,7 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       return Number.isFinite(parsed) && parsed >= 1 ? parsed : null;
     };
 
-    const getAmountValidation = () => {
+    const getAmountValidation = (): AmountValidation => {
       const customValue = customInput?.value.trim() ?? "";
 
       if (customValue) {
@@ -628,15 +631,14 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
 
     const syncAmount = () => {
       const validation = getAmountValidation();
-      const validAmount = validation.valid ? validation.amount : null;
 
-      if (validAmount === null) {
+      if (!validation.valid) {
         setCustomInputError(validation.message);
         if (nextBtn) nextBtn.disabled = true;
         return false;
       }
 
-      amount = validAmount;
+      amount = validation.amount;
       setCustomInputError();
       if (nextBtn) nextBtn.disabled = false;
       amountDisplays.forEach((el) => (el.textContent = formatUsd(amount)));
