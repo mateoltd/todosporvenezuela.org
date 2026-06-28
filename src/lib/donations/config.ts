@@ -11,12 +11,6 @@ import {
   type EnvSource,
 } from "../config/env";
 
-export interface DonationAmount {
-  value: number;
-  note: string;
-  popular?: boolean;
-}
-
 export interface DonationConfig {
   paypalUrl: string;
   paypalNotifyUrl: string;
@@ -25,7 +19,6 @@ export interface DonationConfig {
     hostedButtonId: string;
     business: string;
   };
-  amounts: DonationAmount[];
   pagoMovil: {
     banco: string;
     telefono: string;
@@ -302,12 +295,6 @@ export function buildDonationConfig(
       hostedButtonId: config.paypalHostedButtonId,
       business: config.paypalBusiness,
     },
-    amounts: [
-      { value: 5, note: "Hidratación para quien lo necesita" },
-      { value: 10, note: "Alimentación básica", popular: true },
-      { value: 20, note: "Insumos médicos y primeros auxilios" },
-      { value: 35, note: "Apoyo para zonas remotas" },
-    ],
     pagoMovil: config.pagoMovil,
     binance: {
       payId: config.binancePayId,
