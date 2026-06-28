@@ -1,4 +1,5 @@
 ---
+import { Icon } from "astro-icon/components";
 import type { LanguageSelectorOption } from "../i18n/config";
 import styles from "./LanguageSelector.module.css";
 
@@ -7,6 +8,12 @@ interface Props {
   label: string;
   options: LanguageSelectorOption[];
 }
+
+// ve = es, us = en
+const flagIcons: Record<LanguageSelectorOption["locale"], string> = {
+  es: "circle-flags:ve",
+  en: "circle-flags:us",
+};
 
 const { currentLocale, label, options } = Astro.props;
 const currentOption =
@@ -24,11 +31,11 @@ const menuId = `language-menu-${currentLocale}`;
     data-language-trigger
   >
     <span class={styles.flag} aria-hidden="true">
-      {currentOption.flagEmoji}
+      <Icon name={flagIcons[currentOption.locale]} />
     </span>
     <span class={styles.triggerLabel}>{currentOption.label}</span>
     <span class={styles.triggerCode}>{currentOption.shortLabel}</span>
-    <span class={styles.chevron} aria-hidden="true"></span>
+    <Icon name="tabler:chevron-down" class={styles.chevron} aria-hidden="true" />
   </button>
 
   <div class={styles.positioner} data-language-positioner>
@@ -51,7 +58,7 @@ const menuId = `language-menu-${currentLocale}`;
                 data-locale={option.locale}
               >
                 <span class={styles.optionFlag} aria-hidden="true">
-                  {option.flagEmoji}
+                  <Icon name={flagIcons[option.locale]} />
                 </span>
                 <span class={styles.optionLabel}>{option.label}</span>
                 <span class={styles.optionCode}>{option.shortLabel}</span>
