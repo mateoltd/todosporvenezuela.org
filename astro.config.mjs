@@ -103,6 +103,22 @@ export default defineConfig({
       UPSTASH_REDIS_REST_URL: serverEnvString()
     }
   },
+  i18n: {
+    defaultLocale: "es",
+    locales: [
+      {
+        path: "es",
+        codes: ["es", "es-VE", "es-ES", "es-419", "es-US"]
+      },
+      {
+        path: "en",
+        codes: ["en", "en-US", "en-GB", "en-CA"]
+      }
+    ],
+    routing: {
+      prefixDefaultLocale: true
+    }
+  },
   output: "server",
   security: {
     checkOrigin: false

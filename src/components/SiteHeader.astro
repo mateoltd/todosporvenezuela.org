@@ -1,10 +1,36 @@
 ---
 import { Icon } from "astro-icon/components";
+import type { CampaignContent } from "../data/campaign";
+import type { SupportedLocale } from "../i18n/config";
+import LanguageSelector from "./LanguageSelector.astro";
 import styles from "./SiteHeader.module.css";
+
+interface LanguageSelectorOption {
+  locale: SupportedLocale;
+  href: string;
+  flagEmoji: string;
+  label: string;
+  shortLabel: string;
+}
+
+interface Props {
+  copy: CampaignContent["header"];
+  links: {
+    home: string;
+    impact: string;
+    organizers: string;
+    transparency: string;
+    faq: string;
+  };
+  currentLocale: SupportedLocale;
+  languageOptions: LanguageSelectorOption[];
+}
+
+const { copy, links, currentLocale, languageOptions } = Astro.props;
 ---
 
 <header class={styles.siteHeader} data-header data-scrolled-class={styles.scrolled}>
-  <a class={styles.brand} href="/" aria-label="Todos por Venezuela">
+  <a class={styles.brand} href={links.home} aria-label={copy.brandAriaLabel}>
     <span class={styles.brandMark} aria-hidden="true">
       <picture>
         <source srcset="/images/tpv-emblem.webp" type="image/webp" />
@@ -17,17 +43,19 @@ import styles from "./SiteHeader.module.css";
         />
       </picture>
     </span>
-    <span class={styles.brandText}>Todos por<br />Venezuela</span>
+    <span class={styles.brandText}>{copy.brandText.line1}<br />{copy.brandText.line2}</span>
   </a>
 
   <button
     class={styles.menuToggle}
     type="button"
-    aria-label="Abrir menú de navegación"
+    aria-label={copy.menuOpenLabel}
     aria-controls="site-navigation"
     aria-expanded="false"
     data-menu-toggle
     data-nav-open-class={styles.navOpen}
+    data-menu-open-label={copy.menuOpenLabel}
+    data-menu-close-label={copy.menuCloseLabel}
   >
     <span class={styles.menuIconOpen} aria-hidden="true">
       <Icon name="tabler:menu-2" size={22} />
@@ -37,30 +65,49 @@ import styles from "./SiteHeader.module.css";
     </span>
   </button>
 
-  <nav id="site-navigation" class={styles.primaryNav} aria-label="Navegación principal" data-nav>
-    <a href="/#impacto">Devastación</a>
-    <a href="/#transparencia">Organizadores</a>
-    <a href="/transparencia">Transparencia</a>
-    <a href="/#faq">FAQ</a>
+  <nav id="site-navigation" class={styles.primaryNav} aria-label={copy.navLabel} data-nav>
+    <a href={links.impact}>{copy.nav.impact}</a>
+    <a href={links.organizers}>{copy.nav.organizers}</a>
+    <a href={links.transparency}>{copy.nav.transparency}</a>
+    <a href={links.faq}>{copy.nav.faq}</a>
   </nav>
 
-  <button class={styles.headerDonate} type="button" aria-label="Donar ahora" data-donate-open>
-    <span class={styles.donateTextFull}>Donar ahora</span>
-    <span class={styles.donateTextCompact} aria-hidden="true">Donar</span>
-  </button>
+  <div class={styles.headerActions}>
+    <LanguageSelector
+      currentLocale={currentLocale}
+      label={copy.languageSwitchLabel}
+      options={languageOptions}
+    />
+
+    <button class={styles.headerDonate} type="button" aria-label={copy.donateAriaLabel} data-donate-open>
+      <span class={styles.donateTextFull}>{copy.donateFull}</span>
+      <span class={styles.donateTextCompact} aria-hidden="true">{copy.donateCompact}</span>
+    </button>
+  </div>
 
   <span class={styles.flagRule} aria-hidden="true"></span>
 </header>
 
 <script>
-  const header = document.querySelector("[data-header]");
-  if (header instanceof HTMLElement && header.dataset.headerReady !== "true") {
+  const initSiteHeader = () => {
+    const header = document.querySelector("[data-header]");
+    if (!(header instanceof HTMLElement) || header.dataset.headerReady === "true") return;
+
+    const headerWindow = window as Window & {
+      __tpvSiteHeaderAbortController?: AbortController;
+    };
+
+    headerWindow.__tpvSiteHeaderAbortController?.abort();
+    const headerController = new AbortController();
+    headerWindow.__tpvSiteHeaderAbortController = headerController;
     header.dataset.headerReady = "true";
 
     const nav = header.querySelector("[data-nav]");
     const menuToggle = header.querySelector("[data-menu-toggle]");
     const donateButton = header.querySelector("[data-donate-open]");
     const navOpenClass = menuToggle?.getAttribute("data-nav-open-class");
+    const menuOpenLabel = menuToggle?.getAttribute("data-menu-open-label") ?? "Open navigation menu";
+    const menuCloseLabel = menuToggle?.getAttribute("data-menu-close-label") ?? "Close navigation menu";
     const desktopNav = window.matchMedia("(min-width: 861px)");
 
     const setMenuState = (isOpen: boolean, shouldFocusToggle = false) => {
@@ -72,7 +119,7 @@ import styles from "./SiteHeader.module.css";
       menuToggle.setAttribute("aria-expanded", String(isOpen));
       menuToggle.setAttribute(
         "aria-label",
-        isOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"
+        isOpen ? menuCloseLabel : menuOpenLabel
       );
 
       if (desktopNav.matches) {
@@ -91,26 +138,30 @@ import styles from "./SiteHeader.module.css";
     menuToggle?.addEventListener("click", () => {
       const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
       setMenuState(!isOpen);
-    });
+    }, { signal: headerController.signal });
 
     nav?.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", () => closeMenu());
+      link.addEventListener("click", () => closeMenu(), {
+        signal: headerController.signal
+      });
     });
 
-    donateButton?.addEventListener("click", () => closeMenu());
+    donateButton?.addEventListener("click", () => closeMenu(), {
+      signal: headerController.signal
+    });
 
     document.addEventListener("click", (event) => {
       const isOpen = menuToggle?.getAttribute("aria-expanded") === "true";
       if (isOpen && event.target instanceof Node && !header.contains(event.target)) {
         closeMenu();
       }
-    });
+    }, { signal: headerController.signal });
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && menuToggle?.getAttribute("aria-expanded") === "true") {
         closeMenu(true);
       }
-    });
+    }, { signal: headerController.signal });
 
     const syncMenuForViewport = () => {
       closeMenu();
@@ -120,7 +171,9 @@ import styles from "./SiteHeader.module.css";
     };
 
     if (typeof desktopNav.addEventListener === "function") {
-      desktopNav.addEventListener("change", syncMenuForViewport);
+      desktopNav.addEventListener("change", syncMenuForViewport, {
+        signal: headerController.signal
+      });
     } else {
       desktopNav.addListener(syncMenuForViewport);
     }
@@ -138,6 +191,12 @@ import styles from "./SiteHeader.module.css";
     isScrolled = window.scrollY > 8;
     if (scrolledClass) header.classList.toggle(scrolledClass, isScrolled);
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-  }
+    window.addEventListener("scroll", onScroll, {
+      passive: true,
+      signal: headerController.signal
+    });
+  };
+
+  initSiteHeader();
+  document.addEventListener("astro:page-load", initSiteHeader);
 </script>

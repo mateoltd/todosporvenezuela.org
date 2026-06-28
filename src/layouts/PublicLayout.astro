@@ -1,14 +1,21 @@
 ---
 import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
 import DonationModal from "../components/DonationModal.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import {
-  language as defaultLanguage,
-  locale as defaultLocale,
-  siteName,
-  socialImage,
+  getLocaleContent,
+  type CampaignContent,
 } from "../data/campaign";
+import {
+  defaultLocale,
+  getLocalizedPath,
+  localeDefinitions,
+  supportedLocales,
+  type LocalizedRouteKey,
+  type SupportedLocale,
+} from "../i18n/config";
 import { buildDonationConfig } from "../lib/donations/config";
 
 interface AlternateLink {
@@ -17,6 +24,9 @@ interface AlternateLink {
 }
 
 interface Props {
+  locale?: SupportedLocale;
+  routeKey?: LocalizedRouteKey;
+  content?: CampaignContent;
   title: string;
   description: string;
   canonicalUrl?: string;
@@ -34,7 +44,9 @@ interface Props {
 }
 
 const props = Astro.props;
-const htmlLang = props.htmlLang ?? defaultLanguage;
+const currentLocale = props.locale ?? defaultLocale;
+const content = props.content ?? getLocaleContent(currentLocale);
+const htmlLang = props.htmlLang ?? content.language;
 const canonicalUrl = props.canonicalUrl;
 const alternateLinks =
   props.alternateLinks ??
@@ -49,10 +61,31 @@ const robots = props.robots ?? "index, follow, max-image-preview:large";
 const socialTitle = props.socialTitle ?? props.title;
 const socialDescription = props.socialDescription ?? props.description;
 const ogType = props.ogType ?? "website";
-const ogLocale = props.ogLocale ?? defaultLocale;
+const ogLocale = props.ogLocale ?? content.locale;
 const ogUrl = props.ogUrl ?? canonicalUrl;
 const isSecureSocialImage = props.socialImageUrl.startsWith("https://");
 const donation = buildDonationConfig(Astro.url.origin);
+const routeKey = props.routeKey ?? "home";
+const currentHomePath = getLocalizedPath("home", currentLocale);
+const headerLinks = {
+  home: currentHomePath,
+  impact: `${currentHomePath}#impacto`,
+  organizers: `${currentHomePath}#transparencia`,
+  transparency: getLocalizedPath("transparency", currentLocale),
+  faq: `${currentHomePath}#faq`,
+};
+const languageOptions = supportedLocales.map((locale) => {
+  const href = getLocalizedPath(routeKey, locale);
+  const definition = localeDefinitions[locale];
+
+  return {
+    locale,
+    href,
+    flagEmoji: definition.flagEmoji,
+    label: definition.label,
+    shortLabel: definition.shortLabel,
+  };
+});
 const microsoftClarityProjectId = "xduul4uyvv";
 const googleAnalyticsMeasurementId = "G-EX089GZ90V";
 const microsoftClarityScript = `
@@ -79,9 +112,9 @@ const googleAnalyticsScript = `
     <meta name="format-detection" content="telephone=no" />
     <meta name="description" content={props.description} />
     <meta name="robots" content={robots} />
-    <meta name="author" content={siteName} />
+    <meta name="author" content={content.siteName} />
     <meta name="theme-color" content="#f7f7f2" />
-    <meta name="application-name" content={siteName} />
+    <meta name="application-name" content={content.siteName} />
     <title>{props.title}</title>
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     {
@@ -90,7 +123,7 @@ const googleAnalyticsScript = `
       ))
     }
     <meta property="og:type" content={ogType} />
-    <meta property="og:site_name" content={siteName} />
+    <meta property="og:site_name" content={content.siteName} />
     <meta property="og:locale" content={ogLocale} />
     <meta property="og:title" content={socialTitle} />
     <meta property="og:description" content={socialDescription} />
@@ -102,16 +135,16 @@ const googleAnalyticsScript = `
       )
     }
     <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content={String(socialImage.width)} />
-    <meta property="og:image:height" content={String(socialImage.height)} />
-    <meta property="og:image:alt" content={socialImage.alt} />
+    <meta property="og:image:width" content={String(content.socialImage.width)} />
+    <meta property="og:image:height" content={String(content.socialImage.height)} />
+    <meta property="og:image:alt" content={content.socialImage.alt} />
     <meta name="twitter:card" content="summary_large_image" />
     {props.twitterDomain && <meta name="twitter:domain" content={props.twitterDomain} />}
     {props.twitterUrl && <meta name="twitter:url" content={props.twitterUrl} />}
     <meta name="twitter:title" content={socialTitle} />
     <meta name="twitter:description" content={socialDescription} />
     <meta name="twitter:image" content={props.socialImageUrl} />
-    <meta name="twitter:image:alt" content={socialImage.alt} />
+    <meta name="twitter:image:alt" content={content.socialImage.alt} />
     <link rel="icon" href="/images/venezuela-flag.svg" type="image/svg+xml" />
     <link rel="alternate icon" href="/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -144,6 +177,7 @@ const googleAnalyticsScript = `
       crossorigin
     />
     <slot name="head" />
+    <ClientRouter fallback="animate" />
     <script
       async
       src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsMeasurementId}`}
@@ -152,17 +186,24 @@ const googleAnalyticsScript = `
     <script type="text/javascript" set:html={microsoftClarityScript}></script>
   </head>
   <body>
-    <SiteHeader />
+    <SiteHeader
+      copy={content.header}
+      links={headerLinks}
+      currentLocale={currentLocale}
+      languageOptions={languageOptions}
+    />
 
     <slot />
 
-    <SiteFooter />
+    <SiteFooter copy={content.footer} />
 
     <DonationModal
+      locale={currentLocale}
+      copy={content.donationModal}
       paypalUrl={donation.paypalUrl}
       paypalNotifyUrl={donation.paypalNotifyUrl}
       paypal={donation.paypal}
-      amounts={donation.amounts}
+      amounts={content.donationModal.amounts}
       pagoMovil={donation.pagoMovil}
       binance={donation.binance}
     />
