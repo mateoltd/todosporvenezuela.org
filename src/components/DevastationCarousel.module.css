@@ -64,11 +64,12 @@
 }
 
 .lede {
-  max-width: 56ch;
+  max-width: 68ch;
   margin: clamp(16px, 1.8vw, 22px) auto 0;
   color: var(--muted);
   font-size: clamp(15px, 1.1vw, 17px);
   line-height: 1.55;
+  text-wrap: balance;
 }
 
 /* USGS dateline gives the section factual context. */
