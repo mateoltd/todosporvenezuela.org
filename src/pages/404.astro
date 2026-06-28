@@ -1,13 +1,8 @@
 ---
-import "../styles/global.css";
 import { Icon } from "astro-icon/components";
-import SiteHeader from "../components/SiteHeader.astro";
-import SiteFooter from "../components/SiteFooter.astro";
-import DonationModal from "../components/DonationModal.astro";
-import { buildDonationConfig } from "../lib/donations/config";
+import PublicLayout from "../layouts/PublicLayout.astro";
 import {
   language,
-  locale,
   siteName,
   siteUrlFallback,
   socialImage,
@@ -39,118 +34,45 @@ const siteBaseUrl = normalizeSiteUrl(
 );
 const homeUrl = `${siteBaseUrl}/`;
 const socialImageUrl = new URL(socialImage.path, homeUrl).href;
-const isSecureSocialImage = socialImageUrl.startsWith("https://");
 
 const title = `Página no encontrada | ${siteName}`;
 const description =
   "No encontramos esta página. Vuelve al inicio para seguir la campaña Todos por Venezuela.";
-
-const donation = buildDonationConfig(env, Astro.url.origin);
 ---
 
-<!doctype html>
-<html lang={language}>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta name="description" content={description} />
-    <meta name="robots" content="noindex, follow" />
-    <meta name="author" content={siteName} />
-    <meta name="theme-color" content="#f7f7f2" />
-    <meta name="application-name" content={siteName} />
-    <title>{title}</title>
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content={siteName} />
-    <meta property="og:locale" content={locale} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={homeUrl} />
-    <meta property="og:image" content={socialImageUrl} />
-    {
-      isSecureSocialImage && (
-        <meta property="og:image:secure_url" content={socialImageUrl} />
-      )
-    }
-    <meta property="og:image:type" content="image/jpeg" />
-    <meta property="og:image:width" content={String(socialImage.width)} />
-    <meta property="og:image:height" content={String(socialImage.height)} />
-    <meta property="og:image:alt" content={socialImage.alt} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={socialImageUrl} />
-    <meta name="twitter:image:alt" content={socialImage.alt} />
-    <link rel="icon" href="/images/venezuela-flag.svg" type="image/svg+xml" />
-    <link rel="alternate icon" href="/favicon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link
-      rel="preload"
-      href="/fonts/instrument-sans-latin-400-700.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="/fonts/archivo-latin-400-900.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="/fonts/barlow-condensed-latin-400.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="/fonts/barlow-condensed-latin-900.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-  </head>
-  <body>
-    <SiteHeader />
+<PublicLayout
+  title={title}
+  description={description}
+  robots="noindex, follow"
+  htmlLang={language}
+  socialImageUrl={socialImageUrl}
+  ogUrl={homeUrl}
+>
+  <main class="notfound" aria-labelledby="notfound-title">
+    <div class="stack">
+      <p class="eyebrow">Error 404</p>
 
-    <main class="notfound" aria-labelledby="notfound-title">
-      <div class="stack">
-        <p class="eyebrow">Error 404</p>
+      <p class="code" aria-hidden="true">404</p>
 
-        <p class="code" aria-hidden="true">404</p>
+      <h1 id="notfound-title" class="lede">Esta página no existe</h1>
+      <p class="copy">
+        El enlace puede estar roto o la página se movió. Vuelve al inicio para
+        seguir la campaña y ver cómo avanza la ayuda.
+      </p>
 
-        <h1 id="notfound-title" class="lede">Esta página no existe</h1>
-        <p class="copy">
-          El enlace puede estar roto o la página se movió. Vuelve al inicio para
-          seguir la campaña y ver cómo avanza la ayuda.
-        </p>
-
-        <div class="actions">
-          <a class="primary" href="/">
-            <Icon name="tabler:arrow-left" size={18} aria-hidden="true" />
-            Volver al inicio
-          </a>
-          <nav class="quick" aria-label="Páginas útiles">
-            <a href="/transparencia">Transparencia</a>
-            <a href="/#faq">Preguntas frecuentes</a>
-          </nav>
-        </div>
+      <div class="actions">
+        <a class="primary" href="/">
+          <Icon name="tabler:arrow-left" size={18} aria-hidden="true" />
+          Volver al inicio
+        </a>
+        <nav class="quick" aria-label="Páginas útiles">
+          <a href="/transparencia">Transparencia</a>
+          <a href="/#faq">Preguntas frecuentes</a>
+        </nav>
       </div>
-    </main>
-
-    <SiteFooter />
-
-    <DonationModal
-      paypalUrl={donation.paypalUrl}
-      paypalNotifyUrl={donation.paypalNotifyUrl}
-      paypal={donation.paypal}
-      amounts={donation.amounts}
-      pagoMovil={donation.pagoMovil}
-      binance={donation.binance}
-    />
+    </div>
+  </main>
+</PublicLayout>
 
     <style>
       .notfound {
@@ -334,5 +256,3 @@ const donation = buildDonationConfig(env, Astro.url.origin);
         }
       }
     </style>
-  </body>
-</html>
