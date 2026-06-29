@@ -1,5 +1,4 @@
 ---
-import { Icon } from "astro-icon/components";
 import type { LanguageSelectorOption } from "../i18n/config";
 import styles from "./LanguageSelector.module.css";
 
@@ -7,245 +6,62 @@ interface Props {
   currentLocale: LanguageSelectorOption["locale"];
   label: string;
   options: LanguageSelectorOption[];
+  class?: string;
 }
 
-// ve = es, us = en
-const flagIcons: Record<LanguageSelectorOption["locale"], string> = {
-  es: "circle-flags:ve",
-  en: "circle-flags:us",
-};
-
-const { currentLocale, label, options } = Astro.props;
-const currentOption =
-  options.find((option) => option.locale === currentLocale) ?? options[0];
-const menuId = `language-menu-${currentLocale}`;
+const { currentLocale, label, options, class: className } = Astro.props;
 ---
 
-<div class={styles.root} data-language-selector>
-  <button
-    class={styles.trigger}
-    type="button"
-    aria-label={label}
-    aria-expanded="false"
-    aria-controls={menuId}
-    data-language-trigger
-  >
-    <span class={styles.flag} aria-hidden="true">
-      <Icon name={flagIcons[currentOption.locale]} />
-    </span>
-    <span class={styles.triggerLabel}>{currentOption.label}</span>
-    <span class={styles.triggerCode}>{currentOption.shortLabel}</span>
-    <Icon name="tabler:chevron-down" class={styles.chevron} aria-hidden="true" />
-  </button>
+<div class:list={[styles.root, className]} role="group" aria-label={label}>
+  {
+    options.map((option, index) => {
+      const isCurrent = option.locale === currentLocale;
 
-  <div class={styles.positioner} data-language-positioner>
-    <ul
-      class={styles.menu}
-      id={menuId}
-      data-language-menu
-    >
-      {
-        options.map((option) => {
-          const isCurrent = option.locale === currentLocale;
-
-          return (
-            <li>
-              <a
-                class={styles.option}
-                href={option.href}
-                aria-current={isCurrent ? "true" : undefined}
-                data-current={isCurrent ? "" : undefined}
-                data-locale={option.locale}
-              >
-                <span class={styles.optionFlag} aria-hidden="true">
-                  <Icon name={flagIcons[option.locale]} />
-                </span>
-                <span class={styles.optionLabel}>{option.label}</span>
-                <span class={styles.optionCode}>{option.shortLabel}</span>
-              </a>
-            </li>
-          );
-        })
-      }
-    </ul>
-  </div>
+      return (
+        <>
+          {index > 0 && <span class={styles.divider} aria-hidden="true" />}
+          <a
+            class={styles.lang}
+            href={option.href}
+            hreflang={option.locale}
+            lang={option.locale}
+            aria-current={isCurrent ? "true" : undefined}
+            data-current={isCurrent ? "" : undefined}
+            data-locale={option.locale}
+          >
+            <span class={styles.code}>{option.shortLabel}</span>
+          </a>
+        </>
+      );
+    })
+  }
 </div>
 
 <script is:inline>
   (() => {
-  const initLanguageSelectors = () => {
-    const languageWindow = window;
-
-    languageWindow.__tpvLanguageSelectorAbortController?.abort();
-    const controller = new AbortController();
-    languageWindow.__tpvLanguageSelectorAbortController = controller;
-
     const saveClientPreference = (locale) => {
       const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
       document.cookie = `tpv_locale=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax${secureFlag}`;
     };
 
-    document.querySelectorAll("[data-language-selector]").forEach((root) => {
-      if (!(root instanceof HTMLElement)) return;
-
-      root.dataset.enhanced = "true";
-
-      const trigger = root.querySelector("[data-language-trigger]");
-      const menu = root.querySelector("[data-language-menu]");
-      const options = Array.from(root.querySelectorAll("[data-locale]")).filter(
-        (option) => option instanceof HTMLAnchorElement,
-      );
-
-      if (!(trigger instanceof HTMLButtonElement) || !(menu instanceof HTMLElement)) {
-        return;
-      }
-
-      let highlightedIndex = Math.max(
-        0,
-        options.findIndex((option) => option.hasAttribute("data-current")),
-      );
-
-      const setHighlighted = (nextIndex) => {
-        if (options.length === 0) return;
-        highlightedIndex = (nextIndex + options.length) % options.length;
-        options.forEach((option, index) => {
-          option.toggleAttribute("data-highlighted", index === highlightedIndex);
+    const initLanguageSelectors = () => {
+      document.querySelectorAll("[data-locale]").forEach((link) => {
+        if (!(link instanceof HTMLAnchorElement) || link.dataset.localeBound === "true") {
+          return;
+        }
+        link.dataset.localeBound = "true";
+        link.addEventListener("click", () => {
+          const locale = link.getAttribute("data-locale");
+          if (locale) saveClientPreference(locale);
         });
-      };
-
-      const setOpen = (isOpen, focusTarget = "none") => {
-        root.toggleAttribute("data-open", isOpen);
-        trigger.toggleAttribute("data-popup-open", isOpen);
-        trigger.setAttribute("aria-expanded", String(isOpen));
-
-        if (!isOpen) {
-          options.forEach((option) => option.removeAttribute("data-highlighted"));
-        } else {
-          setHighlighted(highlightedIndex);
-        }
-
-        if (focusTarget === "trigger") {
-          trigger.focus();
-        } else if (focusTarget === "option" && options[highlightedIndex]) {
-          options[highlightedIndex].focus();
-        }
-      };
-
-      const isOpen = () => root.hasAttribute("data-open");
-      const close = (focusTarget = "none") => setOpen(false, focusTarget);
-      const open = (focusTarget = "none") => setOpen(true, focusTarget);
-
-      trigger.addEventListener(
-        "click",
-        () => {
-          if (isOpen()) {
-            close();
-          } else {
-            open();
-          }
-        },
-        { signal: controller.signal },
-      );
-
-      trigger.addEventListener(
-        "keydown",
-        (event) => {
-          if (event.key === "ArrowDown") {
-            event.preventDefault();
-            setHighlighted(0);
-            open("option");
-          } else if (event.key === "ArrowUp") {
-            event.preventDefault();
-            setHighlighted(options.length - 1);
-            open("option");
-          } else if (event.key === "Escape" && isOpen()) {
-            event.preventDefault();
-            close("trigger");
-          }
-        },
-        { signal: controller.signal },
-      );
-
-      options.forEach((option, index) => {
-        option.addEventListener(
-          "click",
-          (event) => {
-            const locale = option.getAttribute("data-locale");
-            if (locale) saveClientPreference(locale);
-
-            close();
-
-            if (option.hasAttribute("data-current")) {
-              event.preventDefault();
-              trigger.focus();
-            }
-          },
-          { signal: controller.signal },
-        );
-
-        option.addEventListener(
-          "focus",
-          () => {
-            setHighlighted(index);
-          },
-          { signal: controller.signal },
-        );
-
-        option.addEventListener(
-          "mouseenter",
-          () => {
-            setHighlighted(index);
-          },
-          { signal: controller.signal },
-        );
       });
+    };
 
-      menu.addEventListener(
-        "keydown",
-        (event) => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            close("trigger");
-          } else if (event.key === "ArrowDown") {
-            event.preventDefault();
-            setHighlighted(highlightedIndex + 1);
-            options[highlightedIndex]?.focus();
-          } else if (event.key === "ArrowUp") {
-            event.preventDefault();
-            setHighlighted(highlightedIndex - 1);
-            options[highlightedIndex]?.focus();
-          } else if (event.key === "Home") {
-            event.preventDefault();
-            setHighlighted(0);
-            options[highlightedIndex]?.focus();
-          } else if (event.key === "End") {
-            event.preventDefault();
-            setHighlighted(options.length - 1);
-            options[highlightedIndex]?.focus();
-          } else if (event.key === "Tab") {
-            close();
-          }
-        },
-        { signal: controller.signal },
-      );
+    initLanguageSelectors();
 
-      document.addEventListener(
-        "click",
-        (event) => {
-          if (event.target instanceof Node && !root.contains(event.target)) {
-            close();
-          }
-        },
-        { signal: controller.signal },
-      );
-    });
-  };
-
-  initLanguageSelectors();
-
-  if (!window.__tpvLanguageSelectorInitBound) {
-    window.__tpvLanguageSelectorInitBound = true;
-    document.addEventListener("astro:page-load", initLanguageSelectors);
-  }
+    if (!window.__tpvLanguageSelectorInitBound) {
+      window.__tpvLanguageSelectorInitBound = true;
+      document.addEventListener("astro:page-load", initLanguageSelectors);
+    }
   })();
 </script>

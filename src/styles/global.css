@@ -112,12 +112,6 @@ body.modal-open {
   }
 }
 
-@keyframes tpv-header-crossfade {
-  from {
-    opacity: 0;
-  }
-}
-
 @supports (view-transition-name: root) {
   ::view-transition-old(root) {
     animation: tpv-page-out 190ms cubic-bezier(0.4, 0, 0.2, 1) both;
@@ -132,15 +126,8 @@ body.modal-open {
   }
 
   ::view-transition-old(site-header),
-  ::view-transition-new(site-header),
-  ::view-transition-old(site-brand),
-  ::view-transition-new(site-brand) {
-    animation-duration: 220ms;
-    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-
-  ::view-transition-new(site-brand) {
-    animation-name: tpv-header-crossfade;
+  ::view-transition-new(site-header) {
+    animation: none;
   }
 }
 

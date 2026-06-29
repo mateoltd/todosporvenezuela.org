@@ -1,200 +1,63 @@
 .root {
-  position: relative;
-  display: inline-flex;
-}
-
-/* flat ghost control, sits next to the menu toggle */
-.trigger {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 44px;
-  padding: 0 10px 0 11px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--radius);
-  background: transparent;
-  color: var(--ink);
+  gap: 10px;
   font-family: "Archivo", sans-serif;
-  cursor: pointer;
-  transition:
-    border-color 160ms ease,
-    background-color 160ms ease,
-    color 160ms ease;
 }
 
-.trigger:hover,
-.trigger[data-popup-open] {
-  border-color: rgba(226, 18, 42, 0.5);
-  background: rgba(226, 18, 42, 0.06);
-  color: var(--red);
+.divider {
+  width: 1px;
+  height: 13px;
+  background: var(--line);
 }
 
-.trigger:focus-visible,
-.option:focus-visible {
-  outline: 3px solid rgba(0, 70, 184, 0.48);
-  outline-offset: 3px;
+.lang {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  transition: color 160ms ease;
 }
 
-.flag,
-.optionFlag {
-  flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(16, 24, 32, 0.1);
-}
-
-.flag svg,
-.optionFlag svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* trigger just shows the code, full name's in the menu */
-.triggerLabel {
-  display: none;
-}
-
-.triggerCode {
-  font-family: "Archivo", sans-serif;
+.code {
+  position: relative;
   font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   line-height: 1;
 }
 
-.chevron {
-  width: 15px;
-  height: 15px;
-  margin-left: 1px;
-  color: var(--muted);
-  transition:
-    transform 200ms cubic-bezier(0.4, 0, 0.1, 1),
-    color 160ms ease;
-}
-
-.trigger:hover .chevron,
-.trigger[data-popup-open] .chevron {
-  color: var(--red);
-}
-
-.trigger[data-popup-open] .chevron {
-  transform: rotate(180deg);
-}
-
-.positioner {
+.code::after {
+  content: "";
   position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  z-index: 40;
-  /* closed wrapper must not swallow clicks below the header */
-  pointer-events: none;
+  inset: auto 0 -6px;
+  height: 2px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.1, 1);
 }
 
-.menu {
-  width: 196px;
-  margin: 0;
-  padding: 7px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--paper-strong);
-  box-shadow: 0 24px 56px rgba(16, 24, 32, 0.16);
-  font-family: "Archivo", sans-serif;
-  list-style: none;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-6px);
-  transform-origin: top right;
-  pointer-events: none;
-  transition:
-    opacity 160ms ease,
-    transform 160ms cubic-bezier(0.4, 0, 0.1, 1),
-    visibility 160ms;
-}
-
-/* no js: hover/focus opens it til the script sets data-enhanced */
-.root:not([data-enhanced="true"]):hover .menu,
-.root:not([data-enhanced="true"]):focus-within .menu,
-.root[data-open] .menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.option {
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 11px;
-  min-height: 44px;
-  padding: 0 10px;
-  border-radius: 6px;
+.lang:hover {
   color: var(--ink);
-  text-decoration: none;
-  transition:
-    background-color 150ms ease,
-    color 150ms ease;
 }
 
-.option:hover,
-.option[data-highlighted] {
-  background: rgba(226, 18, 42, 0.07);
-  color: var(--red);
+.lang[data-current] {
+  color: var(--ink);
 }
 
-.option[data-current] {
-  background: rgba(16, 24, 32, 0.05);
+.lang[data-current] .code::after {
+  transform: scaleX(1);
 }
 
-.option[data-current] .optionCode {
-  color: var(--red);
-}
-
-.optionLabel {
-  overflow: hidden;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.05;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.optionCode {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
-
-@media (max-width: 860px) {
-  .trigger {
-    height: 42px;
-  }
-}
-
-@media (max-width: 560px) {
-  .trigger {
-    gap: 7px;
-    padding: 0 9px;
-  }
-
-  .chevron {
-    display: none;
-  }
-
-  .menu {
-    width: min(208px, calc(100vw - 32px));
-  }
+.lang:focus-visible {
+  outline: 3px solid rgba(0, 70, 184, 0.48);
+  outline-offset: 4px;
+  border-radius: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trigger,
-  .chevron,
-  .option,
-  .menu {
+  .lang,
+  .code::after {
     transition: none;
   }
 }

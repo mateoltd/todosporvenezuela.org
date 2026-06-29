@@ -39,30 +39,21 @@ const { copy, links, currentLocale, languageOptions } = Astro.props;
     <span class={styles.brandText}>{copy.brandText.line1}<br />{copy.brandText.line2}</span>
   </a>
 
-  <button
-    class={styles.menuToggle}
-    type="button"
-    aria-label={copy.menuOpenLabel}
-    aria-controls="site-navigation"
-    aria-expanded="false"
-    data-menu-toggle
-    data-nav-open-class={styles.navOpen}
-    data-menu-open-label={copy.menuOpenLabel}
-    data-menu-close-label={copy.menuCloseLabel}
-  >
-    <span class={styles.menuIconOpen} aria-hidden="true">
-      <Icon name="tabler:menu-2" size={22} />
-    </span>
-    <span class={styles.menuIconClose} aria-hidden="true">
-      <Icon name="tabler:x" size={22} />
-    </span>
-  </button>
-
   <nav id="site-navigation" class={styles.primaryNav} aria-label={copy.navLabel} data-nav>
-    <a href={links.impact}>{copy.nav.impact}</a>
-    <a href={links.organizers}>{copy.nav.organizers}</a>
-    <a href={links.transparency}>{copy.nav.transparency}</a>
-    <a href={links.faq}>{copy.nav.faq}</a>
+    <div class={styles.navLinks}>
+      <a href={links.impact}>{copy.nav.impact}</a>
+      <a href={links.organizers}>{copy.nav.organizers}</a>
+      <a href={links.transparency}>{copy.nav.transparency}</a>
+      <a href={links.faq}>{copy.nav.faq}</a>
+    </div>
+
+    <div class={styles.navFoot}>
+      <LanguageSelector
+        currentLocale={currentLocale}
+        label={copy.languageSwitchLabel}
+        options={languageOptions}
+      />
+    </div>
   </nav>
 
   <div class={styles.headerActions}>
@@ -70,6 +61,7 @@ const { copy, links, currentLocale, languageOptions } = Astro.props;
       currentLocale={currentLocale}
       label={copy.languageSwitchLabel}
       options={languageOptions}
+      class={styles.deskLang}
     />
 
     <DonateButton
@@ -77,9 +69,26 @@ const { copy, links, currentLocale, languageOptions } = Astro.props;
       label={copy.donateCompact}
       ariaLabel={copy.donateAriaLabel}
     />
-  </div>
 
-  <span class={styles.flagRule} aria-hidden="true"></span>
+    <button
+      class={styles.menuToggle}
+      type="button"
+      aria-label={copy.menuOpenLabel}
+      aria-controls="site-navigation"
+      aria-expanded="false"
+      data-menu-toggle
+      data-nav-open-class={styles.navOpen}
+      data-menu-open-label={copy.menuOpenLabel}
+      data-menu-close-label={copy.menuCloseLabel}
+    >
+      <span class={styles.menuIconOpen} aria-hidden="true">
+        <Icon name="tabler:menu-2" size={22} />
+      </span>
+      <span class={styles.menuIconClose} aria-hidden="true">
+        <Icon name="tabler:x" size={22} />
+      </span>
+    </button>
+  </div>
 </header>
 
 <script>
