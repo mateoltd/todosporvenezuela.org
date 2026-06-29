@@ -135,11 +135,14 @@
 }
 
 .photoWrap {
+  position: relative;
   display: block;
+  isolation: isolate;
   flex: 0 0 auto;
   width: var(--photo-size);
   height: var(--photo-size);
   border-radius: 50%;
+  transition: transform 180ms ease;
 }
 
 .photoWrap:focus-visible {
@@ -147,7 +150,50 @@
   outline-offset: 4px;
 }
 
+.featuredPerson .photoWrap::before,
+.featuredPerson .photoWrap::after {
+  position: absolute;
+  pointer-events: none;
+  content: "";
+  opacity: 0;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.featuredPerson .photoWrap::before {
+  inset: -8px;
+  z-index: 0;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 128deg,
+      rgba(246, 191, 0, 0),
+      rgba(246, 191, 0, 0.5),
+      rgba(226, 18, 42, 0.2),
+      rgba(246, 191, 0, 0)
+    );
+  transform: scale(0.9) rotate(-14deg);
+}
+
+.featuredPerson .photoWrap::after {
+  right: -11px;
+  bottom: 16%;
+  z-index: 3;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(246, 191, 0, 0.95) 0 2px, transparent 3px),
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.9) 0 1px, transparent 2px),
+    radial-gradient(circle at 78% 70%, rgba(226, 18, 42, 0.42) 0 1px, transparent 2px);
+  box-shadow: 0 0 18px rgba(246, 191, 0, 0.26);
+  transform: translate3d(-3px, 5px, 0) scale(0.66);
+}
+
 .photoWrap picture {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
@@ -161,6 +207,56 @@
   border-radius: 50%;
   object-fit: cover;
   box-shadow: 0 18px 42px rgba(16, 24, 32, 0.14);
+}
+
+.photoCharm {
+  position: absolute;
+  top: -8px;
+  right: -7px;
+  z-index: 4;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: var(--red);
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 50%;
+  box-shadow: 0 12px 28px rgba(16, 24, 32, 0.16);
+  opacity: 0;
+  transform: translate3d(-5px, 6px, 0) scale(0.72) rotate(-12deg);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.featuredPerson .photoWrap:hover,
+.featuredPerson .photoWrap:focus-visible {
+  transform: translateY(-2px);
+}
+
+.featuredPerson .photoWrap:hover::before,
+.featuredPerson .photoWrap:focus-visible::before,
+.featuredPerson .photoWrap:hover::after,
+.featuredPerson .photoWrap:focus-visible::after,
+.featuredPerson .photoWrap:hover .photoCharm,
+.featuredPerson .photoWrap:focus-visible .photoCharm {
+  opacity: 1;
+}
+
+.featuredPerson .photoWrap:hover::before,
+.featuredPerson .photoWrap:focus-visible::before {
+  transform: scale(1) rotate(8deg);
+}
+
+.featuredPerson .photoWrap:hover::after,
+.featuredPerson .photoWrap:focus-visible::after {
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.featuredPerson .photoWrap:hover .photoCharm,
+.featuredPerson .photoWrap:focus-visible .photoCharm {
+  transform: translate3d(0, 0, 0) scale(1) rotate(-6deg);
 }
 
 .identity {
@@ -378,5 +474,25 @@
   .callout p {
     font-size: 14px;
     line-height: 1.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photoWrap,
+  .featuredPerson .photoWrap::before,
+  .featuredPerson .photoWrap::after,
+  .photoCharm {
+    transition: opacity 120ms ease;
+  }
+
+  .featuredPerson .photoWrap:hover,
+  .featuredPerson .photoWrap:focus-visible,
+  .featuredPerson .photoWrap:hover::before,
+  .featuredPerson .photoWrap:focus-visible::before,
+  .featuredPerson .photoWrap:hover::after,
+  .featuredPerson .photoWrap:focus-visible::after,
+  .featuredPerson .photoWrap:hover .photoCharm,
+  .featuredPerson .photoWrap:focus-visible .photoCharm {
+    transform: none;
   }
 }

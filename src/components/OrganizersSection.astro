@@ -17,6 +17,7 @@ const {
   copy = fallbackContent.organizersSection,
   organizers = fallbackContent.organizers,
 } = Astro.props;
+const featuredOrganizerName = "Valentina Muriel";
 ---
 
 <section class={styles.section} id="transparencia" aria-labelledby="organizers-title">
@@ -41,7 +42,13 @@ const {
     <div class={styles.roster}>
       {
         organizers.map((person) => (
-          <article class={styles.person} style={`--person-accent: ${person.accent};`}>
+          <article
+            class:list={[
+              styles.person,
+              person.name === featuredOrganizerName && styles.featuredPerson,
+            ]}
+            style={`--person-accent: ${person.accent};`}
+          >
             <a
               class={styles.photoWrap}
               href={person.instagram}
@@ -61,6 +68,11 @@ const {
                   decoding="async"
                 />
               </picture>
+              {person.name === featuredOrganizerName && (
+                <span class={styles.photoCharm} aria-hidden="true">
+                  <Icon name="tabler:heart-filled" size={18} />
+                </span>
+              )}
             </a>
 
             <div class={styles.identity}>
