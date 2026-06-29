@@ -103,7 +103,7 @@ export default defineConfig({
       UPSTASH_REDIS_REST_URL: serverEnvString()
     }
   },
-  // Kept only so Astro.preferredLocale is populated for request redirects.
+  // Run i18n manually in src/middleware.ts so private/API routes can stay unlocalized.
   // Route definitions and localized URLs live in src/i18n/config.ts.
   i18n: {
     defaultLocale: "es",
@@ -117,9 +117,7 @@ export default defineConfig({
         codes: ["en", "en-US", "en-GB", "en-CA"]
       }
     ],
-    routing: {
-      prefixDefaultLocale: true
-    }
+    routing: "manual"
   },
   output: "server",
   security: {
