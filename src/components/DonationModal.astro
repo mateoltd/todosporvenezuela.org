@@ -77,6 +77,12 @@ const paypalItemName = getPayPalItemName(copy.paypalItemName);
 const paypalItemNumber = getPayPalItemNumber();
 const formatPaypalAmount = (value: number) =>
   Number.isFinite(value) ? Math.max(1, value).toFixed(2) : "1.00";
+const buildInitialDonateStateUrl = (state: "paypal-completed" | "paypal-cancelled") => {
+  const url = new URL(Astro.url.href);
+  url.searchParams.set("donate", state);
+  url.hash = "";
+  return url.toString();
+};
 const buildInitialPaypalUrl = () => {
   const url = new URL(paypalUrl || "https://www.paypal.com/donate");
 
@@ -94,6 +100,8 @@ const buildInitialPaypalUrl = () => {
   url.searchParams.set("no_shipping", "1");
   url.searchParams.set("rm", "1");
   if (paypalNotifyUrl) url.searchParams.set("notify_url", paypalNotifyUrl);
+  url.searchParams.set("return", buildInitialDonateStateUrl("paypal-completed"));
+  url.searchParams.set("cancel_return", buildInitialDonateStateUrl("paypal-cancelled"));
 
   return url.toString();
 };
@@ -183,7 +191,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
   data-donate-modal
   data-step="1"
   data-paypal-url={paypalUrl}
-  data-paypal-env={paypal.env}
   data-paypal-hosted-button-id={paypal.hostedButtonId}
   data-paypal-business={paypal.business}
   data-paypal-notify-url={paypalNotifyUrl}
@@ -381,7 +388,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
     const vesCopyButtons = modal.querySelectorAll<HTMLButtonElement>("[data-ves-copy]");
     const vesRateDisplays = modal.querySelectorAll<HTMLElement>("[data-ves-rate]");
     const paypalBase = modal.getAttribute("data-paypal-url") ?? "";
-    const paypalEnv = modal.getAttribute("data-paypal-env") || "production";
     const paypalHostedButtonId = modal.getAttribute("data-paypal-hosted-button-id") ?? "";
     const paypalBusiness = modal.getAttribute("data-paypal-business") ?? "";
     const paypalNotifyUrl = modal.getAttribute("data-paypal-notify-url") ?? "";
@@ -410,7 +416,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       modal.querySelector<HTMLElement>("[data-amount].is-active")?.getAttribute("data-amount") ?? 10
     );
     let lastFocused: HTMLElement | null = null;
-    let paypalSdkPromise: Promise<void> | null = null;
     let officialUsdRatePromise: Promise<BcvUsdRate | null> | null = null;
 
     const formatUsd = (value: number) => `$${Math.round(value)}`;
@@ -504,18 +509,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       customInput?.setAttribute("aria-invalid", message ? "true" : "false");
       customInput?.classList.toggle("is-invalid", Boolean(message));
     };
-
-    type PayPalDonationCheckout = {
-      renderTo: (target: Window | WindowProxy) => void;
-    };
-
-    type PayPalNamespace = {
-      Donation: {
-        Checkout?: (options: Record<string, unknown>) => PayPalDonationCheckout;
-      };
-    };
-
-    const getPayPal = () => (window as Window & { PayPal?: PayPalNamespace }).PayPal;
 
     const copyText = async (value: string) => {
       try {
@@ -693,7 +686,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       collapseMethods();
       item.classList.add("is-open");
       toggle.setAttribute("aria-expanded", "true");
-      if (methodId === "paypal") primePayPalCheckout();
       if (item.querySelector("[data-ves-conversion]")) syncVesConversion();
     };
 
@@ -725,7 +717,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       collapseMethods();
       resetCountries();
       goToStep(options.step ?? "1");
-      primePayPalCheckout();
       if (options.methodId) openMethod(options.methodId);
       window.requestAnimationFrame(() => panel?.focus());
     };
@@ -734,83 +725,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
       modal.setAttribute("aria-hidden", "true");
       document.body.classList.remove("modal-open");
       lastFocused?.focus();
-    };
-
-    const loadPayPalSdk = () => {
-      if (getPayPal()) return Promise.resolve();
-      if (paypalSdkPromise) return paypalSdkPromise;
-
-      paypalSdkPromise = new Promise<void>((resolve, reject) => {
-        const existing = document.querySelector<HTMLScriptElement>(
-          'script[src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js"]'
-        );
-
-        if (existing) {
-          existing.addEventListener("load", () => resolve(), { once: true });
-          existing.addEventListener("error", () => reject(new Error("PayPal SDK failed to load")), {
-            once: true
-          });
-          return;
-        }
-
-        const script = document.createElement("script");
-        script.src = "https://www.paypalobjects.com/donate/sdk/donate-sdk.js";
-        script.setAttribute("charset", "UTF-8");
-        script.addEventListener("load", () => resolve(), { once: true });
-        script.addEventListener("error", () => reject(new Error("PayPal SDK failed to load")), {
-          once: true
-        });
-        document.body.append(script);
-      });
-
-      return paypalSdkPromise;
-    };
-
-    const primePayPalCheckout = () => {
-      if (!paypalHostedButtonId && !paypalBusiness) return;
-      void loadPayPalSdk().catch(() => undefined);
-    };
-
-    const buildPayPalCheckoutConfig = () => {
-      const config: Record<string, unknown> = {
-        env: paypalEnv,
-        amount: formatPaypalAmount(amount),
-        currency_code: "USD",
-        item_name: paypalItemName,
-        item_number: paypalItemNumber,
-        no_shipping: "1",
-        rm: "1",
-        return: buildDonateStateUrl("paypal-completed"),
-        cancel_return: buildDonateStateUrl("paypal-cancelled"),
-        onComplete: (details: unknown) => {
-          window.dispatchEvent(new CustomEvent("donation:paypal-complete", { detail: details }));
-          goToStep("done");
-        }
-      };
-
-      if (paypalNotifyUrl) config.notify_url = paypalNotifyUrl;
-
-      if (paypalBusiness) {
-        config.business = paypalBusiness;
-      } else if (paypalHostedButtonId) {
-        config.hosted_button_id = paypalHostedButtonId;
-      }
-
-      return config;
-    };
-
-    const openPayPalCheckout = () => {
-      if (!paypalHostedButtonId && !paypalBusiness) return false;
-
-      const checkout = getPayPal()?.Donation?.Checkout;
-      if (!checkout) return false;
-
-      try {
-        checkout(buildPayPalCheckoutConfig()).renderTo(window.parent);
-        return true;
-      } catch {
-        return false;
-      }
     };
 
     const handleInitialDonateState = () => {
@@ -849,7 +763,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         return;
       }
       goToStep("2");
-      primePayPalCheckout();
     }, { signal: donationController.signal });
 
     paypalLinks.forEach((link) =>
@@ -859,8 +772,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
           customInput?.focus();
           return;
         }
-        if (!openPayPalCheckout()) return;
-        event.preventDefault();
       }, { signal: donationController.signal })
     );
 
@@ -893,7 +804,6 @@ const localCountries: { id: string; name: string; flag: string; methods: Method[
         if (willOpen) {
           item.classList.add("is-open");
           toggle.setAttribute("aria-expanded", "true");
-          if (toggle.getAttribute("data-method-toggle") === "paypal") primePayPalCheckout();
           if (item.querySelector("[data-ves-conversion]")) syncVesConversion();
           window.requestAnimationFrame(() =>
             item.scrollIntoView({ block: "nearest", behavior: "smooth" })
