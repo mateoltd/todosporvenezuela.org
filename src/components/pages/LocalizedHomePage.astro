@@ -35,13 +35,16 @@ const donationSnapshot = await getDonationSnapshot();
 const raised = donationSnapshot.raised;
 const goal = donationSnapshot.goal;
 
+Astro.response.headers.set("Cache-Control", "public, max-age=0, must-revalidate");
 Astro.response.headers.set(
-    "Cache-Control",
-    "no-store, no-cache, max-age=0, must-revalidate",
+    "CDN-Cache-Control",
+    "public, max-age=60, stale-while-revalidate=300",
 );
-Astro.response.headers.set("CDN-Cache-Control", "no-store");
-Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
-Astro.response.headers.set("Surrogate-Control", "no-store");
+Astro.response.headers.set(
+    "Vercel-CDN-Cache-Control",
+    "public, max-age=60, stale-while-revalidate=300",
+);
+Astro.response.headers.set("Surrogate-Control", "max-age=60, stale-while-revalidate=300");
 
 const organizerVideo = getOrganizerVideoConfig();
 const organizerVideoUrl = organizerVideo.sourceUrl;
@@ -74,13 +77,13 @@ const slides = getDevastationSlides(locale);
 
 const heroImageName = "venezuela-earthquake-hero-aid";
 const heroImageWidths = [640, 960, 1280, 1680, 2240];
-const heroImageSrc = optimizedImageSrc(heroImageName, 1280, "webp");
+const heroImageSrc = optimizedImageSrc(heroImageName, 1280, "avif");
 const heroImageSrcSet = optimizedImageSrcSet(
     heroImageName,
     heroImageWidths,
-    "webp",
+    "avif",
 );
-const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1600px)";
+const heroImageSizes = "(max-width: 700px) 100vw, min(96vw, 1680px)";
 const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -199,7 +202,7 @@ const structuredDataJson = JSON.stringify(structuredData).replace(
             rel="preload"
             as="image"
             href={heroImageSrc}
-            type="image/webp"
+            type="image/avif"
             imagesrcset={heroImageSrcSet}
             imagesizes={heroImageSizes}
             fetchpriority="high"

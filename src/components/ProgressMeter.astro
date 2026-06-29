@@ -240,6 +240,8 @@ const redSpecks = [
 
     if (!donationMeters.length) return;
 
+    let progressStarted = false;
+
     const formatDonationCurrency = (value: number, currency: string) =>
       new Intl.NumberFormat("en-US", {
         style: "currency",
@@ -318,19 +320,51 @@ const redSpecks = [
       });
     };
 
-    donationMeters.forEach((meter) => {
-      void refreshDonationProgress(meter).catch(() => undefined);
+    const startLiveDonationProgress = () => {
+      if (progressStarted || progressController.signal.aborted) return;
+      progressStarted = true;
 
-      const pollMs = Number(meter.getAttribute("data-poll-ms"));
-      if (Number.isFinite(pollMs) && pollMs > 0) {
-        const pollId = window.setInterval(() => {
-          void refreshDonationProgress(meter).catch(() => undefined);
-        }, pollMs);
-        cleanupFns.push(() => window.clearInterval(pollId));
+      donationMeters.forEach((meter) => {
+        void refreshDonationProgress(meter).catch(() => undefined);
+
+        const pollMs = Number(meter.getAttribute("data-poll-ms"));
+        if (Number.isFinite(pollMs) && pollMs > 0) {
+          const pollId = window.setInterval(() => {
+            void refreshDonationProgress(meter).catch(() => undefined);
+          }, pollMs);
+          cleanupFns.push(() => window.clearInterval(pollId));
+        }
+      });
+
+      connectDonationProgressStream();
+    };
+
+    const scheduleLiveDonationProgress = () => {
+      const startWhenIdle = () => {
+        if (progressStarted || progressController.signal.aborted) return;
+
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(startLiveDonationProgress, { timeout: 1500 });
+        } else {
+          const timeoutId = window.setTimeout(startLiveDonationProgress, 400);
+          cleanupFns.push(() => window.clearTimeout(timeoutId));
+        }
+      };
+
+      if (document.readyState === "complete") {
+        startWhenIdle();
+      } else {
+        window.addEventListener("load", startWhenIdle, {
+          once: true,
+          signal: progressController.signal
+        });
       }
-    });
 
-    connectDonationProgressStream();
+      const fallbackId = window.setTimeout(startLiveDonationProgress, 4500);
+      cleanupFns.push(() => window.clearTimeout(fallbackId));
+    };
+
+    scheduleLiveDonationProgress();
 
     window.addEventListener("donation:paypal-complete", () => {
       donationMeters.forEach((meter) => {

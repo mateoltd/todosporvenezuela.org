@@ -44,6 +44,11 @@ const heroPlaceholderSrc = staticOptimizedImageSrc(
     >
         <picture data-critical-picture>
             <source
+                srcset={heroSrcSet("avif")}
+                sizes={heroSizes}
+                type="image/avif"
+            />
+            <source
                 srcset={heroSrcSet("webp")}
                 sizes={heroSizes}
                 type="image/webp"
