@@ -12,7 +12,8 @@
   text-transform: uppercase;
   transition:
     transform 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 }
 
 .button:focus-visible {
@@ -37,10 +38,10 @@
 }
 
 .compact {
-  min-height: 48px;
-  padding: 0 20px;
+  min-height: 46px;
+  padding: 0 18px;
   gap: 9px;
-  box-shadow: 0 12px 26px rgba(16, 24, 32, 0.2);
+  background: var(--red);
   font-size: 14px;
   letter-spacing: 0.04em;
 }
@@ -52,7 +53,14 @@
 
 .compact:hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 32px rgba(16, 24, 32, 0.26);
+  background: #c20f24;
+  box-shadow: 0 8px 18px rgba(226, 18, 42, 0.32);
+}
+
+.compact:active {
+  transform: translateY(0);
+  background: #a90d1f;
+  box-shadow: 0 3px 8px rgba(226, 18, 42, 0.28);
 }
 
 .heart {
