@@ -118,15 +118,62 @@ export const esContent: CampaignContent = {
     transparency: {
       title: "Transparencia | Todos por Venezuela",
       description:
-        "Reportes de la campaña Todos por Venezuela: recaudación, compras y entregas. Aún no hay reportes publicados; aparecerán aquí en cuanto comience la respuesta.",
+        "Reportes de la campaña Todos por Venezuela: lo que recibimos, compramos y entregamos. El primer acopio ya está publicado; cada día se suma uno nuevo.",
       eyebrow: "Reporte diario",
       heading: "Transparencia",
       lede:
         "Publicamos el trabajo de cada día: lo que recibimos, lo que compramos y lo que entregamos.",
-      dayLabel: "Día {day}",
-      emptyTitle: "Aún no hay reportes",
-      emptyText:
-        "El primer reporte se publicará en cuanto comience la actividad. A partir de ahí, uno nuevo cada día.",
+      currentLabel: "En curso",
+      totalDays: 5,
+      viewReportLabel: "Ver reporte",
+      backLabel: "Volver a Transparencia",
+      dayMetaTitle: "{title} · {date} | Transparencia | Todos por Venezuela",
+      dayMetaDescription:
+        "Reporte del {date} de la campaña Todos por Venezuela: lo recolectado, el presupuesto y cómo se gestionó.",
+      photoOpenLabel: "Abrir foto {index} de {total}: {alt}",
+      photoCloseLabel: "Cerrar visor de fotos",
+      photoPreviousLabel: "Ver foto anterior",
+      photoNextLabel: "Ver foto siguiente",
+      photoCounterLabel: "Foto",
+      days: [
+        {
+          slug: "27-jun-2026",
+          dayNumber: 1,
+          dateShort: "27–28 jun",
+          dateLabel: "27–28 jun 2026",
+          title: "El primer acopio",
+          intro:
+            "Reunimos este primer lote mientras construíamos la página, con los aportes de quienes empujaron el proyecto desde el comienzo.",
+          budgetValue: "≈ $150",
+          budgetLabel: "presupuesto del día",
+          budgetNote: {
+            text: "De este monto, solo $104,93 está registrado en el contador. El resto se cubrió con aportes recogidos por Instagram que no pasaron por la cuenta.",
+            linkLabel: "Ver la publicación",
+            linkHref: "https://www.instagram.com/p/DaD7tL_vjyc/",
+          },
+          items: [
+            { qty: "72", name: "Jabón de tocador" },
+            { qty: "24", name: "Toallas húmedas", detail: "Momi Talco" },
+            { qty: "12", name: "Cepillos de dientes", detail: "Galactic Medio Epic" },
+            { qty: "10", name: "Paquetes de pañales" },
+            { qty: "12", name: "Paquetes de papel higiénico" },
+          ],
+          extrasLabel: "También recolectado",
+          extras: ["Compotas", "Toallitas sanitarias", "Bolsas para repartir"],
+          handledByLabel: "Gestionado por",
+          handledBy:
+            "Centro de acopio de Pan de Tata, en las inmediaciones de Altamira.",
+          photosLabel: "Fotos del día",
+          photos: [
+            { name: "01-red-cap-packing", alt: "Voluntario con gorra roja empacando insumos" },
+            { name: "02-black-shirt-packing", alt: "Voluntario con camisa negra empacando insumos" },
+            { name: "03-black-cap-gift-table", alt: "Voluntario armando los kits en la mesa" },
+            { name: "04-group-fridge-organizing", alt: "Equipo organizando los insumos recolectados" },
+          ],
+          note:
+            "El detalle de cómo se reunió cada insumo se irá sumando a este registro a medida que la campaña toma forma.",
+        },
+      ],
       fieldsLabel: "Qué incluye cada reporte",
       fields: [
         {

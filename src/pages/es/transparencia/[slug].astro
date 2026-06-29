@@ -1,0 +1,17 @@
+---
+import LocalizedTransparencyDayPage from "../../../components/pages/LocalizedTransparencyDayPage.astro";
+import { getLocaleContent } from "../../../data/campaign";
+import { getLocalizedPath } from "../../../i18n/config";
+
+const { slug } = Astro.params;
+const exists = getLocaleContent("es").transparency.days.some(
+  (day) => day.slug === slug,
+);
+const redirectTarget = exists ? null : getLocalizedPath("transparency", "es");
+
+if (redirectTarget) {
+  return Astro.redirect(redirectTarget, 302);
+}
+---
+
+<LocalizedTransparencyDayPage locale="es" slug={slug ?? ""} />

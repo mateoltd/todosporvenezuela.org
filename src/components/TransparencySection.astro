@@ -5,6 +5,7 @@ import styles from "./TransparencySection.module.css";
 
 interface Props {
   copy?: CampaignContent["transparency"];
+  dayBasePath?: string;
   links?: {
     home: string;
     faq: string;
@@ -13,12 +14,19 @@ interface Props {
 
 const {
   copy = getLocaleContent().transparency,
+  dayBasePath = "/es/transparencia",
   links = { home: "/es/", faq: "/es/#faq" },
 } = Astro.props;
-const reportFields = copy.fields;
 
-// Faint nodes that trail down the spine to signal a daily, ongoing cadence.
-const futureDays = [2, 3, 4, 5];
+const reportFields = copy.fields;
+const doneDays = copy.days;
+const activeDayNumber = doneDays.length + 1;
+const hasActiveDay = activeDayNumber <= copy.totalDays;
+const futureDays: number[] = [];
+for (let day = activeDayNumber + 1; day <= copy.totalDays; day += 1) {
+  futureDays.push(day);
+}
+
 ---
 
 <section class={styles.section} aria-labelledby="transparencia-title">
@@ -31,20 +39,39 @@ const futureDays = [2, 3, 4, 5];
 
     <div class={styles.feed}>
       <ol class={styles.timeline}>
-        <li class={styles.entry} data-state="active">
-          <span class={styles.node} aria-hidden="true" />
-          <p class={styles.day}>{copy.dayLabel.replace("{day}", "1")}</p>
-          <div class={styles.entryBody}>
-            <h2 class={styles.entryTitle}>{copy.emptyTitle}</h2>
-            <p class={styles.entryText}>{copy.emptyText}</p>
-          </div>
-        </li>
+        {
+          doneDays.map((day) => (
+            <li class={styles.entry} data-state="done">
+              <a class={styles.entryLink} href={`${dayBasePath}/${day.slug}`}>
+                <span class={styles.node} aria-hidden="true" />
+                <span class={styles.entryContent}>
+                  <span class={styles.day}>{day.dateShort}</span>
+                  <span class={styles.entryTitle}>{day.title}</span>
+                </span>
+                <span class={styles.entryAction}>
+                  <span class={styles.entryActionLabel}>{copy.viewReportLabel}</span>
+                  <Icon name="tabler:arrow-right" size={18} aria-hidden="true" />
+                </span>
+              </a>
+            </li>
+          ))
+        }
 
         {
-          futureDays.map((day) => (
+          hasActiveDay && (
+            <li class={styles.entry} data-state="active">
+              <span class={styles.node} aria-hidden="true" />
+              <span class={styles.entryContent}>
+                <span class={styles.current}>{copy.currentLabel}</span>
+              </span>
+            </li>
+          )
+        }
+
+        {
+          futureDays.map(() => (
             <li class={styles.entry} data-state="future" aria-hidden="true">
               <span class={styles.node} />
-              <p class={styles.day}>{copy.dayLabel.replace("{day}", String(day))}</p>
             </li>
           ))
         }

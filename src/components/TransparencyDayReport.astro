@@ -1,0 +1,106 @@
+---
+import { Icon } from "astro-icon/components";
+import TransparencyPhotoGallery from "./TransparencyPhotoGallery.astro";
+import type { CampaignContent, TransparencyDay } from "../data/campaign";
+import styles from "./TransparencyDayReport.module.css";
+
+interface Props {
+  copy: CampaignContent["transparency"];
+  day: TransparencyDay;
+  backHref: string;
+  links: {
+    home: string;
+    faq: string;
+  };
+}
+
+const { copy, day, backHref, links } = Astro.props;
+---
+
+<section class={styles.section} aria-labelledby="dia-title">
+  <div class={styles.wrap}>
+    <a href={backHref} class={styles.back}>
+      <Icon name="tabler:arrow-left" size={17} aria-hidden="true" />
+      {copy.backLabel}
+    </a>
+
+    <header class={styles.head}>
+      <p class={styles.eyebrow}>{copy.eyebrow}</p>
+      <p class={styles.dayDate}>{day.dateLabel}</p>
+      <h1 id="dia-title" class={styles.display}>{day.title}</h1>
+      <p class={styles.intro}>{day.intro}</p>
+    </header>
+
+    <p class={styles.budget}>
+      <span class={styles.budgetValue}>{day.budgetValue}</span>
+      <span class={styles.budgetLabel}>{day.budgetLabel}</span>
+    </p>
+
+    {
+      day.budgetNote && (
+        <p class={styles.budgetNote}>
+          {day.budgetNote.text}{" "}
+          <a
+            href={day.budgetNote.linkHref}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {day.budgetNote.linkLabel}
+          </a>
+        </p>
+      )
+    }
+
+    <ul class={styles.items}>
+      {
+        day.items.map((item) => (
+          <li class={styles.item}>
+            <span class={styles.qty}>{item.qty}</span>
+            <span class={styles.itemName}>
+              {item.name}
+              {item.detail && (
+                <span class={styles.itemDetail}>{item.detail}</span>
+              )}
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <dl class={styles.meta}>
+      <div class={styles.metaRow}>
+        <dt class={styles.metaLabel}>{day.extrasLabel}</dt>
+        <dd class={styles.metaValue}>{day.extras.join(", ")}</dd>
+      </div>
+      <div class={styles.metaRow}>
+        <dt class={styles.metaLabel}>{day.handledByLabel}</dt>
+        <dd class={styles.metaValue}>{day.handledBy}</dd>
+      </div>
+    </dl>
+
+    {
+      day.photos.length > 0 && (
+        <TransparencyPhotoGallery
+          id={`transparency-photos-${day.slug}`}
+          label={day.photosLabel}
+          labels={copy}
+          photos={day.photos}
+        />
+      )
+    }
+
+    <p class={styles.note}>{day.note}</p>
+
+    <footer class={styles.closing}>
+      <p>{copy.closing}</p>
+      <div class={styles.closingLinks}>
+        <a href={links.faq} class={styles.linkPrimary}>
+          {copy.faqLink}
+          <Icon name="tabler:arrow-right" size={18} aria-hidden="true" />
+        </a>
+        <a href={links.home} class={styles.linkGhost}>{copy.homeLink}</a>
+      </div>
+    </footer>
+  </div>
+
+</section>

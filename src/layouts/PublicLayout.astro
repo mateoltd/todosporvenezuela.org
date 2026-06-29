@@ -28,6 +28,7 @@ interface Props {
   locale?: SupportedLocale;
   routeKey?: LocalizedRouteKey;
   content?: CampaignContent;
+  languageOptions?: LanguageSelectorOption[];
   title: string;
   description: string;
   canonicalUrl?: string;
@@ -89,17 +90,19 @@ const headerLinks = {
   transparency: getLocalizedPath("transparency", currentLocale),
   faq: `${currentHomePath}#faq`,
 };
-const languageOptions: LanguageSelectorOption[] = supportedLocales.map((locale) => {
-  const href = getLocalizedPath(routeKey, locale);
-  const definition = localeDefinitions[locale];
+const languageOptions: LanguageSelectorOption[] =
+  props.languageOptions ??
+  supportedLocales.map((locale) => {
+    const href = getLocalizedPath(routeKey, locale);
+    const definition = localeDefinitions[locale];
 
-  return {
-    locale,
-    href,
-    label: definition.label,
-    shortLabel: definition.shortLabel,
-  };
-});
+    return {
+      locale,
+      href,
+      label: definition.label,
+      shortLabel: definition.shortLabel,
+    };
+  });
 const microsoftClarityProjectId = "xduul4uyvv";
 const googleAnalyticsMeasurementId = "G-EX089GZ90V";
 const microsoftClarityScript = `

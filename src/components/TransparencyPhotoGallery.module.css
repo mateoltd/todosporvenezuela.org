@@ -1,0 +1,377 @@
+.gallery {
+  margin: clamp(30px, 3.6vw, 48px) 0 0;
+  content-visibility: auto;
+  contain-intrinsic-size: 440px;
+}
+
+.galleryLabel {
+  margin: 0 0 14px;
+  font-family: "Archivo", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: clamp(8px, 1.2vw, 12px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-strong);
+  color: var(--ink);
+  cursor: pointer;
+  isolation: isolate;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.thumb::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(180deg, rgba(16, 24, 32, 0) 58%, rgba(16, 24, 32, 0.32));
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.thumb picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.01);
+  transition: transform 220ms ease;
+}
+
+.thumbIcon {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: inline-grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(16, 24, 32, 0.14);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 12px 24px -14px rgba(7, 13, 19, 0.55);
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.thumb:hover,
+.thumb:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--ink);
+}
+
+.thumb:hover::after,
+.thumb:focus-visible::after,
+.thumb:hover .thumbIcon,
+.thumb:focus-visible .thumbIcon {
+  opacity: 1;
+}
+
+.thumb:hover .thumbIcon,
+.thumb:focus-visible .thumbIcon {
+  transform: translateY(0);
+}
+
+.thumb:hover img,
+.thumb:focus-visible img {
+  transform: scale(1.045);
+}
+
+.thumb:focus-visible {
+  outline: 3px solid rgba(0, 70, 184, 0.45);
+  outline-offset: 3px;
+}
+
+.lightbox {
+  width: min(calc(100vw - 24px), 860px);
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(16, 24, 32, 0.14);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 28px 90px rgba(16, 24, 32, 0.28);
+}
+
+.lightbox::backdrop {
+  background: rgba(16, 24, 32, 0.58);
+  backdrop-filter: blur(2px);
+}
+
+.lightboxShell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-height: calc(100dvh - 24px);
+}
+
+.lightboxToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+  padding: 9px 10px 8px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  color: var(--muted);
+  font-family: "Archivo", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.counter strong {
+  color: var(--ink);
+  font-family: "Barlow Condensed", "Archivo", sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.lightboxFigure {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 0;
+  margin: 0;
+}
+
+.lightboxFrame {
+  --lightbox-frame-padding-block: clamp(18px, 2.2vw, 28px);
+
+  position: relative;
+  display: grid;
+  min-height: 0;
+  height: min(calc(100dvh - 154px), 900px);
+  padding: var(--lightbox-frame-padding-block) clamp(56px, 6vw, 78px);
+  place-items: center;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(247, 247, 242, 0.96)),
+    var(--paper);
+}
+
+.lightboxFrame::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 3px solid rgba(16, 24, 32, 0.14);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  animation: photoSpin 720ms linear infinite;
+}
+
+.lightbox[data-loading="true"] .lightboxFrame::before {
+  opacity: 1;
+}
+
+.lightboxImg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: min(calc(100dvh - 220px), 840px);
+  border: 1px solid rgba(16, 24, 32, 0.12);
+  border-radius: 3px;
+  background: var(--paper-strong);
+  box-shadow: 0 24px 42px -30px rgba(7, 13, 19, 0.62);
+  object-fit: contain;
+  opacity: 1;
+  transition: opacity 120ms ease;
+}
+
+.lightbox[data-loading="true"] .lightboxImg {
+  opacity: 0.18;
+}
+
+.lightboxCaption {
+  min-height: 46px;
+  margin: 0;
+  padding: 14px clamp(18px, 2.6vw, 30px) 18px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.lightboxButton {
+  display: inline-grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgba(16, 24, 32, 0.14);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 12px 24px -14px rgba(7, 13, 19, 0.55);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.lightboxButton:hover,
+.lightboxButton:focus-visible {
+  background: var(--paper-strong);
+}
+
+.lightboxButton:focus-visible {
+  outline: 3px solid rgba(0, 70, 184, 0.45);
+  outline-offset: 3px;
+}
+
+.lightboxClose {
+  flex: 0 0 auto;
+}
+
+.lightboxNav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+}
+
+.lightboxNav:hover,
+.lightboxNav:focus-visible {
+  transform: translateY(-50%) scale(1.04);
+}
+
+.lightboxPrevious {
+  left: 14px;
+}
+
+.lightboxNext {
+  right: 14px;
+}
+
+.gallery[data-single="true"] .lightboxNav {
+  display: none;
+}
+
+@keyframes photoSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .thumbs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .thumbIcon {
+    opacity: 1;
+    transform: none;
+  }
+
+  .lightbox {
+    width: calc(100vw - 18px);
+    max-height: calc(100dvh - 18px);
+    border-radius: var(--radius);
+  }
+
+  .lightboxShell {
+    max-height: calc(100dvh - 18px);
+  }
+
+  .lightboxToolbar {
+    padding-left: 14px;
+  }
+
+  .lightboxFrame {
+    min-height: 0;
+    height: calc(100dvh - 150px);
+    padding: 0 10px;
+  }
+
+  .lightboxImg {
+    max-height: 100%;
+  }
+
+  .lightboxCaption {
+    min-height: 44px;
+    padding: 0 16px 14px;
+  }
+
+  .lightboxNav {
+    width: 40px;
+    height: 40px;
+    background: var(--paper);
+  }
+
+  .lightboxPrevious {
+    left: 10px;
+  }
+
+  .lightboxNext {
+    right: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb,
+  .thumb::after,
+  .thumb img,
+  .thumbIcon,
+  .lightboxButton,
+  .lightboxImg,
+  .lightboxFrame::before {
+    transition: none;
+  }
+
+  .lightboxFrame::before {
+    animation: none;
+  }
+}

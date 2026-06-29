@@ -119,15 +119,61 @@ export const enContent: CampaignContent = {
     transparency: {
       title: "Transparency | Everyone for Venezuela",
       description:
-        "Reports from the Everyone for Venezuela campaign: funds raised, purchases, and deliveries. No reports have been published yet; they will appear here when the response begins.",
+        "Reports from the Everyone for Venezuela campaign: what came in, what we purchased, and what we delivered. The first collection is now published; a new report is added each day.",
       eyebrow: "Daily report",
       heading: "Transparency",
       lede:
         "We publish each day's work: what came in, what we purchased, and what we delivered.",
-      dayLabel: "Day {day}",
-      emptyTitle: "No reports yet",
-      emptyText:
-        "The first report will be published as soon as activity begins. From there, a new report will follow each day.",
+      currentLabel: "In progress",
+      totalDays: 5,
+      viewReportLabel: "View report",
+      backLabel: "Back to Transparency",
+      dayMetaTitle: "{title} · {date} | Transparency | Everyone for Venezuela",
+      dayMetaDescription:
+        "Report from {date} for the Everyone for Venezuela campaign: what was collected, the budget, and how it was handled.",
+      photoOpenLabel: "Open photo {index} of {total}: {alt}",
+      photoCloseLabel: "Close photo viewer",
+      photoPreviousLabel: "View previous photo",
+      photoNextLabel: "View next photo",
+      photoCounterLabel: "Photo",
+      days: [
+        {
+          slug: "jun-27-2026",
+          dayNumber: 1,
+          dateShort: "Jun 27–28",
+          dateLabel: "Jun 27–28, 2026",
+          title: "The first collection",
+          intro:
+            "We gathered this first batch while building the page, with contributions from the people who pushed the project from the start.",
+          budgetValue: "≈ $150",
+          budgetLabel: "budget for the day",
+          budgetNote: {
+            text: "Of this amount, only $104.93 is recorded in the tracker. The rest was covered by contributions gathered through Instagram that didn't go through the account.",
+            linkLabel: "See the post",
+            linkHref: "https://www.instagram.com/p/DaD7tL_vjyc/",
+          },
+          items: [
+            { qty: "72", name: "Bath soap bars" },
+            { qty: "24", name: "Wet wipes", detail: "Momi Talco" },
+            { qty: "12", name: "Toothbrushes", detail: "Galactic Medium Epic" },
+            { qty: "10", name: "Packs of diapers" },
+            { qty: "12", name: "Packs of toilet paper" },
+          ],
+          extrasLabel: "Also collected",
+          extras: ["Baby food", "Sanitary pads", "Bags for handing out"],
+          handledByLabel: "Handled by",
+          handledBy: "Pan de Tata collection center, near Altamira.",
+          photosLabel: "Photos from the day",
+          photos: [
+            { name: "01-red-cap-packing", alt: "Volunteer in a red cap packing supplies" },
+            { name: "02-black-shirt-packing", alt: "Volunteer in a black shirt packing supplies" },
+            { name: "03-black-cap-gift-table", alt: "Volunteer assembling kits at the table" },
+            { name: "04-group-fridge-organizing", alt: "Team organizing the collected supplies" },
+          ],
+          note:
+            "The detail of how each item was sourced will be added to this record as the campaign takes shape.",
+        },
+      ],
       fieldsLabel: "What each report includes",
       fields: [
         {

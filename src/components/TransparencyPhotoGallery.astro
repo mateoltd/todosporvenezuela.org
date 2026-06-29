@@ -1,0 +1,144 @@
+---
+import { Icon } from "astro-icon/components";
+import type { CampaignContent, TransparencyDay } from "../data/campaign";
+import {
+  getTransparencyPhotoSources,
+  transparencyPhotoDimensions,
+} from "../lib/transparency/photos";
+import styles from "./TransparencyPhotoGallery.module.css";
+
+type TransparencyPhoto = TransparencyDay["photos"][number];
+
+interface Props {
+  id: string;
+  label: string;
+  labels: Pick<
+    CampaignContent["transparency"],
+    | "photoOpenLabel"
+    | "photoCloseLabel"
+    | "photoPreviousLabel"
+    | "photoNextLabel"
+    | "photoCounterLabel"
+  >;
+  photos: readonly TransparencyPhoto[];
+}
+
+const { id, label, labels, photos } = Astro.props;
+const labelId = `${id}-label`;
+const captionId = `${id}-caption`;
+const counterLabelId = `${id}-counter-label`;
+const formatOpenLabel = (photo: TransparencyPhoto, index: number) =>
+  labels.photoOpenLabel
+    .replace("{index}", String(index + 1))
+    .replace("{total}", String(photos.length))
+    .replace("{alt}", photo.alt);
+---
+
+<section
+  class={styles.gallery}
+  aria-labelledby={labelId}
+  data-transparency-photo-gallery
+  data-single={photos.length === 1 ? "true" : undefined}
+>
+  <p id={labelId} class={styles.galleryLabel}>{label}</p>
+
+  <ul class={styles.thumbs}>
+    {
+      photos.map((photo, index) => {
+        const sources = getTransparencyPhotoSources(photo.name);
+
+        return (
+          <li>
+            <button
+              type="button"
+              class={styles.thumb}
+              aria-label={formatOpenLabel(photo, index)}
+              data-photo-trigger
+              data-photo-src={sources.webp}
+              data-photo-fallback-src={sources.jpg}
+              data-photo-alt={photo.alt}
+            >
+              <picture>
+                <source srcset={sources.avif} type="image/avif" />
+                <source srcset={sources.webp} type="image/webp" />
+                <img
+                  src={sources.jpg}
+                  alt={photo.alt}
+                  width={transparencyPhotoDimensions.width}
+                  height={transparencyPhotoDimensions.height}
+                  loading="lazy"
+                  decoding="async"
+                  fetchpriority="low"
+                />
+              </picture>
+              <span class={styles.thumbIcon} aria-hidden="true">
+                <Icon name="tabler:maximize" size={18} />
+              </span>
+            </button>
+          </li>
+        );
+      })
+    }
+  </ul>
+
+  <dialog
+    class={styles.lightbox}
+    aria-labelledby={counterLabelId}
+    aria-describedby={captionId}
+    data-photo-dialog
+    data-loading="false"
+  >
+    <div class={styles.lightboxShell}>
+      <div class={styles.lightboxToolbar}>
+        <p class={styles.counter}>
+          <span id={counterLabelId}>{labels.photoCounterLabel}</span>
+          <strong data-photo-counter>1 / {photos.length}</strong>
+        </p>
+        <button
+          type="button"
+          class={`${styles.lightboxButton} ${styles.lightboxClose}`}
+          aria-label={labels.photoCloseLabel}
+          data-photo-close
+        >
+          <Icon name="tabler:x" size={22} aria-hidden="true" />
+        </button>
+      </div>
+
+      <figure class={styles.lightboxFigure}>
+        <div class={styles.lightboxFrame}>
+          <img
+            class={styles.lightboxImg}
+            width={transparencyPhotoDimensions.width}
+            height={transparencyPhotoDimensions.height}
+            decoding="async"
+            data-photo-image
+            alt=""
+          />
+          <button
+            type="button"
+            class={`${styles.lightboxButton} ${styles.lightboxNav} ${styles.lightboxPrevious}`}
+            aria-label={labels.photoPreviousLabel}
+            data-photo-previous
+          >
+            <Icon name="tabler:chevron-left" size={26} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            class={`${styles.lightboxButton} ${styles.lightboxNav} ${styles.lightboxNext}`}
+            aria-label={labels.photoNextLabel}
+            data-photo-next
+          >
+            <Icon name="tabler:chevron-right" size={26} aria-hidden="true" />
+          </button>
+        </div>
+        <figcaption id={captionId} class={styles.lightboxCaption} data-photo-caption></figcaption>
+      </figure>
+    </div>
+  </dialog>
+</section>
+
+<script>
+  import { bootTransparencyPhotoLightboxes } from "../lib/transparency/photoLightbox";
+
+  bootTransparencyPhotoLightboxes();
+</script>

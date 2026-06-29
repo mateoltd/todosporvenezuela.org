@@ -92,6 +92,18 @@ export const getLocalizedUrl = (
   hash = "",
 ) => new URL(getLocalizedPath(routeKey, locale, hash), `${siteBaseUrl}/`).href;
 
+export const getTransparencyDayPath = (
+  locale: SupportedLocale,
+  slug: string,
+) => `${localizedRoutes.transparency[locale]}/${slug}`;
+
+export const getTransparencyDayUrl = (
+  locale: SupportedLocale,
+  slug: string,
+  siteBaseUrl: string,
+) =>
+  new URL(getTransparencyDayPath(locale, slug), `${siteBaseUrl}/`).href;
+
 export const getAlternateLinks = (
   routeKey: LocalizedRouteKey,
   siteBaseUrl: string,

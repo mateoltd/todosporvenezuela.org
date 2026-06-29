@@ -1,0 +1,112 @@
+---
+import TransparencyDayReport from "../TransparencyDayReport.astro";
+import PublicLayout from "../../layouts/PublicLayout.astro";
+import { getLocaleContent } from "../../data/campaign";
+import { getConfiguredSiteBaseUrl } from "../../lib/config/env";
+import {
+  defaultLocale,
+  getLocalizedPath,
+  getTransparencyDayPath,
+  getTransparencyDayUrl,
+  localeDefinitions,
+  supportedLocales,
+  type AlternateLink,
+  type LanguageSelectorOption,
+  type SupportedLocale,
+} from "../../i18n/config";
+
+interface Props {
+  locale: SupportedLocale;
+  slug: string;
+}
+
+const { locale, slug } = Astro.props;
+const content = getLocaleContent(locale);
+const day = content.transparency.days.find((entry) => entry.slug === slug);
+
+if (!day) {
+  return Astro.redirect(getLocalizedPath("transparency", locale), 302);
+}
+
+Astro.response.headers.set(
+  "Cache-Control",
+  "no-store, no-cache, max-age=0, must-revalidate",
+);
+Astro.response.headers.set("CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Vercel-CDN-Cache-Control", "no-store");
+Astro.response.headers.set("Surrogate-Control", "no-store");
+
+const siteBaseUrl = getConfiguredSiteBaseUrl(
+  Astro.site?.toString() ?? Astro.url.origin,
+);
+const canonicalUrl = getTransparencyDayUrl(locale, day.slug, siteBaseUrl);
+const socialImageUrl = new URL(content.socialImage.path, `${siteBaseUrl}/`).href;
+
+const localeDay = (target: SupportedLocale) =>
+  getLocaleContent(target).transparency.days.find(
+    (entry) => entry.dayNumber === day.dayNumber,
+  );
+
+const alternateLinks: AlternateLink[] = supportedLocales.flatMap((target) => {
+  const match = localeDay(target);
+  return match
+    ? [{ hreflang: target, href: getTransparencyDayUrl(target, match.slug, siteBaseUrl) }]
+    : [];
+});
+const defaultDay = localeDay(defaultLocale);
+if (defaultDay) {
+  alternateLinks.push({
+    hreflang: "x-default",
+    href: getTransparencyDayUrl(defaultLocale, defaultDay.slug, siteBaseUrl),
+  });
+}
+
+const languageOptions: LanguageSelectorOption[] = supportedLocales.map(
+  (target) => {
+    const match = localeDay(target);
+    const definition = localeDefinitions[target];
+
+    return {
+      locale: target,
+      href: match
+        ? getTransparencyDayPath(target, match.slug)
+        : getLocalizedPath("transparency", target),
+      label: definition.label,
+      shortLabel: definition.shortLabel,
+    };
+  },
+);
+
+const metaTitle = content.transparency.dayMetaTitle
+  .replace("{title}", day.title)
+  .replace("{date}", day.dateLabel);
+const metaDescription = content.transparency.dayMetaDescription.replace(
+  "{date}",
+  day.dateLabel,
+);
+---
+
+<PublicLayout
+  locale={locale}
+  routeKey="transparency"
+  content={content}
+  languageOptions={languageOptions}
+  title={metaTitle}
+  description={metaDescription}
+  canonicalUrl={canonicalUrl}
+  alternateLinks={alternateLinks}
+  htmlLang={content.language}
+  socialImageUrl={socialImageUrl}
+>
+  <main>
+    <TransparencyDayReport
+      copy={content.transparency}
+      day={day}
+      backHref={getLocalizedPath("transparency", locale)}
+      links={{
+        home: getLocalizedPath("home", locale),
+        faq: `${getLocalizedPath("home", locale)}#faq`,
+      }}
+    />
+  </main>
+</PublicLayout>

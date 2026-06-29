@@ -46,6 +46,7 @@ const socialImageUrl = new URL(content.socialImage.path, `${siteBaseUrl}/`).href
   <main>
     <TransparencySection
       copy={content.transparency}
+      dayBasePath={getLocalizedPath("transparency", locale)}
       links={{
         home: getLocalizedPath("home", locale),
         faq: `${getLocalizedPath("home", locale)}#faq`,

@@ -10,6 +10,7 @@ export type {
   CampaignFaq,
   CampaignOrganizer,
   DonationModalCopy,
+  TransparencyDay,
 } from "./types";
 export { buildFaqs };
 

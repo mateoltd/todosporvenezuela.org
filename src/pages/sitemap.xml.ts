@@ -5,8 +5,10 @@ import {
   siteUrlFallback,
 } from "../data/campaign";
 import {
+  defaultLocale,
   getAlternateLinks,
   getLocalizedUrl,
+  getTransparencyDayUrl,
   supportedLocales,
   type LocalizedRouteKey,
   type SupportedLocale,
@@ -66,14 +68,57 @@ ${renderAlternateLinks(routeKey, siteBaseUrl)}
   </url>`;
 };
 
+const renderTransparencyDayUrls = (siteBaseUrl: string) => {
+  const days = getLocaleContent(defaultLocale).transparency.days;
+
+  return days.map((day) => {
+    const alternates = supportedLocales
+      .flatMap((locale) => {
+        const localized = getLocaleContent(locale).transparency.days.find(
+          (entry) => entry.dayNumber === day.dayNumber,
+        );
+        return localized
+          ? [{ locale, slug: localized.slug }]
+          : [];
+      })
+      .map(
+        ({ locale, slug }) =>
+          `    <xhtml:link rel="alternate" hreflang="${escapeXml(locale)}" href="${escapeXml(getTransparencyDayUrl(locale, slug, siteBaseUrl))}" />`,
+      )
+      .join("\n");
+
+    return supportedLocales
+      .flatMap((locale) => {
+        const localized = getLocaleContent(locale).transparency.days.find(
+          (entry) => entry.dayNumber === day.dayNumber,
+        );
+        if (!localized) return [];
+
+        return [
+          `  <url>
+    <loc>${escapeXml(getTransparencyDayUrl(locale, localized.slug, siteBaseUrl))}</loc>
+${alternates}
+    <lastmod>${modifiedDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`,
+        ];
+      })
+      .join("\n");
+  });
+};
+
 export const GET: APIRoute = ({ site, url }) => {
   const siteBaseUrl = normalizeSiteUrl(
     import.meta.env.PUBLIC_SITE_URL || site?.toString() || url.origin,
     siteUrlFallback,
   );
-  const urls = (["home", "transparency"] as const).flatMap((routeKey) =>
-    supportedLocales.map((locale) => renderUrl(routeKey, locale, siteBaseUrl)),
-  );
+  const urls = [
+    ...(["home", "transparency"] as const).flatMap((routeKey) =>
+      supportedLocales.map((locale) => renderUrl(routeKey, locale, siteBaseUrl)),
+    ),
+    ...renderTransparencyDayUrls(siteBaseUrl),
+  ];
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls.join("\n")}

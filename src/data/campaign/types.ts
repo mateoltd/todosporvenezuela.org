@@ -7,6 +7,37 @@ export interface CampaignFaq {
   };
 }
 
+export interface TransparencyDay {
+  slug: string;
+  dayNumber: number;
+  dateShort: string;
+  dateLabel: string;
+  title: string;
+  intro: string;
+  budgetValue: string;
+  budgetLabel: string;
+  budgetNote?: {
+    text: string;
+    linkLabel: string;
+    linkHref: string;
+  };
+  items: {
+    qty: string;
+    name: string;
+    detail?: string;
+  }[];
+  extrasLabel: string;
+  extras: string[];
+  handledByLabel: string;
+  handledBy: string;
+  photosLabel: string;
+  photos: {
+    name: string;
+    alt: string;
+  }[];
+  note: string;
+}
+
 export interface CampaignOrganizer {
   name: string;
   image: string;
@@ -194,9 +225,18 @@ export interface CampaignContent {
     eyebrow: string;
     heading: string;
     lede: string;
-    dayLabel: string;
-    emptyTitle: string;
-    emptyText: string;
+    currentLabel: string;
+    totalDays: number;
+    viewReportLabel: string;
+    backLabel: string;
+    dayMetaTitle: string;
+    dayMetaDescription: string;
+    photoOpenLabel: string;
+    photoCloseLabel: string;
+    photoPreviousLabel: string;
+    photoNextLabel: string;
+    photoCounterLabel: string;
+    days: TransparencyDay[];
     fieldsLabel: string;
     fields: {
       icon: string;
