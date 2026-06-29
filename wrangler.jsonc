@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "todosporvenezuela",
+  "workers_dev": true,
+  "preview_urls": true,
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-06-29",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
+  "routes": [
+    {
+      "pattern": "todosporvenezuela.org/*",
+      "zone_name": "todosporvenezuela.org"
+    },
+    {
+      "pattern": "www.todosporvenezuela.org/*",
+      "zone_name": "todosporvenezuela.org"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  // Redis, payment account, and admin values are managed in Cloudflare as
+  // dashboard vars/secrets. Preserve them on deploy instead of treating this
+  // config as the complete runtime-var source of truth.
+  "keep_vars": true,
+  "vars": {
+    "PUBLIC_DONATION_ENV": "production",
+    "PUBLIC_SITE_URL": "https://todosporvenezuela.org",
+    "DONATION_ENABLE_WRITES": "true",
+    "DONATION_REDIS_PREFIX": "tpv:donations"
+  }
+}
