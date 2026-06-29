@@ -70,8 +70,10 @@
   --w-read: 940px;
   --w-content: 1340px;
   --w-wide: 1600px;
-  --header-height: 84px;
-  --header-compact-height: 68px;
+  --announcement-height: 34px;
+  --nav-height: 72px;
+  --nav-compact-height: 58px;
+  --header-height: calc(var(--announcement-height) + var(--nav-height));
 }
 
 * {
@@ -129,6 +131,15 @@ body.modal-open {
   ::view-transition-new(site-header) {
     animation: none;
   }
+
+  ::view-transition-group(announcement-bar) {
+    z-index: 21;
+  }
+
+  ::view-transition-old(announcement-bar),
+  ::view-transition-new(announcement-bar) {
+    animation: none;
+  }
 }
 
 button,
@@ -155,8 +166,10 @@ p {
 @media (max-width: 860px) {
   :root {
     --page-gutter: 18px;
-    --header-height: 72px;
-    --header-compact-height: 60px;
+    --announcement-height: 30px;
+    --nav-height: 62px;
+    --nav-compact-height: 50px;
+    --header-height: calc(var(--announcement-height) + var(--nav-height));
   }
 }
 

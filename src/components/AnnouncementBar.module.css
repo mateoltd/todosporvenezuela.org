@@ -1,0 +1,87 @@
+.bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 21;
+  min-height: var(--announcement-height);
+  background: var(--ink);
+  view-transition-name: announcement-bar;
+}
+
+.viewport {
+  position: relative;
+  min-height: var(--announcement-height);
+}
+
+.item {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 var(--page-gutter);
+  font-family: "Archivo", sans-serif;
+  font-size: 12.5px;
+  line-height: 1;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 380ms ease,
+    visibility 380ms ease;
+}
+
+.item[data-active="true"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.message {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.01em;
+}
+
+.link {
+  flex: 0 0 auto;
+  color: var(--yellow);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  transition: text-decoration-color 160ms ease;
+}
+
+.link::after {
+  content: " \2192";
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration-color: var(--yellow);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+@media (max-width: 560px) {
+  .item {
+    gap: 10px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item,
+  .link {
+    transition: none;
+  }
+}

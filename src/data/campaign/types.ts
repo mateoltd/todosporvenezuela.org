@@ -1,3 +1,10 @@
+export interface AnnouncementItem {
+  message: string;
+  linkLabel?: string;
+  href?: string;
+  external?: boolean;
+}
+
 export interface CampaignFaq {
   question: string;
   answer: string;
@@ -162,6 +169,10 @@ export interface CampaignContent {
     donateAriaLabel: string;
     donateCompact: string;
     languageSwitchLabel: string;
+  };
+  announcement: {
+    ariaLabel: string;
+    items: AnnouncementItem[];
   };
   hero: {
     eyebrow: string;

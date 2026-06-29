@@ -1,0 +1,123 @@
+---
+import styles from "./AnnouncementBar.module.css";
+
+interface AnnouncementBarItem {
+  message: string;
+  linkLabel?: string;
+  href?: string;
+  external?: boolean;
+}
+
+interface Props {
+  ariaLabel: string;
+  items: AnnouncementBarItem[];
+}
+
+const { ariaLabel, items } = Astro.props;
+const rotates = items.length > 1;
+---
+
+<aside class={styles.bar} aria-label={ariaLabel}>
+  <div
+    class={styles.viewport}
+    data-announcement-rotator={rotates ? "" : undefined}
+  >
+    {
+      items.map((item, index) => (
+        <p
+          class={styles.item}
+          data-announcement-item
+          data-active={index === 0 ? "true" : "false"}
+          aria-hidden={index === 0 ? "false" : "true"}
+        >
+          <span class={styles.message}>{item.message}</span>
+          {item.linkLabel && item.href && (
+            <a
+              class={styles.link}
+              href={item.href}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noreferrer" : undefined}
+            >
+              {item.linkLabel}
+            </a>
+          )}
+        </p>
+      ))
+    }
+  </div>
+</aside>
+
+<script>
+  const initAnnouncementRotator = () => {
+    const rotator = document.querySelector<HTMLElement>(
+      "[data-announcement-rotator]",
+    );
+    const rotatorWindow = window as Window & {
+      __tpvAnnouncementAbortController?: AbortController;
+    };
+
+    if (!rotator) {
+      rotatorWindow.__tpvAnnouncementAbortController?.abort();
+      return;
+    }
+
+    if (rotator.dataset.rotatorReady === "true") return;
+
+    rotatorWindow.__tpvAnnouncementAbortController?.abort();
+    const controller = new AbortController();
+    rotatorWindow.__tpvAnnouncementAbortController = controller;
+    rotator.dataset.rotatorReady = "true";
+
+    const items = Array.from(
+      rotator.querySelectorAll<HTMLElement>("[data-announcement-item]"),
+    );
+    if (items.length < 2) return;
+
+    const intervalMs = 6000;
+    let index = 0;
+    let timer: number | undefined;
+
+    const show = (next: number) => {
+      items.forEach((item, position) => {
+        const active = position === next;
+        item.dataset.active = active ? "true" : "false";
+        item.setAttribute("aria-hidden", active ? "false" : "true");
+      });
+      index = next;
+    };
+
+    const advance = () => show((index + 1) % items.length);
+
+    const stop = () => {
+      if (timer !== undefined) {
+        window.clearInterval(timer);
+        timer = undefined;
+      }
+    };
+
+    const start = () => {
+      stop();
+      timer = window.setInterval(advance, intervalMs);
+    };
+
+    controller.signal.addEventListener("abort", stop);
+
+    rotator.addEventListener("pointerenter", stop, { signal: controller.signal });
+    rotator.addEventListener("pointerleave", start, { signal: controller.signal });
+    rotator.addEventListener("focusin", stop, { signal: controller.signal });
+    rotator.addEventListener("focusout", start, { signal: controller.signal });
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.hidden) stop();
+        else start();
+      },
+      { signal: controller.signal },
+    );
+
+    start();
+  };
+
+  initAnnouncementRotator();
+  document.addEventListener("astro:page-load", initAnnouncementRotator);
+</script>

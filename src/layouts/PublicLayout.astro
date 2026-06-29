@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
+import AnnouncementBar from "../components/AnnouncementBar.astro";
 import DonationModal from "../components/DonationModal.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -204,6 +205,11 @@ const googleAnalyticsScript = `
     <script is:inline type="text/javascript" set:html={microsoftClarityScript}></script>
   </head>
   <body>
+    <AnnouncementBar
+      ariaLabel={content.announcement.ariaLabel}
+      items={content.announcement.items}
+    />
+
     <SiteHeader
       copy={content.header}
       links={headerLinks}
