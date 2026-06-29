@@ -46,7 +46,7 @@ export const esContent: CampaignContent = {
       menuCloseLabel: "Cerrar menú de navegación",
       navLabel: "Navegación principal",
       nav: {
-        impact: "Devastación",
+        impact: "Situación",
         organizers: "Organizadores",
         transparency: "Transparencia",
         faq: "FAQ",
