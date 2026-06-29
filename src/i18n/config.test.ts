@@ -17,7 +17,7 @@ describe("i18n config", () => {
     );
   });
 
-  it("resolves request locale by path, cookie, preferred locale, then default", () => {
+  it("resolves request locale by path, cookie, then default", () => {
     expect(
       resolveRequestLocale({
         cookieValue: "es",
@@ -33,18 +33,17 @@ describe("i18n config", () => {
       }),
     ).toBe("en");
 
-    expect(resolveRequestLocale({ preferredLocale: "en-GB" })).toBe("en");
-    expect(resolveRequestLocale({ preferredLocale: "es-419" })).toBe("es");
-    expect(resolveRequestLocale({ preferredLocale: "en-AU" })).toBe("en");
-    expect(resolveRequestLocale({ preferredLocale: "es-MX" })).toBe("es");
+    expect(resolveRequestLocale({})).toBe(defaultLocale);
     expect(resolveRequestLocale({ cookieValue: "fr", preferredLocale: "fr-FR" })).toBe(
       defaultLocale,
     );
   });
 
-  it("normalizes preferred locale codes by case and whitespace", () => {
-    expect(resolveRequestLocale({ preferredLocale: "ES-VE" })).toBe("es");
-    expect(resolveRequestLocale({ preferredLocale: "  en-GB  " })).toBe("en");
+  it("does not infer locale from browser or device language", () => {
+    expect(resolveRequestLocale({ preferredLocale: "en-GB" })).toBe(defaultLocale);
+    expect(resolveRequestLocale({ preferredLocale: "en-AU" })).toBe(defaultLocale);
+    expect(resolveRequestLocale({ preferredLocale: "ES-VE" })).toBe(defaultLocale);
+    expect(resolveRequestLocale({ preferredLocale: "  en-GB  " })).toBe(defaultLocale);
   });
 
   it("falls back to the default locale for unknown or empty input", () => {

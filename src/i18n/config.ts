@@ -58,28 +58,8 @@ export const localizedRoutes = {
 
 export type LocalizedRouteKey = keyof typeof localizedRoutes;
 
-const codeToLocale = new Map<string, SupportedLocale>(
-  supportedLocales.flatMap((locale) =>
-    localeDefinitions[locale].codes.map((code) => [code.toLowerCase(), locale]),
-  ),
-);
-
 const isSupportedLocale = (value: string | undefined | null): value is SupportedLocale =>
   supportedLocales.includes(value as SupportedLocale);
-
-const resolvePreferredLocalePath = (
-  code: string | undefined | null,
-): SupportedLocale | undefined => {
-  if (!code) return undefined;
-
-  const normalized = code.trim().toLowerCase();
-  if (!normalized) return undefined;
-
-  if (codeToLocale.has(normalized)) return codeToLocale.get(normalized);
-
-  const language = normalized.split("-")[0];
-  return codeToLocale.get(language);
-};
 
 const getLocaleFromPathname = (
   pathname: string,
@@ -91,16 +71,13 @@ const getLocaleFromPathname = (
 export const resolveRequestLocale = ({
   cookieValue,
   pathname,
-  preferredLocale,
 }: {
   cookieValue?: string | null;
   pathname?: string;
   preferredLocale?: string | null;
 }): SupportedLocale =>
   (pathname ? getLocaleFromPathname(pathname) : undefined) ??
-  (isSupportedLocale(cookieValue)
-    ? cookieValue
-    : resolvePreferredLocalePath(preferredLocale) ?? defaultLocale);
+  (isSupportedLocale(cookieValue) ? cookieValue : defaultLocale);
 
 export const getLocalizedPath = (
   routeKey: LocalizedRouteKey,
