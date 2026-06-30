@@ -19,10 +19,30 @@ const serverEnvDonationMode = () => envField.enum({
   values: ["production", "sandbox"]
 });
 
+// Cloudflare's local SSR runner evaluates modules in workerd, so CJS-shaped
+// transitive dependencies need to be prebundled before runtime.
+const cloudflareSsrOptimizeDeps = (include) => ({
+  name: "cloudflare-ssr-optimize-deps",
+  configEnvironment(name) {
+    if (name !== "ssr") return;
+
+    return {
+      optimizeDeps: { include },
+    };
+  },
+});
+
 export default defineConfig({
   adapter: cloudflare({
     imageService: "compile"
   }),
+  vite: {
+    plugins: [
+      cloudflareSsrOptimizeDeps([
+        "astro-icon > @iconify/utils",
+      ]),
+    ],
+  },
   env: {
     schema: {
       DONATION_ADMIN_MAX_TOP_UP_USD: serverEnvString(),
