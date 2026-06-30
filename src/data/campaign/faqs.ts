@@ -35,7 +35,7 @@ export const buildFaqs = (
       {
         question: "Can I pay with a debit or credit card?",
         answer:
-          "Yes. You can pay with a debit or credit card through PayPal, depending on availability in your country. We are also evaluating other providers to enable more payment options without funds being held as long as they can be with Stripe.",
+          "Yes. You can pay with a debit or credit card through PayPal, depending on availability in your country. We are also evaluating other providers to enable more payment options without long fund holds.",
       },
       {
         question: "How can I donate from Venezuela?",
@@ -91,7 +91,7 @@ export const buildFaqs = (
     {
       question: "¿Puedo pagar con tarjeta de débito o crédito?",
       answer:
-        "Sí. Puedes pagar con tarjeta de débito o crédito a través de PayPal, según la disponibilidad en tu país. También estamos evaluando otros proveedores para habilitar más opciones de pago sin que los fondos queden retenidos tanto tiempo como ocurre con Stripe.",
+        "Sí. Puedes pagar con tarjeta de débito o crédito a través de PayPal, según la disponibilidad en tu país. También estamos evaluando otros proveedores para habilitar más opciones de pago sin retenciones largas de fondos.",
     },
     {
       question: "¿Cómo dono desde Venezuela?",

@@ -31,6 +31,16 @@ export const optionalEnvString = z.preprocess(
 export const envString = (fallback = "") =>
   optionalEnvString.transform((value) => value ?? fallback);
 
+export const optionalBooleanEnv = z.preprocess((value) => {
+  const normalized = cleanEnvString(value)?.toLowerCase();
+  if (!normalized) return undefined;
+
+  if (["1", "true", "yes", "on"].includes(normalized)) return true;
+  if (["0", "false", "no", "off"].includes(normalized)) return false;
+
+  return normalized;
+}, z.boolean().optional());
+
 export const optionalEnvUrl = optionalEnvString.pipe(z.url().optional());
 
 export const positiveIntegerEnv = (fallback: number) =>

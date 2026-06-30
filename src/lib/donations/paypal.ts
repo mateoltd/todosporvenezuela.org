@@ -1,6 +1,6 @@
 import {
+  getDonationCallbackBaseUrl,
   getDonationEnvConfig,
-  getDonationSiteBaseUrl,
   parseAmountToCents,
 } from "./config";
 import { getEnv } from "../config/env";
@@ -25,7 +25,7 @@ export const getPayPalItemName = (
 export const getPayPalItemNumber = () => getDonationEnvConfig().paypalItemNumber;
 
 export const getPayPalNotifyUrl = (fallbackSiteUrl = "") => {
-  const siteUrl = getDonationSiteBaseUrl(fallbackSiteUrl);
+  const siteUrl = getDonationCallbackBaseUrl(fallbackSiteUrl);
   return siteUrl ? new URL("/api/donations/paypal/ipn", siteUrl).toString() : "";
 };
 
@@ -57,8 +57,20 @@ const paramsToRecord = (params: URLSearchParams) =>
   }, {});
 
 const receiverIsAllowed = (raw: Record<string, string>) => {
-  const { paypalReceiverEmails: allowedEmails, paypalReceiverIds: allowedIds } =
-    getDonationEnvConfig();
+  const config = getDonationEnvConfig();
+  const configuredBusiness = config.paypalBusiness.trim().toLowerCase();
+  const allowedEmails =
+    config.paypalReceiverEmails.length > 0
+      ? config.paypalReceiverEmails
+      : configuredBusiness.includes("@")
+        ? [configuredBusiness]
+        : [];
+  const allowedIds =
+    config.paypalReceiverIds.length > 0
+      ? config.paypalReceiverIds
+      : configuredBusiness && !configuredBusiness.includes("@")
+        ? [configuredBusiness]
+        : [];
 
   if (!allowedEmails.length && !allowedIds.length) return true;
 

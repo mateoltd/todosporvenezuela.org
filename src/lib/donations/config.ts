@@ -5,6 +5,7 @@ import {
   getEnv,
   getEnvSource,
   normalizeSiteUrl,
+  optionalBooleanEnv,
   optionalEnvString,
   optionalEnvUrl,
   positiveIntegerEnv,
@@ -39,6 +40,9 @@ export interface DonationRuntimeConfig {
   binancePayId: string;
   currency: string;
   donationEnv: "production" | "sandbox";
+  donationCallbackBaseUrl: string;
+  donationDeploymentEnv: "development" | "preview" | "production" | "";
+  donationWritesEnabled: boolean;
   goalCents: number;
   keys: {
     recentEvents: string;
@@ -115,6 +119,11 @@ const donationEnvMode = z
     z.enum(["production", "sandbox"]).optional(),
   );
 
+const deploymentEnvMode = z.preprocess(
+  (value) => cleanEnvString(value)?.toLowerCase(),
+  z.enum(["development", "preview", "production"]).optional(),
+);
+
 const csvList = optionalEnvString.transform((value) =>
   (value ?? "")
     .split(",")
@@ -130,6 +139,9 @@ const donationEnvSchema = z
     DONATION_ADMIN_USERNAME: envString(),
     DONATION_BASELINE_RAISED_USD: centsFromEnv,
     DONATION_CURRENCY: currencyCode,
+    DONATION_CALLBACK_BASE_URL: optionalEnvUrl,
+    DONATION_DEPLOYMENT_ENV: deploymentEnvMode,
+    DONATION_ENABLE_WRITES: optionalBooleanEnv,
     DONATION_GOAL_USD: centsFromEnv,
     DONATION_PAYPAL_ITEM_NAME: envString(
       "Ayuda para insumos médicos, alimentación e hidratación en Venezuela.",
@@ -173,6 +185,7 @@ const donationEnvSchema = z
   })
   .transform((env): DonationRuntimeConfig => {
     const donationEnv = env.PUBLIC_DONATION_ENV ?? env.PUBLIC_PAYPAL_ENV ?? "production";
+    const donationDeploymentEnv = env.DONATION_DEPLOYMENT_ENV ?? "";
     const currency = env.DONATION_CURRENCY ?? env.PUBLIC_DONATION_CURRENCY ?? "USD";
     const prefix = env.DONATION_REDIS_PREFIX;
     const defaultPaypalDonateUrl =
@@ -207,6 +220,9 @@ const donationEnvSchema = z
       binancePayId: env.PUBLIC_BINANCE_PAY_ID,
       currency,
       donationEnv,
+      donationCallbackBaseUrl: normalizeSiteUrl(env.DONATION_CALLBACK_BASE_URL ?? ""),
+      donationDeploymentEnv,
+      donationWritesEnabled: env.DONATION_ENABLE_WRITES ?? false,
       goalCents:
         env.DONATION_GOAL_USD ??
         env.PUBLIC_DONATION_GOAL_USD ??
@@ -270,9 +286,16 @@ export const getDonationEnvConfig = (env?: EnvSource) => {
 export const getDonationEnv = (key: string, fallback = "", env?: EnvSource) =>
   getEnv(key, fallback, env);
 
-export const getDonationSiteBaseUrl = (fallbackSiteUrl = "", env?: EnvSource) => {
-  const publicSiteUrl = getDonationEnvConfig(env).publicSiteUrl;
-  return publicSiteUrl || normalizeSiteUrl(fallbackSiteUrl);
+export const getDonationCallbackBaseUrl = (fallbackSiteUrl = "", env?: EnvSource) => {
+  const config = getDonationEnvConfig(env);
+  const fallback = normalizeSiteUrl(fallbackSiteUrl);
+
+  if (config.donationCallbackBaseUrl) return config.donationCallbackBaseUrl;
+  if (config.donationEnv === "sandbox" || config.donationDeploymentEnv === "preview") {
+    return fallback || config.publicSiteUrl;
+  }
+
+  return config.publicSiteUrl || fallback;
 };
 
 const getPayPalNotifyUrl = (siteUrl: string) =>
@@ -285,11 +308,11 @@ export function buildDonationConfig(
   env?: EnvSource,
 ): DonationConfig {
   const config = getDonationEnvConfig(env);
-  const siteUrl = config.publicSiteUrl || normalizeSiteUrl(origin);
+  const callbackSiteUrl = getDonationCallbackBaseUrl(origin, env);
 
   return {
     paypalUrl: config.paypalDonateUrl,
-    paypalNotifyUrl: getPayPalNotifyUrl(siteUrl),
+    paypalNotifyUrl: getPayPalNotifyUrl(callbackSiteUrl),
     paypal: {
       env: config.donationEnv,
       hostedButtonId: config.paypalHostedButtonId,

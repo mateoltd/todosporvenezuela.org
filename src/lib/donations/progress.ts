@@ -40,8 +40,22 @@ const cleanKeyPart = (value: string) =>
 
 export const getDonationConfig = (): DonationRuntimeConfig => getDonationEnvConfig();
 
+export class DonationWritesDisabledError extends Error {
+  constructor() {
+    super("Donation writes are disabled for this environment");
+    this.name = "DonationWritesDisabledError";
+  }
+}
+
+export const isDonationWritesDisabledError = (
+  error: unknown,
+): error is DonationWritesDisabledError => error instanceof DonationWritesDisabledError;
+
 export const hasRedisConfig = (config = getDonationConfig()) =>
   Boolean(config.redisRestUrl && config.redisRestToken);
+
+export const hasDonationWriteConfig = (config = getDonationConfig()) =>
+  config.donationWritesEnabled && hasRedisConfig(config);
 
 export const hasRedisReadConfig = (config = getDonationConfig()) =>
   Boolean(config.redisRestUrl && (config.redisRestReadOnlyToken || config.redisRestToken));
@@ -130,6 +144,10 @@ export const getDonationSnapshot = async (): Promise<DonationSnapshot> => {
 
 export const recordDonation = async (input: DonationRecordInput) => {
   const config = getDonationConfig();
+
+  if (!config.donationWritesEnabled) {
+    throw new DonationWritesDisabledError();
+  }
 
   if (!hasRedisConfig(config)) {
     throw new Error("Donation progress storage is not configured");

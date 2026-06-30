@@ -28,9 +28,27 @@
   // config as the complete runtime-var source of truth.
   "keep_vars": true,
   "vars": {
+    "DONATION_DEPLOYMENT_ENV": "production",
     "PUBLIC_DONATION_ENV": "production",
     "PUBLIC_SITE_URL": "https://todosporvenezuela.org",
     "DONATION_ENABLE_WRITES": "true",
     "DONATION_REDIS_PREFIX": "tpv:donations"
+  },
+  "env": {
+    "preview": {
+      "name": "todosporvenezuela-preview",
+      "workers_dev": true,
+      "preview_urls": true,
+      "routes": [],
+      "keep_vars": true,
+      "vars": {
+        "DONATION_DEPLOYMENT_ENV": "preview",
+        "PUBLIC_DONATION_ENV": "sandbox",
+        "PUBLIC_SITE_URL": "https://todosporvenezuela.org",
+        "DONATION_CALLBACK_BASE_URL": "",
+        "DONATION_ENABLE_WRITES": "false",
+        "DONATION_REDIS_PREFIX": "tpv:donations:preview"
+      }
+    }
   }
 }

@@ -12,6 +12,11 @@ const serverEnvNumber = () => envField.number({
   access: "secret",
   optional: true
 });
+const serverEnvBoolean = () => envField.boolean({
+  context: "server",
+  access: "secret",
+  optional: true
+});
 const serverEnvDonationMode = () => envField.enum({
   context: "server",
   access: "secret",
@@ -50,7 +55,10 @@ export default defineConfig({
       DONATION_ADMIN_TOKEN: serverEnvString(),
       DONATION_ADMIN_USERNAME: serverEnvString(),
       DONATION_BASELINE_RAISED_USD: serverEnvString(),
+      DONATION_CALLBACK_BASE_URL: serverEnvString(),
+      DONATION_DEPLOYMENT_ENV: serverEnvString(),
       DONATION_CURRENCY: serverEnvString(),
+      DONATION_ENABLE_WRITES: serverEnvBoolean(),
       DONATION_GOAL_USD: serverEnvString(),
       DONATION_PAYPAL_ITEM_NAME: serverEnvString(),
       DONATION_PAYPAL_ITEM_NUMBER: serverEnvString(),

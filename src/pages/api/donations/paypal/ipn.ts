@@ -1,5 +1,9 @@
 import type { APIRoute } from "astro";
-import { donationJson, recordDonation } from "../../../../lib/donations/progress";
+import {
+  donationJson,
+  isDonationWritesDisabledError,
+  recordDonation,
+} from "../../../../lib/donations/progress";
 import { parsePayPalIpnDonation, verifyPayPalIpn } from "../../../../lib/donations/paypal";
 
 export const prerender = false;
@@ -14,6 +18,7 @@ export const POST: APIRoute = async ({ request }) => {
   const verification = await verifyPayPalIpn(rawBody);
 
   if (!verification.verified) {
+    console.warn("PayPal IPN verification failed");
     return donationJson(
       { ok: false, error: "paypal_ipn_not_verified", paypal: verification.text },
       { status: 400 },
@@ -23,6 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
   const donation = parsePayPalIpnDonation(new URLSearchParams(rawBody));
 
   if ("reason" in donation) {
+    console.info("PayPal IPN ignored", { reason: donation.reason });
     return donationJson({ ok: true, ignored: true, reason: donation.reason });
   }
 
@@ -35,6 +41,15 @@ export const POST: APIRoute = async ({ request }) => {
       progress: result.snapshot,
     });
   } catch (error) {
+    if (isDonationWritesDisabledError(error)) {
+      console.info("PayPal IPN ignored", { reason: "donation_writes_disabled" });
+      return donationJson({
+        ok: true,
+        ignored: true,
+        reason: "donation_writes_disabled",
+      });
+    }
+
     console.error("PayPal IPN donation recording failed", error);
     return donationJson({ ok: false, error: "recording_failed" }, { status: 500 });
   }

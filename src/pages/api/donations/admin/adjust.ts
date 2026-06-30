@@ -7,6 +7,7 @@ import {
 import { getDonationEnvConfig } from "../../../../lib/donations/config";
 import {
   donationJson,
+  isDonationWritesDisabledError,
   recordDonation,
 } from "../../../../lib/donations/progress";
 
@@ -111,6 +112,13 @@ export const POST: APIRoute = async ({ request }) => {
       { status: result.inserted ? 201 : 200 },
     );
   } catch (error) {
+    if (isDonationWritesDisabledError(error)) {
+      return donationJson(
+        { ok: false, error: "donation_writes_disabled" },
+        { status: 403 },
+      );
+    }
+
     console.error("Donation admin adjustment failed", error);
     return donationJson({ ok: false, error: "recording_failed" }, { status: 500 });
   }

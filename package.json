@@ -9,6 +9,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "deploy:cf": "astro build && wrangler deploy",
+    "deploy:cf:preview": "astro build && node scripts/deploy-cloudflare-preview.mjs && wrangler deploy --config dist/server/wrangler.preview.json",
     "preview:cf": "astro build && wrangler dev",
     "test": "vitest run"
   },

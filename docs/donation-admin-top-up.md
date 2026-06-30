@@ -28,6 +28,8 @@ DONATION_ADMIN_MAX_TOP_UP_USD=10000
 
 `DONATION_ADMIN_MAX_TOP_UP_USD` defaults to `10000` if unset or invalid.
 
+Manual adjustments also require donation writes to be enabled for the environment. See `docs/donation-environments.md` for the Production/Preview write policy.
+
 ## Browser Page
 
 Route:
