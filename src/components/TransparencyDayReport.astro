@@ -67,16 +67,24 @@ const { copy, day, backHref, links } = Astro.props;
       }
     </ul>
 
-    <dl class={styles.meta}>
-      <div class={styles.metaRow}>
-        <dt class={styles.metaLabel}>{day.extrasLabel}</dt>
-        <dd class={styles.metaValue}>{day.extras.join(", ")}</dd>
-      </div>
-      <div class={styles.metaRow}>
-        <dt class={styles.metaLabel}>{day.handledByLabel}</dt>
-        <dd class={styles.metaValue}>{day.handledBy}</dd>
-      </div>
-    </dl>
+    {
+      (day.extras.length > 0 || day.handledBy) && (
+        <dl class={styles.meta}>
+          {day.extras.length > 0 && (
+            <div class={styles.metaRow}>
+              <dt class={styles.metaLabel}>{day.extrasLabel}</dt>
+              <dd class={styles.metaValue}>{day.extras.join(", ")}</dd>
+            </div>
+          )}
+          {day.handledBy && (
+            <div class={styles.metaRow}>
+              <dt class={styles.metaLabel}>{day.handledByLabel}</dt>
+              <dd class={styles.metaValue}>{day.handledBy}</dd>
+            </div>
+          )}
+        </dl>
+      )
+    }
 
     {
       day.photos.length > 0 && (
@@ -89,7 +97,7 @@ const { copy, day, backHref, links } = Astro.props;
       )
     }
 
-    <p class={styles.note}>{day.note}</p>
+    {day.note && <p class={styles.note}>{day.note}</p>}
 
     <footer class={styles.closing}>
       <p>{copy.closing}</p>

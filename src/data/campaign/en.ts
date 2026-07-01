@@ -60,15 +60,9 @@ export const enContent: CampaignContent = {
     ariaLabel: "Campaign notices",
     items: [
       {
-        message: "First transparency report now available.",
+        message: "Second transparency report now available.",
         linkLabel: "View report",
-        href: "/en/transparency/jun-27-2026",
-      },
-      {
-        message: "Magnitude 4.8 aftershock recorded near La Guaira.",
-        linkLabel: "USGS source",
-        href: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t8yf/executive",
-        external: true,
+        href: "/en/transparency/jun-29-2026",
       },
       {
         message: "Aid deliveries are ongoing in the affected areas.",
@@ -136,11 +130,12 @@ export const enContent: CampaignContent = {
   transparency: {
     title: "Transparency | Everyone for Venezuela",
     description:
-      "Reports from the Everyone for Venezuela campaign: what came in, what we purchased, and what we delivered. The first collection is now published; a new report is added each day.",
+      "Reports from the Everyone for Venezuela campaign: what came in, what we purchased, and what we delivered. The first reports are now published; a new report is added each day.",
     eyebrow: "Daily report",
     heading: "Transparency",
     lede: "We publish each day's work: what came in, what we purchased, and what we delivered.",
     currentLabel: "In progress",
+    currentDateShort: "Jun 30",
     totalDays: 5,
     viewReportLabel: "View report",
     backLabel: "Back to Transparency",
@@ -161,7 +156,7 @@ export const enContent: CampaignContent = {
         title: "The first collection",
         intro:
           "We gathered this first batch while building the page, with contributions from the people who pushed the project from the start.",
-        budgetValue: "≈ $150",
+        budgetValue: "$150",
         budgetLabel: "budget for the day",
         budgetNote: {
           text: "Of this amount, only $104.93 is recorded in the tracker. The rest was covered by contributions gathered through Instagram that didn't go through the account.",
@@ -199,6 +194,63 @@ export const enContent: CampaignContent = {
           },
         ],
         note: "The detail of how each item was sourced will be added to this record as the campaign takes shape.",
+      },
+      {
+        slug: "jun-29-2026",
+        dayNumber: 2,
+        dateShort: "Jun 29",
+        dateLabel: "Jun 29, 2026",
+        title: "Soup and needs survey",
+        intro:
+          "Soup was prepared for 100 people: the campaign purchased the ingredients and a group of volunteers cooked it. In parallel, the core team surveyed collection centers in Caracas to record their needs, at the request of a distribution center in Catia La Mar that had resources to donate and wanted to send them where they were needed most.",
+        budgetValue: "$86.55",
+        budgetLabel: "spent on the day",
+        budgetNote: {
+          text: "Paid in bolivares from a separate $100 contribution received by pago móvil. The dollar figure uses the official BCV Sistema del Mercado Cambiario rate, sheet 26062026, Value Date 06/30/2026: Bs 623.0223 per $1.",
+          linkLabel: "See BCV XLS",
+          linkHref:
+            "https://www.bcv.org.ve/sites/default/files/EstadisticasGeneral/2_1_2b26_smc.xls",
+        },
+        items: [
+          {
+            qty: "100",
+            name: "Plastic containers with lids",
+            detail: "To serve the soup",
+          },
+          {
+            qty: "5",
+            name: "Kg of chicken",
+            detail:
+              "Charcutería y Delicias La Fortuna; weight estimated from the amount paid",
+          },
+          {
+            qty: "1",
+            name: "Kg of powdered milk",
+            detail: "Inversiones Bienvenido, Propatria",
+          },
+          {
+            qty: "1",
+            name: "Kg of sugar",
+            detail: "Inversiones Bienvenido, Propatria",
+          },
+          {
+            qty: "",
+            name: "Vegetables",
+            detail: "Assorted, for the soup; reported purchase, no receipt",
+          },
+          {
+            qty: "",
+            name: "Oats",
+            detail: "For the soup; reported purchase, no receipt",
+          },
+        ],
+        extrasLabel: "Also done",
+        extras: [],
+        handledByLabel: "Handled by",
+        handledBy: "",
+        photosLabel: "Photos from the day",
+        photos: [],
+        note: "",
       },
     ],
     fieldsLabel: "What each report includes",

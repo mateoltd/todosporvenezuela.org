@@ -60,10 +60,19 @@ for (let day = activeDayNumber + 1; day <= copy.totalDays; day += 1) {
         {
           hasActiveDay && (
             <li class={styles.entry} data-state="active">
-              <span class={styles.node} aria-hidden="true" />
-              <span class={styles.entryContent}>
-                <span class={styles.current}>{copy.currentLabel}</span>
-              </span>
+              <div class={styles.entryLink} aria-disabled="true">
+                <span class={styles.node} aria-hidden="true" />
+                <span class={styles.entryContent}>
+                  <span class={styles.day}>{copy.currentDateShort}</span>
+                  <span class={styles.entryTitle}>{copy.currentLabel}</span>
+                </span>
+                <span class={styles.entryAction}>
+                  <span class={styles.entryActionLabel}>
+                    {copy.viewReportLabel}
+                  </span>
+                  <Icon name="tabler:arrow-right" size={18} aria-hidden="true" />
+                </span>
+              </div>
             </li>
           )
         }

@@ -237,6 +237,7 @@ export interface CampaignContent {
     heading: string;
     lede: string;
     currentLabel: string;
+    currentDateShort: string;
     totalDays: number;
     viewReportLabel: string;
     backLabel: string;

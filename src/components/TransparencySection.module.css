@@ -86,7 +86,8 @@
   padding-bottom: 20px;
 }
 
-.entry[data-state="done"] {
+.entry[data-state="done"],
+.entry[data-state="active"] {
   display: block;
   padding-bottom: 6px;
 }
@@ -169,12 +170,15 @@
 }
 
 .day {
+  flex: 0 0 auto;
+  min-width: 88px;
   margin: 0;
   font-family: "Archivo", sans-serif;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--muted);
 }
 
@@ -213,11 +217,25 @@
   color: var(--red);
 }
 
-.current {
-  margin: 0;
-  font-family: "Archivo", sans-serif;
-  font-size: 14px;
-  font-weight: 700;
+.entry[data-state="active"] .entryLink {
+  cursor: default;
+}
+
+.entry[data-state="active"] .entryLink:hover {
+  background: transparent;
+}
+
+.entry[data-state="active"] .entryContent,
+.entry[data-state="active"] .entryAction {
+  opacity: 0.5;
+}
+
+.entry[data-state="active"] .entryLink:hover .entryTitle {
+  color: inherit;
+}
+
+.entry[data-state="active"] .entryLink:hover .entryAction {
+  gap: 8px;
   color: var(--muted);
 }
 
@@ -295,7 +313,7 @@
 }
 
 .closing p {
-  max-width: 44ch;
+  max-width: none;
   margin: 0;
   color: var(--muted);
   font-size: 15px;

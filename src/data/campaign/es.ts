@@ -59,15 +59,9 @@ export const esContent: CampaignContent = {
     ariaLabel: "Avisos de la campaña",
     items: [
       {
-        message: "Primer reporte de transparencia disponible.",
+        message: "Segundo reporte de transparencia disponible.",
         linkLabel: "Ver reporte",
-        href: "/es/transparencia/27-jun-2026",
-      },
-      {
-        message: "Réplica de magnitud 4.8 registrada cerca de La Guaira.",
-        linkLabel: "Fuente USGS",
-        href: "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t8yf/executive",
-        external: true,
+        href: "/es/transparencia/29-jun-2026",
       },
       {
         message: "Las entregas de ayuda continúan en las zonas afectadas.",
@@ -135,11 +129,12 @@ export const esContent: CampaignContent = {
   transparency: {
     title: "Transparencia | Todos por Venezuela",
     description:
-      "Reportes de la campaña Todos por Venezuela: lo que recibimos, compramos y entregamos. El primer acopio ya está publicado; cada día se suma uno nuevo.",
+      "Reportes de la campaña Todos por Venezuela: lo que recibimos, compramos y entregamos. Los primeros reportes ya están publicados; cada día se suma uno nuevo.",
     eyebrow: "Reporte diario",
     heading: "Transparencia",
     lede: "Publicamos el trabajo de cada día: lo que recibimos, lo que compramos y lo que entregamos.",
     currentLabel: "En curso",
+    currentDateShort: "30 jun",
     totalDays: 5,
     viewReportLabel: "Ver reporte",
     backLabel: "Volver a Transparencia",
@@ -160,7 +155,7 @@ export const esContent: CampaignContent = {
         title: "El primer acopio",
         intro:
           "Reunimos este primer lote mientras construíamos la página, con los aportes de quienes empujaron el proyecto desde el comienzo.",
-        budgetValue: "≈ $150",
+        budgetValue: "$150",
         budgetLabel: "presupuesto del día",
         budgetNote: {
           text: "De este monto, solo $104,93 está registrado en el contador. El resto se cubrió con aportes recogidos por Instagram que no pasaron por la cuenta.",
@@ -203,6 +198,63 @@ export const esContent: CampaignContent = {
           },
         ],
         note: "El detalle de cómo se reunió cada insumo se irá sumando a este registro a medida que la campaña toma forma.",
+      },
+      {
+        slug: "29-jun-2026",
+        dayNumber: 2,
+        dateShort: "29 jun",
+        dateLabel: "29 jun 2026",
+        title: "Sopa y registro de necesidades",
+        intro:
+          "Se preparó sopa para 100 personas: la campaña compró los ingredientes y un grupo de voluntarios la cocinó. En paralelo, el equipo central recorrió centros de acopio en Caracas para registrar sus necesidades, a solicitud de un centro de distribución en Catia La Mar que tenía recursos para donar y quería enviarlos a donde más se necesitaban.",
+        budgetValue: "$86,55",
+        budgetLabel: "gastado en el día",
+        budgetNote: {
+          text: "Pagado en bolívares con un aporte aparte de $100 recibido por pago móvil. La cifra en dólares usa la tasa oficial BCV del Sistema del Mercado Cambiario, hoja 26062026, Fecha Valor 30/06/2026: Bs 623,0223 por $1.",
+          linkLabel: "Ver XLS del BCV",
+          linkHref:
+            "https://www.bcv.org.ve/sites/default/files/EstadisticasGeneral/2_1_2b26_smc.xls",
+        },
+        items: [
+          {
+            qty: "100",
+            name: "Potes plásticos con tapa",
+            detail: "Para servir la sopa",
+          },
+          {
+            qty: "5",
+            name: "Kg de pollo",
+            detail:
+              "Charcutería y Delicias La Fortuna; peso estimado por el monto pagado",
+          },
+          {
+            qty: "1",
+            name: "Kg de leche en polvo",
+            detail: "Inversiones Bienvenido, Propatria",
+          },
+          {
+            qty: "1",
+            name: "Kg de azúcar",
+            detail: "Inversiones Bienvenido, Propatria",
+          },
+          {
+            qty: "",
+            name: "Vegetales",
+            detail: "Surtidos, para la sopa; compra reportada, sin recibo",
+          },
+          {
+            qty: "",
+            name: "Avena",
+            detail: "Para la sopa; compra reportada, sin recibo",
+          },
+        ],
+        extrasLabel: "También se hizo",
+        extras: [],
+        handledByLabel: "Gestionado por",
+        handledBy: "",
+        photosLabel: "Fotos del día",
+        photos: [],
+        note: "",
       },
     ],
     fieldsLabel: "Qué incluye cada reporte",
