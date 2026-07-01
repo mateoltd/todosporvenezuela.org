@@ -7,3 +7,15 @@ dist/
 !.env.example
 .vercel
 .wrangler/
+.scraping/
+design/
+print-assets/
+docs/desaparecidos-terremoto-venezuela-notes.md
+docs/nexo-signal-notes.md
+docs/nexo-signal-owner-warning-draft.md
+docs/secure-people-finder-overnight-runbook.md
+docs/secure-people-finder-scraping-plan.md
+docs/venezuela-te-busca-notes.md
+docs/vzlaencuentra-notes.md
+docs/yummy-sos-aggregator-notes.md
+scripts/secure-people-finder/
