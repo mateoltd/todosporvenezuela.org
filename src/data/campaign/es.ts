@@ -257,24 +257,6 @@ export const esContent: CampaignContent = {
         note: "",
       },
     ],
-    fieldsLabel: "Qué incluye cada reporte",
-    fields: [
-      {
-        icon: "tabler:cash",
-        label: "Lo recibido",
-        body: "Cuánto entró ese día y por qué medio.",
-      },
-      {
-        icon: "tabler:receipt",
-        label: "Lo comprado",
-        body: "Cada compra del día.",
-      },
-      {
-        icon: "tabler:truck-delivery",
-        label: "Lo entregado",
-        body: "Qué llegó a quién.",
-      },
-    ],
     closing:
       "Mientras tanto, conoce a quiénes están detrás y cómo funciona la campaña.",
     faqLink: "Preguntas frecuentes",

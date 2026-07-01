@@ -249,56 +249,6 @@
   opacity: 0.15;
 }
 
-/* ---------- What each report includes ---------- */
-
-.fields {
-  margin-top: clamp(44px, 5vw, 72px);
-}
-
-.fieldsLabel {
-  margin: 0 0 clamp(18px, 2vw, 26px);
-  color: var(--muted);
-  font-family: "Archivo", sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.fieldList {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(20px, 2.6vw, 36px);
-  margin: 0;
-}
-
-.field {
-  padding-top: 18px;
-  border-top: 2px solid var(--ink);
-}
-
-.field dt {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-family: "Archivo", sans-serif;
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: -0.01em;
-}
-
-.field dt svg {
-  flex: 0 0 auto;
-  color: var(--ink);
-}
-
-.field dd {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 14.5px;
-  line-height: 1.5;
-}
-
 /* ---------- Closing ---------- */
 
 .closing {
@@ -307,8 +257,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px 32px;
-  margin-top: clamp(48px, 6vw, 84px);
-  padding-top: clamp(28px, 3vw, 40px);
+  margin-top: clamp(24px, 3vw, 38px);
+  padding-top: clamp(18px, 2vw, 28px);
   border-top: 1px solid var(--line);
 }
 
@@ -391,20 +341,6 @@
 
   .entryAction {
     color: var(--ink);
-  }
-
-  .fieldList {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .field {
-    padding: 16px 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .field:first-child {
-    border-top: 2px solid var(--ink);
   }
 
   .closing {

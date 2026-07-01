@@ -253,24 +253,6 @@ export const enContent: CampaignContent = {
         note: "",
       },
     ],
-    fieldsLabel: "What each report includes",
-    fields: [
-      {
-        icon: "tabler:cash",
-        label: "What came in",
-        body: "How much arrived that day and through which method.",
-      },
-      {
-        icon: "tabler:receipt",
-        label: "What was purchased",
-        body: "Every purchase made that day.",
-      },
-      {
-        icon: "tabler:truck-delivery",
-        label: "What was delivered",
-        body: "What reached whom.",
-      },
-    ],
     closing:
       "In the meantime, meet the people behind the campaign and see how it works.",
     faqLink: "Frequently asked questions",

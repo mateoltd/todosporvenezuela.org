@@ -249,12 +249,6 @@ export interface CampaignContent {
     photoNextLabel: string;
     photoCounterLabel: string;
     days: TransparencyDay[];
-    fieldsLabel: string;
-    fields: {
-      icon: string;
-      label: string;
-      body: string;
-    }[];
     closing: string;
     faqLink: string;
     homeLink: string;
